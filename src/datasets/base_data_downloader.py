@@ -1,3 +1,4 @@
+import json
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
@@ -67,6 +68,7 @@ class BaseDataDownloader(ABC):
             "datasets_processed": 0,
             "datasets_not_suitable": 0,
             "files_downloaded": 0,
+            "geo_packages": 0,
             "errors": 0,
             "start_time": datetime.now(),
             "cache_hits": 0,
@@ -87,6 +89,11 @@ class BaseDataDownloader(ABC):
         # Initialize buffer attributes (set in __aenter__ if needed)
         self.vector_db_buffer = None
         self.dataset_db_buffer = None
+
+        # Cache unsuitable datasets to speed up processing
+        self.unsuitable_datasets: Set[str] = set()
+        self.unsuitable_datasets_lock = asyncio.Lock()
+        self.unsuitable_datasets_file = self.output_dir / "unsuitable_datasets.json"
 
     async def __aenter__(self):
         """Async context manager entry with optimized session"""
@@ -125,6 +132,8 @@ class BaseDataDownloader(ABC):
             database = await get_mongo_database()
             dataset_db = await get_dataset_repository(database=database)
             self.dataset_db_buffer = DatasetDBBuffer(dataset_db)
+
+        await self.load_unsuitable_datasets()
 
         await self._initialize_resources()
 
@@ -279,6 +288,7 @@ class BaseDataDownloader(ABC):
             files = self.stats["files_downloaded"]
             errors = self.stats["errors"]
             not_suitable = self.stats["datasets_not_suitable"]
+            geo_packages = self.stats["geo_packages"]
             cache_hits = self.stats["cache_hits"]
             retries = self.stats["retries"]
             failed_count = len(self.stats["failed_datasets"])
@@ -309,6 +319,7 @@ class BaseDataDownloader(ABC):
                 if total > 0
                 else "Datasets processed: 0"
             )
+            self.logger.debug(f"Geo packages: {geo_packages}")
             self.logger.debug(f"Files downloaded: {files}")
             self.logger.debug("-" * 60)
             self.logger.debug("PERFORMANCE METRICS:")
@@ -326,17 +337,9 @@ class BaseDataDownloader(ABC):
             self.logger.debug(f"Not suitable: {not_suitable}")
             self.logger.debug(f"Success rate: {success_rate:.1f}%")
 
-            if 0 < failed_count <= 10:
+            if 0 < failed_count:
                 self.logger.debug("Failed dataset IDs:")
                 for dataset_id in self.stats["failed_datasets"]:
-                    self.logger.debug(f"  - {dataset_id}")
-            elif failed_count > 10:
-                self.logger.debug(
-                    f"Failed dataset IDs (showing first 10 of {failed_count}):"
-                )
-                for i, dataset_id in enumerate(
-                    list(self.stats["failed_datasets"])[:10]
-                ):
                     self.logger.debug(f"  - {dataset_id}")
 
             # Get additional metrics from child classes
@@ -388,5 +391,52 @@ class BaseDataDownloader(ABC):
         """
         async with self.failed_urls_lock:
             return url in self.failed_urls
+
+    # endregion
+
+    # region UNSUITABLE DATASETS CACHE
+
+    async def load_unsuitable_datasets(self):
+        """Load unsuitable datasets from cache file"""
+        if not self.unsuitable_datasets_file.exists():
+            self.logger.info("No unsuitable datasets cache found, starting fresh")
+            return
+
+        try:
+            with open(self.unsuitable_datasets_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                async with self.unsuitable_datasets_lock:
+                    self.unsuitable_datasets = set(data)
+        except Exception as e:
+            self.logger.error(f"Error loading unsuitable datasets cache: {e}")
+            self.unsuitable_datasets = set()
+
+    async def save_unsuitable_datasets(self):
+        """Save unsuitable datasets to cache file"""
+        if not self.is_file_system:
+            return
+
+        try:
+            async with self.unsuitable_datasets_lock:
+                data = sorted(list(self.unsuitable_datasets))
+
+            with open(self.unsuitable_datasets_file, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+
+        except Exception as e:
+            self.logger.error(f"Error saving unsuitable datasets cache: {e}")
+
+    async def is_dataset_unsuitable(self, package_name: str) -> bool:
+        """Check if dataset is in unsuitable cache"""
+        async with self.unsuitable_datasets_lock:
+            return package_name in self.unsuitable_datasets
+
+    async def mark_dataset_unsuitable(self, package_name: str):
+        """Mark dataset as unsuitable and save to cache"""
+        async with self.unsuitable_datasets_lock:
+            self.unsuitable_datasets.add(package_name)
+
+        if self.is_file_system:
+            await self.save_unsuitable_datasets()
 
     # endregion

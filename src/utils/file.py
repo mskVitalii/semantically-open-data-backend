@@ -7,6 +7,9 @@ import asyncio
 
 
 async def save_file(path: str, content: Union[str, bytes], binary: bool = False):
+    # Ensure parent directories exist
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+
     if binary:
         async with aiofiles.open(path, "wb") as f:
             await f.write(content)

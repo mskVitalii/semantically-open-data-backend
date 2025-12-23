@@ -15,6 +15,7 @@ from playwright.async_api import async_playwright, ViewportSize
 from src.datasets.base_data_downloader import BaseDataDownloader
 from src.datasets.datasets_metadata import (
     DatasetMetadataWithFields,
+    Dataset,
 )
 from src.infrastructure.logger import get_prefixed_logger
 from src.utils.datasets_utils import (
@@ -72,7 +73,6 @@ class Berlin(BaseDataDownloader):
         self.api_url = f"{self.base_url}/api/3/action"
         self.logger = get_prefixed_logger(__name__, "BERLIN")
         self.stats["playwright_downloads"] = 0
-        self.stats["playwright_downloads"] = 0
 
         # Track domains that require Playwright
         self.playwright_domains: Set[str] = set()
@@ -87,72 +87,15 @@ class Berlin(BaseDataDownloader):
         self.use_parallel = use_parallel
         self.use_playwright = use_playwright
 
-        # Cache unsuitable datasets to speed up processing
-        self.unsuitable_datasets: Set[str] = set()
-        self.unsuitable_datasets_lock = asyncio.Lock()
-        self.unsuitable_datasets_file = self.output_dir / "unsuitable_datasets.json"
-
-    async def _initialize_resources(self):
-        """Load unsuitable datasets cache on startup"""
-        if self.is_file_system:
-            await self.load_unsuitable_datasets()
-
     async def _cleanup_resources(self):
         if self.browser:
             await self.browser.close()
 
     # endregion
 
-    # region UNSUITABLE DATASETS CACHE
-
-    async def load_unsuitable_datasets(self):
-        """Load unsuitable datasets from cache file"""
-        if not self.unsuitable_datasets_file.exists():
-            self.logger.info("No unsuitable datasets cache found, starting fresh")
-            return
-
-        try:
-            with open(self.unsuitable_datasets_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                async with self.unsuitable_datasets_lock:
-                    self.unsuitable_datasets = set(data)
-        except Exception as e:
-            self.logger.error(f"Error loading unsuitable datasets cache: {e}")
-            self.unsuitable_datasets = set()
-
-    async def save_unsuitable_datasets(self):
-        """Save unsuitable datasets to cache file"""
-        if not self.is_file_system:
-            return
-
-        try:
-            async with self.unsuitable_datasets_lock:
-                data = sorted(list(self.unsuitable_datasets))
-
-            with open(self.unsuitable_datasets_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
-
-        except Exception as e:
-            self.logger.error(f"Error saving unsuitable datasets cache: {e}")
-
-    async def is_dataset_unsuitable(self, package_name: str) -> bool:
-        """Check if dataset is in unsuitable cache"""
-        async with self.unsuitable_datasets_lock:
-            return package_name in self.unsuitable_datasets
-
-    async def mark_dataset_unsuitable(self, package_name: str):
-        """Mark dataset as unsuitable and save to cache"""
-        async with self.unsuitable_datasets_lock:
-            self.unsuitable_datasets.add(package_name)
-
-        if self.is_file_system:
-            await self.save_unsuitable_datasets()
-
-    # endregion
-
     # region STATS
     async def get_additional_metrics(self) -> list[str]:
-        return ["playwright_downloads", ""]
+        return ["playwright_downloads"]
 
     # endregion
 
@@ -206,7 +149,8 @@ class Berlin(BaseDataDownloader):
                 await self.browser_context.route(
                     "**/*",
                     lambda route: route.abort()
-                    if route.request.resource_type in ["image", "stylesheet", "font", "media"]
+                    if route.request.resource_type
+                    in ["image", "stylesheet", "font", "media"]
                     else route.continue_(),
                 )
 
@@ -222,7 +166,6 @@ class Berlin(BaseDataDownloader):
             try:
                 # Wait for download to start automatically with shorter timeout
                 async with page.expect_download(timeout=5000) as download_info:
-                    # Use domcontentloaded instead of networkidle for faster loading
                     await page.goto(url, wait_until="domcontentloaded", timeout=10000)
 
                 download = await download_info.value
@@ -294,18 +237,19 @@ class Berlin(BaseDataDownloader):
     def should_skip_resource(resource: Dict) -> bool:
         """Optimized resource skip check"""
         url = resource.get("url", "").lower()
-        format = resource.get("format", "").lower()
+        pkg_format = resource.get("format", "").lower()
         formats = ["csv", "json", "xls", "xlsx"]
 
         # Check for allowed formats
         return not any(
-            format in formats or url.endswith(f".{indicator}") for indicator in formats
+            pkg_format in formats or url.endswith(f".{indicator}")
+            for indicator in formats
         )
 
     @staticmethod
-    def is_geo_format(resource: Dict) -> bool:
+    def is_geo_resource(resource: Dict) -> bool:
         url = resource.get("url", "").lower()
-        format = resource.get("format", "").lower()
+        pkg_format = resource.get("format", "").lower()
 
         # Geographic/geospatial formats to skip
         geo_formats = {
@@ -334,7 +278,7 @@ class Berlin(BaseDataDownloader):
         }
 
         # Check format field
-        if format and any(geo_fmt in format for geo_fmt in geo_formats):
+        if pkg_format and any(geo_fmt in pkg_format for geo_fmt in geo_formats):
             return True
 
         # Check URL for geographic extensions
@@ -555,8 +499,10 @@ class Berlin(BaseDataDownloader):
 
             # Filter and prioritize resources
             valid_resources = []
+            is_geo_format = False
             for i, resource in enumerate(resources):
-                if self.is_geo_format(resource):
+                if self.is_geo_resource(resource):
+                    is_geo_format = True
                     continue
 
                 if not resource.get("url") or self.should_skip_resource(resource):
@@ -574,6 +520,9 @@ class Berlin(BaseDataDownloader):
 
             # Sort by priority
             valid_resources.sort(key=lambda x: x[0])
+
+            if is_geo_format:
+                await self.update_stats("geo_packages")
 
             if len(valid_resources) == 0:
                 self.logger.debug(f"Dataset {package_name} has no suitable resources")
@@ -629,12 +578,12 @@ class Berlin(BaseDataDownloader):
                 if self.is_file_system:
                     save_file_with_task(metadata_file, package_meta.to_json())
 
-                # if self.is_embeddings and self.vector_db_buffer:
-                #     await self.vector_db_buffer.add(package_meta)
+                if self.is_embeddings and self.vector_db_buffer:
+                    await self.vector_db_buffer.add(package_meta)
 
-                # if self.is_store and self.dataset_db_buffer:
-                #     dataset = Dataset(metadata=package_meta, data=data)
-                #     await self.dataset_db_buffer.add(dataset)
+                if self.is_store and self.dataset_db_buffer:
+                    dataset = Dataset(metadata=package_meta, data=data)
+                    await self.dataset_db_buffer.add(dataset)
             else:
                 # Clean up empty dataset
                 if self.is_file_system:
@@ -815,9 +764,6 @@ async def main():
             use_parallel=True,
             use_playwright=True,
         ) as downloader:
-            # await downloader.process_dataset(
-            #     "auslandische-einwohnerinnen-und-einwohner-in-berlin-in-lor-planungsraumen-am-31-12-2015"
-            # )
             await downloader.process_all_datasets()
 
     except KeyboardInterrupt:

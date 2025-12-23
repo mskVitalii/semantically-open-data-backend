@@ -39,6 +39,8 @@ class Chemnitz(BaseDataDownloader):
         connection_limit_per_host: int = 30,
         batch_size: int = 50,
         max_retries: int = 1,
+        use_parallel: bool = True,
+        use_playwright: bool = True,
     ):
         """
         Initialize optimized downloader
@@ -55,6 +57,8 @@ class Chemnitz(BaseDataDownloader):
             connection_limit_per_host: Per-host connection limit
             batch_size: Size of dataset batches to process
             max_retries: Maximum retry attempts for failed requests
+            use_parallel: Whether to use parallel processing
+            use_playwright: Whether to use Playwright for downloads
         """
         super().__init__(
             output_dir=output_dir,
@@ -71,6 +75,9 @@ class Chemnitz(BaseDataDownloader):
         self.csv_file_path = csv_file_path
         self.stats["layers_downloaded"] = 0
         self.logger = get_prefixed_logger(__name__, "CHEMNITZ")
+
+        self.use_parallel = use_parallel
+        self.use_playwright = use_playwright
 
     # endregion
 
@@ -100,7 +107,7 @@ class Chemnitz(BaseDataDownloader):
             params = {
                 "where": "1=1",
                 "outFields": "*",
-                "f": "geojson" if format_name == "geojson" else format_name,
+                "f": format_name,
                 "returnGeometry": "true",
             }
 
@@ -192,6 +199,10 @@ class Chemnitz(BaseDataDownloader):
             # Get service info
             service_info = await self.get_service_info_by_api(service_url)
             if not service_info:
+                await self.update_stats("datasets_processed")
+                await self.update_stats("failed_datasets", title)
+                return True
+
                 return False
 
             # Prepare metadata
@@ -211,10 +222,13 @@ class Chemnitz(BaseDataDownloader):
 
             if not all_features:
                 await self.update_stats("datasets_processed")
+                await self.update_stats("failed_datasets", title)
                 return True
 
             # Download layers concurrently with limited concurrency
-            layer_semaphore = asyncio.Semaphore(self.max_workers)
+            layer_semaphore = asyncio.Semaphore(
+                self.max_workers if self.use_parallel else 1
+            )
 
             async def download_with_semaphore(feature):
                 async with layer_semaphore:
@@ -268,6 +282,7 @@ class Chemnitz(BaseDataDownloader):
 
         except Exception as e:
             self.logger.error(f"\tError processing dataset {title}: {e}", exc_info=True)
+            await self.update_stats("datasets_processed")
             await self.update_stats("failed_datasets", title)
             await self.update_stats("errors")
             return False
@@ -279,6 +294,13 @@ class Chemnitz(BaseDataDownloader):
         url = metadata["url"]
         dataset_type = metadata["type"]
         description = metadata.get("description", "")
+
+        safe_title = sanitize_title(title)
+        if await self.is_dataset_unsuitable(safe_title):
+            self.logger.debug(f"Skipping unsuitable dataset from cache: {title}")
+            await self.update_stats("datasets_processed")
+            await self.update_stats("datasets_not_suitable")
+            return True
 
         try:
             if "Feature Service" == dataset_type:
@@ -334,7 +356,7 @@ class Chemnitz(BaseDataDownloader):
 
         progress_task = asyncio.create_task(self.progress_reporter())
 
-        semaphore = asyncio.Semaphore(self.max_workers)
+        semaphore = asyncio.Semaphore(self.max_workers if self.use_parallel else 1)
 
         async def process_with_semaphore(metadata: Dict[str, str]):
             async with semaphore:
@@ -427,24 +449,38 @@ async def async_main():
     elif args.verbose:
         logging.getLogger().setLevel(logging.INFO)
 
+    # Disable noisy third-party library logs
+    logging.getLogger("matplotlib").setLevel(logging.WARNING)
+    logging.getLogger("PIL").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("aiohttp").setLevel(logging.WARNING)
+    logging.getLogger("asyncio").setLevel(logging.WARNING)
+    logging.getLogger("playwright").setLevel(logging.WARNING)
+
     try:
         async with Chemnitz(
             csv_file,
             output_dir=args.output,
             max_workers=args.max_workers,
             delay=args.delay,
-            is_embeddings=True,
-            is_store=True,
+            is_embeddings=False,
+            is_store=False,
+            is_file_system=True,
             connection_limit=args.connection_limit,
             batch_size=args.batch_size,
             max_retries=args.max_retries,
+            use_parallel=False,
+            use_playwright=True,
         ) as downloader:
             await downloader.process_all_datasets()
         return 0
 
     except KeyboardInterrupt:
-        print("⚠️ Download interrupted by user")
-        return 130  # Standard for Ctrl+C
+        print("\n\nDownload interrupted by user (Ctrl+C)")
+        sys.exit(0)
+    except asyncio.CancelledError:
+        print("\n\nDownload cancelled")
+        sys.exit(0)
 
     except Exception as e:
         print(f"❌ An error occurred: {e}")
