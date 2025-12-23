@@ -40,6 +40,8 @@ class Berlin(BaseDataDownloader):
         connection_limit: int = 100,
         connection_limit_per_host: int = 30,
         batch_size: int = 50,
+        use_parallel: bool = True,
+        use_playwright: bool = True,
     ):
         """
         Initialize optimized downloader
@@ -70,6 +72,7 @@ class Berlin(BaseDataDownloader):
         self.api_url = f"{self.base_url}/api/3/action"
         self.logger = get_prefixed_logger(__name__, "BERLIN")
         self.stats["playwright_downloads"] = 0
+        self.stats["playwright_downloads"] = 0
 
         # Track domains that require Playwright
         self.playwright_domains: Set[str] = set()
@@ -78,8 +81,21 @@ class Berlin(BaseDataDownloader):
         # Playwright browser instance
         self.browser = None
         self.browser_lock = asyncio.Lock()
+        self.browser_context = None
+        self.context_lock = asyncio.Lock()
 
-        self.use_parallel = False
+        self.use_parallel = use_parallel
+        self.use_playwright = use_playwright
+
+        # Cache unsuitable datasets to speed up processing
+        self.unsuitable_datasets: Set[str] = set()
+        self.unsuitable_datasets_lock = asyncio.Lock()
+        self.unsuitable_datasets_file = self.output_dir / "unsuitable_datasets.json"
+
+    async def _initialize_resources(self):
+        """Load unsuitable datasets cache on startup"""
+        if self.is_file_system:
+            await self.load_unsuitable_datasets()
 
     async def _cleanup_resources(self):
         if self.browser:
@@ -87,15 +103,62 @@ class Berlin(BaseDataDownloader):
 
     # endregion
 
+    # region UNSUITABLE DATASETS CACHE
+
+    async def load_unsuitable_datasets(self):
+        """Load unsuitable datasets from cache file"""
+        if not self.unsuitable_datasets_file.exists():
+            self.logger.info("No unsuitable datasets cache found, starting fresh")
+            return
+
+        try:
+            with open(self.unsuitable_datasets_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                async with self.unsuitable_datasets_lock:
+                    self.unsuitable_datasets = set(data)
+        except Exception as e:
+            self.logger.error(f"Error loading unsuitable datasets cache: {e}")
+            self.unsuitable_datasets = set()
+
+    async def save_unsuitable_datasets(self):
+        """Save unsuitable datasets to cache file"""
+        if not self.is_file_system:
+            return
+
+        try:
+            async with self.unsuitable_datasets_lock:
+                data = sorted(list(self.unsuitable_datasets))
+
+            with open(self.unsuitable_datasets_file, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+
+        except Exception as e:
+            self.logger.error(f"Error saving unsuitable datasets cache: {e}")
+
+    async def is_dataset_unsuitable(self, package_name: str) -> bool:
+        """Check if dataset is in unsuitable cache"""
+        async with self.unsuitable_datasets_lock:
+            return package_name in self.unsuitable_datasets
+
+    async def mark_dataset_unsuitable(self, package_name: str):
+        """Mark dataset as unsuitable and save to cache"""
+        async with self.unsuitable_datasets_lock:
+            self.unsuitable_datasets.add(package_name)
+
+        if self.is_file_system:
+            await self.save_unsuitable_datasets()
+
+    # endregion
+
     # region STATS
     async def get_additional_metrics(self) -> list[str]:
-        return ["playwright_downloads"]
+        return ["playwright_downloads", ""]
 
     # endregion
 
     # region PLAYWRIGHT
     async def get_or_create_browser(self):
-        """Get or create a shared Playwright browser instance"""
+        """Get or create a shared Playwright browser instance with optimizations"""
         async with self.browser_lock:
             if not self.browser:
                 p = await async_playwright().start()
@@ -106,26 +169,61 @@ class Berlin(BaseDataDownloader):
                         "--disable-dev-shm-usage",
                         "--no-sandbox",
                         "--disable-setuid-sandbox",
+                        # Performance optimizations
+                        "--disable-gpu",
+                        "--disable-dev-tools",
+                        "--disable-software-rasterizer",
+                        "--disable-extensions",
+                        "--disable-background-networking",
+                        "--disable-background-timer-throttling",
+                        "--disable-backgrounding-occluded-windows",
+                        "--disable-renderer-backgrounding",
+                        "--disable-sync",
+                        "--metrics-recording-only",
+                        "--mute-audio",
+                        "--no-first-run",
+                        "--no-default-browser-check",
                     ],
                 )
             return self.browser
 
-    async def download_file_playwright(self, url: str) -> bytes | None:
-        """Download file content using Playwright when browser auto-triggers download"""
-        browser = await self.get_or_create_browser()
-        async with await browser.new_context(
-            accept_downloads=True,
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            viewport=ViewportSize(width=1920, height=1080),
-            java_script_enabled=True,
-        ) as context:
-            try:
-                page = await context.new_page()
+    async def get_or_create_context(self):
+        """Get or create a shared browser context for faster page loads"""
+        async with self.context_lock:
+            if not self.browser_context:
+                browser = await self.get_or_create_browser()
+                self.browser_context = await browser.new_context(
+                    accept_downloads=True,
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                    viewport=ViewportSize(width=1280, height=720),  # Smaller viewport
+                    java_script_enabled=True,
+                    # Disable unnecessary resources for speed
+                    bypass_csp=True,
+                    ignore_https_errors=True,
+                )
 
-                # Wait for download to start automatically
-                async with page.expect_download(timeout=3000) as download_info:
-                    await page.goto(url, wait_until="networkidle")
-                    await page.wait_for_timeout(2000)
+                # Block images, fonts, and stylesheets to speed up loading
+                await self.browser_context.route(
+                    "**/*",
+                    lambda route: route.abort()
+                    if route.request.resource_type in ["image", "stylesheet", "font", "media"]
+                    else route.continue_(),
+                )
+
+            return self.browser_context
+
+    async def download_file_playwright(self, url: str) -> bytes | None:
+        """Optimized file download using Playwright with reusable context"""
+        context = await self.get_or_create_context()
+
+        try:
+            page = await context.new_page()
+
+            try:
+                # Wait for download to start automatically with shorter timeout
+                async with page.expect_download(timeout=5000) as download_info:
+                    # Use domcontentloaded instead of networkidle for faster loading
+                    await page.goto(url, wait_until="domcontentloaded", timeout=10000)
 
                 download = await download_info.value
 
@@ -140,9 +238,13 @@ class Berlin(BaseDataDownloader):
                 await self.update_stats("playwright_downloads")
                 return content
 
-            except Exception as e:
-                self.logger.error(f"Playwright error for {url}: {e}")
-                return None
+            finally:
+                # Always close the page to free resources
+                await page.close()
+
+        except Exception as e:
+            self.logger.error(f"Playwright error for {url}: {e}")
+            return None
 
     # endregion
 
@@ -200,9 +302,50 @@ class Berlin(BaseDataDownloader):
             format in formats or url.endswith(f".{indicator}") for indicator in formats
         )
 
+    @staticmethod
+    def is_geo_format(resource: Dict) -> bool:
+        url = resource.get("url", "").lower()
+        format = resource.get("format", "").lower()
+
+        # Geographic/geospatial formats to skip
+        geo_formats = {
+            "wms",
+            "wfs",
+            "wcs",
+            "wmts",  # Web map services
+            "geojson",
+            "kml",
+            "kmz",
+            "gml",
+            "gpx",  # Vector formats
+            "shp",
+            "shx",
+            "dbf",
+            "prj",
+            "shz",  # Shapefile components
+            "gpkg",
+            "geopackage",  # GeoPackage
+            "geotiff",
+            "tif",
+            "tiff",  # Raster formats
+            "ecw",
+            "mrsid",
+            "sid",  # Compressed imagery
+        }
+
+        # Check format field
+        if format and any(geo_fmt in format for geo_fmt in geo_formats):
+            return True
+
+        # Check URL for geographic extensions
+        if url and any(url.endswith(f".{geo_fmt}") for geo_fmt in geo_formats):
+            return True
+
+        return False
+
     # 5.
     async def download_resource_by_api(
-        self, resource: dict, package_name: str
+        self, resource: dict
     ) -> (bool, list[dict] | None):
         """Optimized file download with streaming"""
         url = resource.get("url")
@@ -215,6 +358,9 @@ class Berlin(BaseDataDownloader):
 
                 if "html" in content_type:
                     # Use Playwright for HTML content that triggers download
+                    if not self.use_playwright:
+                        return False, None
+
                     self.logger.debug(f"Using Playwright for: {url}")
                     content = await self.download_file_playwright(url)
                     if content is None:
@@ -362,6 +508,13 @@ class Berlin(BaseDataDownloader):
     async def process_dataset(self, package_name: str) -> bool:
         """Process dataset with optimized resource handling"""
 
+        # Skip if dataset is known to be unsuitable
+        if await self.is_dataset_unsuitable(package_name):
+            self.logger.debug(f"Skipping unsuitable dataset from cache: {package_name}")
+            await self.update_stats("datasets_processed")
+            await self.update_stats("datasets_not_suitable")
+            return True
+
         # Create dataset directory
         dataset_dir = self.output_dir / f"{package_name}"
         metadata_file = dataset_dir / "metadata.json"
@@ -390,7 +543,9 @@ class Berlin(BaseDataDownloader):
 
             if not resources:
                 self.logger.debug(f"No resources in dataset: {title}")
+                await self.mark_dataset_unsuitable(package_name)
                 await self.update_stats("datasets_processed")
+                await self.update_stats("datasets_not_suitable")
                 await self.update_stats("failed_datasets", package_name)
                 return True
 
@@ -401,6 +556,9 @@ class Berlin(BaseDataDownloader):
             # Filter and prioritize resources
             valid_resources = []
             for i, resource in enumerate(resources):
+                if self.is_geo_format(resource):
+                    continue
+
                 if not resource.get("url") or self.should_skip_resource(resource):
                     continue
 
@@ -412,13 +570,19 @@ class Berlin(BaseDataDownloader):
                     for fmt in format_priority
                     if fmt in format_str
                 )
-                if priority == 999:
-                    priority = 7  # Unknown format
-
                 valid_resources.append((priority, i, resource))
 
             # Sort by priority
             valid_resources.sort(key=lambda x: x[0])
+
+            if len(valid_resources) == 0:
+                self.logger.debug(f"Dataset {package_name} has no suitable resources")
+                await self.mark_dataset_unsuitable(package_name)
+                await self.update_stats("datasets_processed")
+                await self.update_stats("datasets_not_suitable")
+                if self.is_file_system:
+                    safe_delete(dataset_dir, self.logger)
+                return True
 
             # Download resources concurrently (but limit to avoid overwhelming)
             download_tasks = []
@@ -431,7 +595,7 @@ class Berlin(BaseDataDownloader):
                 # filename = sanitize_title(f"{resource_name}_{i}{extension}")
                 # filepath = dataset_dir / filename
 
-                task = self.download_resource_by_api(resource, package_name)
+                task = self.download_resource_by_api(resource)
                 download_tasks.append(task)
 
             # Wait for downloads
@@ -540,36 +704,44 @@ class Berlin(BaseDataDownloader):
             async with semaphore:
                 return await self.process_dataset(package_name)
 
-        # Process in batches to avoid overwhelming memory
-        for i in range(0, len(packages), self.batch_size):
-            batch = packages[i : i + self.batch_size]
-            tasks = [process_with_semaphore(package) for package in batch]
-            results = await asyncio.gather(*tasks, return_exceptions=True)
-
-            # Handle exceptions
-            for package, result in zip(batch, results):
-                if isinstance(result, Exception):
-                    self.logger.error(f"Exception in task for {package}: {result}")
-                    await self.update_stats("errors")
-
-            self.logger.debug(
-                f"Completed batch {i // self.batch_size + 1}/{(len(packages) + self.batch_size - 1) // self.batch_size}"
-            )
-
-        # Cancel progress reporter
-        progress_task.cancel()
         try:
-            await progress_task
+            # Process in batches to avoid overwhelming memory
+            for i in range(0, len(packages), self.batch_size):
+                batch = packages[i : i + self.batch_size]
+                tasks = [process_with_semaphore(package) for package in batch]
+                results = await asyncio.gather(*tasks, return_exceptions=True)
+
+                # Handle exceptions
+                for package, result in zip(batch, results):
+                    if isinstance(result, Exception):
+                        if not isinstance(result, asyncio.CancelledError):
+                            self.logger.error(
+                                f"Exception in task for {package}: {result}"
+                            )
+                            await self.update_stats("errors")
+
+                self.logger.debug(
+                    f"Completed batch {i // self.batch_size + 1}/{(len(packages) + self.batch_size - 1) // self.batch_size}"
+                )
+
         except asyncio.CancelledError:
-            pass
+            self.logger.info("Processing cancelled by user")
+            raise
+        finally:
+            # Cancel progress reporter
+            progress_task.cancel()
+            try:
+                await progress_task
+            except asyncio.CancelledError:
+                pass
 
-        # Final flush of embeddings buffer
-        if hasattr(self, "vector_db_buffer") and self.vector_db_buffer:
-            await self.vector_db_buffer.flush()
+            # Final flush of embeddings buffer
+            if hasattr(self, "vector_db_buffer") and self.vector_db_buffer:
+                await self.vector_db_buffer.flush()
 
-        # STATS
-        self.logger.info("🎉 Download completed!")
-        await self.print_final_report()
+            # STATS
+            self.logger.info("Download stopped")
+            await self.print_final_report()
 
     # endregion
 
@@ -623,6 +795,14 @@ async def main():
     elif args.verbose:
         logging.getLogger().setLevel(logging.INFO)
 
+    # Disable noisy third-party library logs
+    logging.getLogger("matplotlib").setLevel(logging.WARNING)
+    logging.getLogger("PIL").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("aiohttp").setLevel(logging.WARNING)
+    logging.getLogger("asyncio").setLevel(logging.WARNING)
+    logging.getLogger("playwright").setLevel(logging.WARNING)
+
     try:
         async with Berlin(
             output_dir=args.output_dir,
@@ -632,6 +812,8 @@ async def main():
             is_embeddings=True,
             connection_limit=args.connection_limit,
             batch_size=args.batch_size,
+            use_parallel=True,
+            use_playwright=True,
         ) as downloader:
             # await downloader.process_dataset(
             #     "auslandische-einwohnerinnen-und-einwohner-in-berlin-in-lor-planungsraumen-am-31-12-2015"
@@ -639,7 +821,11 @@ async def main():
             await downloader.process_all_datasets()
 
     except KeyboardInterrupt:
-        print("Download interrupted by user")
+        print("\n\nDownload interrupted by user (Ctrl+C)")
+        sys.exit(0)
+    except asyncio.CancelledError:
+        print("\n\nDownload cancelled")
+        sys.exit(0)
     except Exception as e:
         print(f"Unexpected error: {e}")
         sys.exit(1)

@@ -65,6 +65,7 @@ class BaseDataDownloader(ABC):
         self.stats = {
             "datasets_found": 0,
             "datasets_processed": 0,
+            "datasets_not_suitable": 0,
             "files_downloaded": 0,
             "errors": 0,
             "start_time": datetime.now(),
@@ -277,6 +278,7 @@ class BaseDataDownloader(ABC):
             total = self.stats["datasets_found"]
             files = self.stats["files_downloaded"]
             errors = self.stats["errors"]
+            not_suitable = self.stats["datasets_not_suitable"]
             cache_hits = self.stats["cache_hits"]
             retries = self.stats["retries"]
             failed_count = len(self.stats["failed_datasets"])
@@ -321,6 +323,7 @@ class BaseDataDownloader(ABC):
             self.logger.debug("ERROR ANALYSIS:")
             self.logger.debug(f"Total errors: {errors}")
             self.logger.debug(f"Failed datasets: {failed_count}")
+            self.logger.debug(f"Not suitable: {not_suitable}")
             self.logger.debug(f"Success rate: {success_rate:.1f}%")
 
             if 0 < failed_count <= 10:
