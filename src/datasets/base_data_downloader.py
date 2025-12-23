@@ -83,6 +83,10 @@ class BaseDataDownloader(ABC):
         self.failed_urls_lock = asyncio.Lock()
         self.logger = logging.getLogger(__name__)
 
+        # Initialize buffer attributes (set in __aenter__ if needed)
+        self.vector_db_buffer = None
+        self.dataset_db_buffer = None
+
     async def __aenter__(self):
         """Async context manager entry with optimized session"""
         # Create connector with connection pooling
@@ -128,13 +132,13 @@ class BaseDataDownloader(ABC):
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Async context manager exit"""
         # Flush embeddings buffer if it exists
-        if self.vector_db_buffer:
+        if hasattr(self, "vector_db_buffer") and self.vector_db_buffer:
             try:
                 await self.vector_db_buffer.flush()
             except Exception as e:
                 self.logger.error(f"Error flushing VECTOR buffer: {e}")
 
-        if self.dataset_db_buffer:
+        if hasattr(self, "dataset_db_buffer") and self.dataset_db_buffer:
             try:
                 await self.dataset_db_buffer.flush()
             except Exception as e:

@@ -6,6 +6,10 @@ from logging import Logger
 from pathlib import Path
 from typing import Any
 
+import matplotlib
+
+matplotlib.use("Agg")  # Use non-interactive backend to prevent plots from showing
+
 import numpy as np
 from fitter import Fitter
 from scipy import stats
@@ -21,10 +25,10 @@ def safe_delete(path: Path, logger: Logger | logging.LoggerAdapter):
     if path.exists():
         if path.is_file():
             path.unlink()
-            logger.debug(f"Deleted file: {path}")
+            # logger.debug(f"Deleted file: {path}")
         elif path.is_dir():
             shutil.rmtree(path)
-            logger.debug(f"Deleted folder: {path}")
+            # logger.debug(f"Deleted folder: {path}")
     else:
         logger.debug(f"Path doesn't exist: {path}")
 
@@ -54,17 +58,22 @@ skip_formats = [
     "atom",
     "wms",
     "wfs",
+    "geojson",
     "wmts",
     "api",
     "html",
     "htm",
-    "xlsx",
-    "xls",
     "zip",
 ]
 
-allowed_formats = ["csv", "json", "txt"]
-allowed_extensions = [".csv", ".json", ".xlsx", ".xls", ".txt"]
+allowed_formats = [
+    "csv",
+    "json",
+    "txt",
+    "xlsx",
+    "xls",
+]
+allowed_extensions = [f".{f}" for f in allowed_formats]
 
 
 logging.getLogger("fitter").setLevel(logging.WARNING)
@@ -106,6 +115,11 @@ def detect_distribution(series: np.ndarray, min_size: int = 30) -> str:
 
         f = Fitter(data.tolist(), distributions=["expon", "lognorm", "gamma"])
         f.fit()
+
+        # Check if any distributions were fitted successfully
+        if not f.fitted_param:
+            return "none"
+
         best = f.get_best(method="sumsquare_error")
         if not best:
             return "none"

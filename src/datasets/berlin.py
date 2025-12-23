@@ -5,23 +5,20 @@ import logging
 import random
 import sys
 from itertools import chain
-from pathlib import Path
 from typing import Dict, Optional, Set
 
 import aiohttp
 import pandas as pd
 from aiohttp import ClientTimeout
-from playwright.async_api import async_playwright, ViewportSize, Error
+from playwright.async_api import async_playwright, ViewportSize
 
 from src.datasets.base_data_downloader import BaseDataDownloader
 from src.datasets.datasets_metadata import (
     DatasetMetadataWithFields,
-    Dataset,
 )
 from src.infrastructure.logger import get_prefixed_logger
 from src.utils.datasets_utils import (
     safe_delete,
-    sanitize_title,
     extract_fields,
 )
 from src.utils.file import save_file_with_task
@@ -37,7 +34,7 @@ class Berlin(BaseDataDownloader):
         output_dir: str = "berlin",
         max_workers: int = 128,
         delay: float = 0.05,
-        is_file_system: bool = True,
+        is_file_system: bool = False,
         is_embeddings: bool = False,
         is_store: bool = False,
         connection_limit: int = 100,
@@ -82,6 +79,8 @@ class Berlin(BaseDataDownloader):
         self.browser = None
         self.browser_lock = asyncio.Lock()
 
+        self.use_parallel = False
+
     async def _cleanup_resources(self):
         if self.browser:
             await self.browser.close()
@@ -111,64 +110,39 @@ class Berlin(BaseDataDownloader):
                 )
             return self.browser
 
-    async def download_file_playwright(self, url: str, filepath: Path) -> bool:
-        """Optimized Playwright download with browser reuse"""
-        if filepath.exists() and filepath.stat().st_size > 0:
-            self.logger.debug(f"File already exists: {filepath.name}")
-            return True
-
+    async def download_file_playwright(self, url: str) -> bytes | None:
+        """Download file content using Playwright when browser auto-triggers download"""
         browser = await self.get_or_create_browser()
-        context = await browser.new_context(
+        async with await browser.new_context(
             accept_downloads=True,
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            viewport=ViewportSize(1920, 1080),
+            viewport=ViewportSize(width=1920, height=1080),
             java_script_enabled=True,
-        )
+        ) as context:
+            try:
+                page = await context.new_page()
 
-        try:
-            page = await context.new_page()
-
-            # Set longer timeout for complex pages
-            page.set_default_timeout(10000)
-
-            async with page.expect_download(timeout=10000) as download_info:
-                await page.goto(url, wait_until="networkidle", timeout=10000)
-                # Wait a bit for JS to initialize
-                await page.wait_for_timeout(2000)
-
-                # Try to find and click download buttons
-                download_selectors = [
-                    "a[download]",
-                    'button:has-text("Download")',
-                    'a:has-text("Download")',
-                    'button:has-text("Herunterladen")',
-                    'a:has-text("Herunterladen")',
-                    ".download-button",
-                    '[class*="download"]',
-                ]
-
-                for selector in download_selectors:
-                    try:
-                        if await page.locator(selector).first.is_visible():
-                            await page.locator(selector).first.click()
-                            break
-                    # noqa: F821
-                    except (TimeoutError, Error):
-                        continue
+                # Wait for download to start automatically
+                async with page.expect_download(timeout=3000) as download_info:
+                    await page.goto(url, wait_until="networkidle")
+                    await page.wait_for_timeout(2000)
 
                 download = await download_info.value
 
-            await download.save_as(filepath)
-            await context.close()
+                # Read download content directly
+                path = await download.path()
+                with open(path, "rb") as f:
+                    content = f.read()
 
-            self.logger.debug(f"Downloaded via Playwright: {filepath.name}")
-            await self.update_stats("playwright_downloads")
-            return True
+                self.logger.debug(
+                    f"Downloaded via Playwright: {download.suggested_filename}"
+                )
+                await self.update_stats("playwright_downloads")
+                return content
 
-        except Exception as e:
-            self.logger.error(f"Playwright error for {url}: {e}")
-            await context.close()
-            return False
+            except Exception as e:
+                self.logger.error(f"Playwright error for {url}: {e}")
+                return None
 
     # endregion
 
@@ -218,20 +192,20 @@ class Berlin(BaseDataDownloader):
     def should_skip_resource(resource: Dict) -> bool:
         """Optimized resource skip check"""
         url = resource.get("url", "").lower()
-        format_hint = resource.get("format", "").lower()
+        format = resource.get("format", "").lower()
+        formats = ["csv", "json", "xls", "xlsx"]
 
         # Check for allowed formats
-        if any(
-            indicator in format_hint or url.endswith(f".{indicator}")
-            for indicator in ["csv", "json", "geojson"]
-        ):
-            return False
-
-        return True
+        return not any(
+            format in formats or url.endswith(f".{indicator}") for indicator in formats
+        )
 
     # 5.
-    async def download_file_by_api(self, url: str) -> (bool, list[dict] | None):
+    async def download_resource_by_api(
+        self, resource: dict, package_name: str
+    ) -> (bool, list[dict] | None):
         """Optimized file download with streaming"""
+        url = resource.get("url")
         try:
             async with self.session.get(
                 url, timeout=ClientTimeout(total=600), ssl=False
@@ -240,7 +214,40 @@ class Berlin(BaseDataDownloader):
                 content_type = response.headers.get("content-type", "").lower()
 
                 if "html" in content_type:
-                    return False, None
+                    # Use Playwright for HTML content that triggers download
+                    self.logger.debug(f"Using Playwright for: {url}")
+                    content = await self.download_file_playwright(url)
+                    if content is None:
+                        return False, None
+
+                    # Try to detect file type and parse
+                    try:
+                        # Try CSV first
+                        df = pd.read_csv(
+                            io.BytesIO(content),
+                            encoding="utf-8-sig",
+                            sep=None,
+                            engine="python",
+                        )
+                        features = df.to_dict("records")
+                        await self.update_stats("files_downloaded")
+                        return True, features
+                    except Exception:
+                        try:
+                            # Try Excel
+                            df = pd.read_excel(io.BytesIO(content), engine="openpyxl")
+                            features = df.to_dict("records")
+                            await self.update_stats("files_downloaded")
+                            return True, features
+                        except Exception:
+                            # Try JSON
+                            try:
+                                data = json.loads(content.decode("utf-8"))
+                                features = data.get("features", [])
+                                await self.update_stats("files_downloaded")
+                                return True, features
+                            except Exception:
+                                return False, None
                 elif (
                     "csv" in content_type
                     or "text/plain" in content_type
@@ -277,36 +284,30 @@ class Berlin(BaseDataDownloader):
                         return True, features
                     except Exception:
                         return False, None
-                # else:
-                #     # Create temporary file for atomic write
-                #     temp_filepath = filepath.with_suffix(filepath.suffix + ".tmp")
-                #
-                #     content_type = response.headers.get("content-type", "").lower()
-                #     if response.status != 200:
-                #         return False, None
-                #
-                #     if "html" in content_type:
-                #         # self.logger.info(f"HTML in content_type: {content_type}")
-                #         # async with self.playwright_lock:
-                #         #     self.playwright_domains.add(domain)
-                #         # return await self.download_file_playwright(url, filepath)
-                #         return False, None
-                #     else:
-                #         # Normal download with larger buffer
-                #         async with aiofiles.open(temp_filepath, "wb") as f:
-                #             async for chunk in response.content.iter_chunked(65536):
-                #                 await f.write(chunk)
-                #
-                #     # Verify file is not empty
-                #     if temp_filepath.stat().st_size == 0:
-                #         self.logger.warning(f"Downloaded file is empty: {filepath}")
-                #         temp_filepath.unlink()
-                #         return False, None
-                #
-                #     # Atomic rename
-                #     temp_filepath.rename(filepath)
-                #     await self.update_stats("files_downloaded")
-                #     return True, None
+                elif (
+                    "vnd.ms-excel" in content_type
+                    or "spreadsheetml.sheet" in content_type
+                    or url.endswith(".xls")
+                    or url.endswith(".xlsx")
+                ):
+                    content = await response.read()
+                    try:
+                        df = pd.read_excel(io.BytesIO(content), engine="openpyxl")
+                    except Exception:
+                        # Fallback to xlrd for old .xls files
+                        try:
+                            df = pd.read_excel(io.BytesIO(content), engine="xlrd")
+                        except Exception as e:
+                            self.logger.error(f"Failed to read Excel file {url}: {e}")
+                            return False, None
+                    features = df.to_dict("records")
+                    await self.update_stats("files_downloaded")
+                    return True, features
+                else:
+                    self.logger.warning(
+                        f"Unknown content type {content_type} for {url}"
+                    )
+                    return False, None
 
         except Exception as e:
             if "Not Found" in str(e):
@@ -352,15 +353,28 @@ class Berlin(BaseDataDownloader):
                     f"Error fetching package details for {package_name}: {e}"
                 )
                 if attempt == retries - 1:
-                    raise
+                    return None
                 await asyncio.sleep(delay + random.random())
                 delay *= 2
-                return None
         return None
 
     # 3.
     async def process_dataset(self, package_name: str) -> bool:
         """Process dataset with optimized resource handling"""
+
+        # Create dataset directory
+        dataset_dir = self.output_dir / f"{package_name}"
+        metadata_file = dataset_dir / "metadata.json"
+
+        # Skip if already processed successfully
+        if self.is_file_system:
+            if metadata_file.exists():
+                self.logger.debug(f"Dataset already processed: {package_name}")
+                await self.update_stats("datasets_processed")
+                await self.update_stats("files_downloaded")
+                return True
+            dataset_dir.mkdir(exist_ok=True)
+
         # Minimal delay to respect server
         await asyncio.sleep(self.delay)
 
@@ -374,27 +388,14 @@ class Berlin(BaseDataDownloader):
             title = package.get("title", package_name)
             resources = package.get("resources", [])
 
-            # Create dataset directory
-            safe_title = sanitize_title(title)
-            dataset_dir = self.output_dir / f"{package_name}_{safe_title}"
-
-            # Skip if already processed successfully
-            metadata_file = dataset_dir / "metadata.json"
-            if self.is_file_system:
-                if metadata_file.exists():
-                    self.logger.debug(f"Dataset already processed: {title}")
-                    await self.update_stats("datasets_processed")
-                    return True
-                dataset_dir.mkdir(exist_ok=True)
-
             if not resources:
-                self.logger.debug(f"No resources found for dataset: {title}")
+                self.logger.debug(f"No resources in dataset: {title}")
                 await self.update_stats("datasets_processed")
-                await self.update_stats("failed_datasets")
+                await self.update_stats("failed_datasets", package_name)
                 return True
 
             self.logger.debug(
-                f"Processing dataset: {title} ({len(resources)} resources)"
+                f"Processing dataset: {package_name} ({len(resources)} resources)"
             )
 
             # Filter and prioritize resources
@@ -404,11 +405,7 @@ class Berlin(BaseDataDownloader):
                     continue
 
                 # Prioritize by format
-                format_priority = {
-                    "json": 1,
-                    "geojson": 2,
-                    "csv": 3,
-                }
+                format_priority = {"json": 1, "csv": 2, "xlsx": 3, "xls": 4}
                 format_str = resource.get("format", "").lower()
                 priority = min(
                     format_priority.get(fmt, 999)
@@ -427,7 +424,6 @@ class Berlin(BaseDataDownloader):
             download_tasks = []
 
             for priority, i, resource in valid_resources:
-                url = resource.get("url")
                 # resource_name = resource.get("name", f"resource_{i}")
                 # resource_format = resource.get("format", "")
                 # extension = self.get_file_extension(url, resource_format)
@@ -435,12 +431,14 @@ class Berlin(BaseDataDownloader):
                 # filename = sanitize_title(f"{resource_name}_{i}{extension}")
                 # filepath = dataset_dir / filename
 
-                task = self.download_file_by_api(url)
+                task = self.download_resource_by_api(resource, package_name)
                 download_tasks.append(task)
 
             # Wait for downloads
             results = await asyncio.gather(*download_tasks, return_exceptions=True)
-            success_count = sum(1 for r in results if r[0] is True)
+            success_count = sum(
+                1 for r in results if not isinstance(r, Exception) and r[0] is True
+            )
 
             if success_count > 0:
                 package_meta = DatasetMetadataWithFields(
@@ -455,18 +453,24 @@ class Berlin(BaseDataDownloader):
                     country="Germany",
                 )
 
-                data = list(chain.from_iterable(res[1] for res in results))
+                data = list(
+                    chain.from_iterable(
+                        res[1]
+                        for res in results
+                        if not isinstance(res, Exception) and res[0] is True and res[1]
+                    )
+                )
                 package_meta.fields = extract_fields(data)
 
                 if self.is_file_system:
                     save_file_with_task(metadata_file, package_meta.to_json())
 
-                if self.is_embeddings and self.vector_db_buffer:
-                    await self.vector_db_buffer.add(package_meta)
+                # if self.is_embeddings and self.vector_db_buffer:
+                #     await self.vector_db_buffer.add(package_meta)
 
-                if self.is_store and self.dataset_db_buffer:
-                    dataset = Dataset(metadata=package_meta, data=data)
-                    await self.dataset_db_buffer.add(dataset)
+                # if self.is_store and self.dataset_db_buffer:
+                #     dataset = Dataset(metadata=package_meta, data=data)
+                #     await self.dataset_db_buffer.add(dataset)
             else:
                 # Clean up empty dataset
                 if self.is_file_system:
@@ -530,7 +534,7 @@ class Berlin(BaseDataDownloader):
         # Progress reporting task
         progress_task = asyncio.create_task(self.progress_reporter())
 
-        semaphore = asyncio.Semaphore(self.max_workers)
+        semaphore = asyncio.Semaphore(self.max_workers if self.use_parallel else 1)
 
         async def process_with_semaphore(package_name: str):
             async with semaphore:
@@ -560,7 +564,7 @@ class Berlin(BaseDataDownloader):
             pass
 
         # Final flush of embeddings buffer
-        if self.vector_db_buffer:
+        if hasattr(self, "vector_db_buffer") and self.vector_db_buffer:
             await self.vector_db_buffer.flush()
 
         # STATS
@@ -623,11 +627,15 @@ async def main():
         async with Berlin(
             output_dir=args.output_dir,
             max_workers=args.max_workers,
+            is_file_system=True,
             delay=args.delay,
             is_embeddings=True,
             connection_limit=args.connection_limit,
             batch_size=args.batch_size,
         ) as downloader:
+            # await downloader.process_dataset(
+            #     "auslandische-einwohnerinnen-und-einwohner-in-berlin-in-lor-planungsraumen-am-31-12-2015"
+            # )
             await downloader.process_all_datasets()
 
     except KeyboardInterrupt:
