@@ -4,7 +4,7 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import Optional
 
 import pandas as pd
 from aiohttp import (
@@ -33,9 +33,10 @@ class Dresden(BaseDataDownloader):
         output_dir: str = "dresden",
         max_workers: int = 20,
         delay: float = 0.05,
-        is_file_system: bool = True,
-        is_embeddings: bool = False,
-        is_store: bool = False,
+        use_file_system: bool = True,
+        use_embeddings: bool = False,
+        use_store: bool = False,
+        use_parallel: bool = True,
         connection_limit: int = 100,
         connection_limit_per_host: int = 30,
         batch_size: int = 50,
@@ -48,9 +49,9 @@ class Dresden(BaseDataDownloader):
             output_dir: Directory to save data
             max_workers: Number of parallel workers
             delay: Delay between requests in seconds
-            is_file_system: Whether to save datasets to filesystem
-            is_embeddings: Whether to generate embeddings
-            is_store: Whether to save datasets to DB or not
+            use_file_system: Whether to save datasets to filesystem
+            use_embeddings: Whether to generate embeddings
+            use_store: Whether to save datasets to DB or not
             connection_limit: Total connection pool size
             connection_limit_per_host: Per-host connection limit
             batch_size: Size of dataset batches to process
@@ -60,9 +61,10 @@ class Dresden(BaseDataDownloader):
             output_dir=output_dir,
             max_workers=max_workers,
             delay=delay,
-            is_file_system=is_file_system,
-            is_embeddings=is_embeddings,
-            is_store=is_store,
+            use_file_system=use_file_system,
+            use_embeddings=use_embeddings,
+            use_store=use_store,
+            use_parallel=use_parallel,
             connection_limit=connection_limit,
             connection_limit_per_host=connection_limit_per_host,
             batch_size=batch_size,
@@ -143,30 +145,6 @@ class Dresden(BaseDataDownloader):
                             return True, features
                         except json.JSONDecodeError:
                             return False, None
-                    # else:
-                    #     # Create temporary file for atomic write
-                    #     temp_path = filepath.with_suffix(filepath.suffix + ".tmp")
-                    #
-                    #     # Download with streaming
-                    #     async with aiofiles.open(temp_path, "wb") as f:
-                    #         async for chunk in response.content.iter_chunked(
-                    #             65536
-                    #         ):  # 64KB chunks
-                    #             await f.write(chunk)
-                    #
-                    #     # Verify file is not empty
-                    #     if temp_path.stat().st_size == 0:
-                    #         self.logger.warning(f"Downloaded file is empty: {filepath}")
-                    #         temp_path.unlink()
-                    #         await self.mark_url_failed(url)
-                    #         return False
-                    #
-                    #     # Atomic rename
-                    #     temp_path.rename(filepath)
-                    #
-                    #     await self.update_stats("files_downloaded")
-                    #     return True
-
             except Exception as e:
                 if attempt < self.max_retries - 1:
                     await self.update_stats("retries")
@@ -180,7 +158,7 @@ class Dresden(BaseDataDownloader):
 
     # 7.
     @staticmethod
-    def extract_from_distributions(metadata: Dict) -> List[Dict]:
+    def extract_from_distributions(metadata: dict) -> list[dict]:
         """
         Fallback method to extract download URLs from distribution metadata
 
@@ -188,7 +166,7 @@ class Dresden(BaseDataDownloader):
             metadata: Dataset metadata
 
         Returns:
-            List of download information
+            list of download information
         """
         downloads = []
 
@@ -266,8 +244,8 @@ class Dresden(BaseDataDownloader):
 
     # 6.
     async def check_url_availability_by_api(
-        self, url: str, format_info: Dict
-    ) -> Optional[Dict]:
+        self, url: str, format_info: dict
+    ) -> Optional[dict]:
         """Check if a URL is available and return download info"""
         try:
             async with self.session.head(
@@ -291,8 +269,8 @@ class Dresden(BaseDataDownloader):
 
     # 5.
     async def extract_download_urls(
-        self, dataset_metadata: Dict, dataset_uri: str
-    ) -> List[Dict]:
+        self, dataset_metadata: dict, dataset_uri: str
+    ) -> list[dict]:
         """
         Extract download URLs from metadata using direct content.csv approach
 
@@ -301,7 +279,7 @@ class Dresden(BaseDataDownloader):
             dataset_uri: URI of the dataset
 
         Returns:
-            List of dictionaries with download file information
+            list of dictionaries with download file information
         """
         downloads = []
 
@@ -347,9 +325,8 @@ class Dresden(BaseDataDownloader):
         return downloads
 
     # 4.
-    async def process_dataset(self, dataset_info: Dict) -> bool:
+    async def process_dataset(self, dataset_info: dict) -> bool:
         """Process a single dataset with optimized async operations"""
-        await asyncio.sleep(self.delay)  # Minimal delay to respect server
 
         context_id = dataset_info.get("contextId")
         entry_id = dataset_info.get("entryId")
@@ -357,6 +334,8 @@ class Dresden(BaseDataDownloader):
         if not context_id or not entry_id:
             self.logger.warning("Missing contextId or entryId")
             return False
+
+        await asyncio.sleep(self.delay)  # Minimal delay to respect server
 
         # Use metadata from dataset_info
         dataset_metadata = dataset_info.get("metadata", {})
@@ -413,8 +392,24 @@ class Dresden(BaseDataDownloader):
             )
             return False
 
+        # Create safe_title after extracting title
         safe_title = sanitize_title(title)
-        dataset_dir = self.output_dir / f"{context_id}_{entry_id}_{safe_title}"
+        ds_name = f"{context_id}_{entry_id}_{safe_title}"
+        dataset_dir = self.output_dir / ds_name
+
+        # Check if dataset already processed by finding directory that starts with {context_id}_{entry_id}_
+        if self.use_file_system:
+            metadata_file = dataset_dir / "metadata.json"
+            if metadata_file.exists():
+                self.logger.debug(f"Dataset already processed: {ds_name}")
+                await self.update_stats("datasets_processed")
+                await self.update_stats("files_downloaded")
+                return True
+
+            # Create new directory with full pattern
+            dataset_dir.mkdir(exist_ok=True)
+
+        self.logger.debug(f"Processing dataset: {ds_name}")
 
         # Prepare metadata
         package_meta = DatasetMetadataWithFields(
@@ -432,7 +427,7 @@ class Dresden(BaseDataDownloader):
         downloads = await self.extract_download_urls(dataset_metadata, dataset_uri)
         if not downloads:
             await self.update_stats("datasets_processed")
-            await self.update_stats("failed_datasets")
+            await self.update_stats("failed_datasets", ds_name)
             return False
 
         # Sort downloads to prioritize JSON files
@@ -441,7 +436,9 @@ class Dresden(BaseDataDownloader):
         sorted_downloads = json_downloads + other_downloads
 
         # Download files with limited concurrency
-        download_semaphore = asyncio.Semaphore(self.max_workers)
+        download_semaphore = asyncio.Semaphore(
+            self.max_workers if self.use_parallel else 1
+        )
 
         async def download_with_semaphore(_download_info):
             async with download_semaphore:
@@ -464,28 +461,28 @@ class Dresden(BaseDataDownloader):
             package_meta.fields = extract_fields(data)
 
             # Save metadata
-            if self.is_file_system:
+            if self.use_file_system:
                 dataset_dir.mkdir(exist_ok=True)
                 metadata_file = dataset_dir / "metadata.json"
                 content = package_meta.to_json()
                 save_file_with_task(metadata_file, content)
 
-            if self.is_embeddings and self.vector_db_buffer:
+            if self.use_embeddings and self.vector_db_buffer:
                 await self.vector_db_buffer.add(package_meta)
 
-            if self.is_store and self.dataset_db_buffer:
+            if self.use_store and self.dataset_db_buffer:
                 dataset = Dataset(metadata=package_meta, data=data)
                 await self.dataset_db_buffer.add(dataset)
         else:
             # Clean up empty dataset
-            if self.is_file_system:
+            if self.use_file_system:
                 safe_delete(dataset_dir, self.logger)
 
         await self.update_stats("datasets_processed")
         return success
 
     # 3.
-    async def search_datasets_by_api(self, limit: int = 150, offset: int = 0) -> Dict:
+    async def search_datasets_by_api(self, limit: int = 150, offset: int = 0) -> dict:
         """
         Search Dresden datasets via API with retry logic
 
@@ -521,7 +518,7 @@ class Dresden(BaseDataDownloader):
         return {}
 
     # 2.
-    async def collect_datasets(self) -> List[Dict]:
+    async def collect_datasets(self) -> list[dict]:
         """Collect all datasets from the API"""
         all_datasets = []
         offset = 0
@@ -571,9 +568,9 @@ class Dresden(BaseDataDownloader):
 
         progress_task = asyncio.create_task(self.progress_reporter())
 
-        semaphore = asyncio.Semaphore(self.max_workers)
+        semaphore = asyncio.Semaphore(self.max_workers if self.use_parallel else 1)
 
-        async def process_with_semaphore(dataset: Dict):
+        async def process_with_semaphore(dataset: dict):
             async with semaphore:
                 try:
                     return await self.process_dataset(dataset)
@@ -594,9 +591,9 @@ class Dresden(BaseDataDownloader):
         except asyncio.CancelledError:
             pass
 
-        if self.is_embeddings:
+        if self.use_embeddings:
             await self.vector_db_buffer.flush()
-        if self.is_store:
+        if self.use_store:
             await self.dataset_db_buffer.flush()
 
         # STATS
@@ -661,12 +658,22 @@ async def async_main():
     elif args.verbose:
         logging.getLogger().setLevel(logging.INFO)
 
+    # Disable noisy third-party library logs
+    logging.getLogger("matplotlib").setLevel(logging.WARNING)
+    logging.getLogger("PIL").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("aiohttp").setLevel(logging.WARNING)
+    logging.getLogger("asyncio").setLevel(logging.WARNING)
+    logging.getLogger("playwright").setLevel(logging.WARNING)
+
     try:
         async with Dresden(
             output_dir=args.output_dir,
             max_workers=args.max_workers,
             delay=args.delay,
-            is_embeddings=True,
+            use_file_system=True,
+            use_embeddings=False,
+            use_store=False,
             connection_limit=args.connection_limit,
             batch_size=args.batch_size,
             max_retries=args.max_retries,
@@ -675,9 +682,11 @@ async def async_main():
         return 0
 
     except KeyboardInterrupt:
-        print("⚠️ Download interrupted by user")
-        return 130  # Standard for Ctrl+C
-
+        print("\n\n⚠️ Download interrupted by user (Ctrl+C)")
+        sys.exit(0)
+    except asyncio.CancelledError:
+        print("\n\n⚠️ Download cancelled")
+        sys.exit(0)
     except Exception as e:
         print(f"❌ An error occurred: {e}")
         if args.debug:

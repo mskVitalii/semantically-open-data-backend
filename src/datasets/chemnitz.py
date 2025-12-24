@@ -32,15 +32,15 @@ class Chemnitz(BaseDataDownloader):
         output_dir: str = "chemnitz",
         max_workers: int = 128,
         delay: float = 0.05,
-        is_file_system: bool = True,
-        is_embeddings: bool = False,
-        is_store: bool = False,
+        use_file_system: bool = True,
+        use_embeddings: bool = False,
+        use_store: bool = False,
+        use_parallel: bool = True,
+        use_playwright: bool = True,
         connection_limit: int = 100,
         connection_limit_per_host: int = 30,
         batch_size: int = 50,
         max_retries: int = 1,
-        use_parallel: bool = True,
-        use_playwright: bool = True,
     ):
         """
         Initialize optimized downloader
@@ -50,9 +50,9 @@ class Chemnitz(BaseDataDownloader):
             output_dir: Directory to save data
             max_workers: Number of parallel workers
             delay: Delay between requests in seconds
-            is_file_system: Whether to save datasets to filesystem
-            is_embeddings: Whether to generate embeddings
-            is_store: Whether to save datasets to DB or not
+            use_file_system: Whether to save datasets to filesystem
+            use_embeddings: Whether to generate embeddings
+            use_store: Whether to save datasets to DB or not
             connection_limit: Total connection pool size
             connection_limit_per_host: Per-host connection limit
             batch_size: Size of dataset batches to process
@@ -64,9 +64,10 @@ class Chemnitz(BaseDataDownloader):
             output_dir=output_dir,
             max_workers=max_workers,
             delay=delay,
-            is_file_system=is_file_system,
-            is_embeddings=is_embeddings,
-            is_store=is_store,
+            use_file_system=use_file_system,
+            use_embeddings=use_embeddings,
+            use_store=use_store,
+            use_parallel=use_parallel,
             connection_limit=connection_limit,
             connection_limit_per_host=connection_limit_per_host,
             batch_size=batch_size,
@@ -75,8 +76,6 @@ class Chemnitz(BaseDataDownloader):
         self.csv_file_path = csv_file_path
         self.stats["layers_downloaded"] = 0
         self.logger = get_prefixed_logger(__name__, "CHEMNITZ")
-
-        self.use_parallel = use_parallel
         self.use_playwright = use_playwright
 
     # endregion
@@ -260,21 +259,21 @@ class Chemnitz(BaseDataDownloader):
 
                 await self.update_stats("files_downloaded")
 
-                if self.is_embeddings and self.vector_db_buffer:
+                if self.use_embeddings and self.vector_db_buffer:
                     await self.vector_db_buffer.add(package_meta)
 
-                if self.is_store and self.dataset_db_buffer:
+                if self.use_store and self.dataset_db_buffer:
                     dataset = Dataset(metadata=package_meta, data=data)
                     await self.dataset_db_buffer.add(dataset)
 
-                if self.is_file_system:
+                if self.use_file_system:
                     save_file_with_task(
                         self.output_dir / safe_title / "metadata.json",
                         package_meta.to_json(),
                     )
             else:
                 # Clean up empty dataset
-                if self.is_file_system:
+                if self.use_file_system:
                     safe_delete(self.output_dir / safe_title, self.logger)
 
             await self.update_stats("datasets_processed")
@@ -376,9 +375,9 @@ class Chemnitz(BaseDataDownloader):
         except asyncio.CancelledError:
             pass
 
-        if self.is_embeddings:
+        if self.use_embeddings:
             await self.vector_db_buffer.flush()
-        if self.is_store:
+        if self.use_store:
             await self.dataset_db_buffer.flush()
 
         # STATS
@@ -463,9 +462,9 @@ async def async_main():
             output_dir=args.output,
             max_workers=args.max_workers,
             delay=args.delay,
-            is_embeddings=False,
-            is_store=False,
-            is_file_system=True,
+            use_embeddings=False,
+            use_store=False,
+            use_file_system=True,
             connection_limit=args.connection_limit,
             batch_size=args.batch_size,
             max_retries=args.max_retries,
@@ -476,12 +475,11 @@ async def async_main():
         return 0
 
     except KeyboardInterrupt:
-        print("\n\nDownload interrupted by user (Ctrl+C)")
+        print("\n\n⚠️ Download interrupted by user (Ctrl+C)")
         sys.exit(0)
     except asyncio.CancelledError:
-        print("\n\nDownload cancelled")
+        print("\n\n⚠️ Download cancelled")
         sys.exit(0)
-
     except Exception as e:
         print(f"❌ An error occurred: {e}")
         if args.debug:

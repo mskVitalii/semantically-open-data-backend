@@ -24,9 +24,10 @@ class BaseDataDownloader(ABC):
         output_dir: str = "data",
         max_workers: int = 8,
         delay: float = 0.05,
-        is_file_system: bool = True,
-        is_embeddings: bool = False,
-        is_store: bool = False,
+        use_file_system: bool = True,
+        use_embeddings: bool = False,
+        use_store: bool = False,
+        use_parallel: bool = True,
         connection_limit: int = 100,
         connection_limit_per_host: int = 30,
         batch_size: int = 50,
@@ -39,16 +40,16 @@ class BaseDataDownloader(ABC):
             output_dir: Directory to save data
             max_workers: Number of parallel workers
             delay: Delay between requests in seconds
-            is_embeddings: Whether to generate embeddings
-            is_store: Whether to save datasets to DB or not
+            use_embeddings: Whether to generate embeddings
+            use_store: Whether to save datasets to DB or not
             connection_limit: Total connection pool size
             connection_limit_per_host: Per-host connection limit
             batch_size: Size of dataset batches to process
             max_retries: Maximum retry attempts for failed requests
         """
-        self.is_file_system = is_file_system
+        self.use_file_system = use_file_system
         self.output_dir = Path(output_dir)
-        if is_file_system:
+        if use_file_system:
             self.output_dir.mkdir(exist_ok=True)
 
         self.max_workers = max_workers
@@ -56,8 +57,9 @@ class BaseDataDownloader(ABC):
         self.batch_size = batch_size
         self.max_retries = max_retries
         self.session: aiohttp.ClientSession
-        self.is_embeddings = is_embeddings
-        self.is_store = is_store
+        self.use_embeddings = use_embeddings
+        self.use_store = use_store
+        self.use_parallel = use_parallel
 
         # Connection configuration
         self.connection_limit = connection_limit
@@ -124,11 +126,11 @@ class BaseDataDownloader(ABC):
 
         # Call child class initialization if needed
         """Initialize Dresden-specific resources"""
-        if self.is_embeddings:
+        if self.use_embeddings:
             vector_db = await get_vector_db(use_grpc=True)
             self.vector_db_buffer = VectorDBBuffer(vector_db)
 
-        if self.is_store:
+        if self.use_store:
             database = await get_mongo_database()
             dataset_db = await get_dataset_repository(database=database)
             self.dataset_db_buffer = DatasetDBBuffer(dataset_db)
@@ -413,7 +415,7 @@ class BaseDataDownloader(ABC):
 
     async def save_unsuitable_datasets(self):
         """Save unsuitable datasets to cache file"""
-        if not self.is_file_system:
+        if not self.use_file_system:
             return
 
         try:
@@ -436,7 +438,7 @@ class BaseDataDownloader(ABC):
         async with self.unsuitable_datasets_lock:
             self.unsuitable_datasets.add(package_name)
 
-        if self.is_file_system:
+        if self.use_file_system:
             await self.save_unsuitable_datasets()
 
     # endregion

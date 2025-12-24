@@ -35,9 +35,9 @@ class Berlin(BaseDataDownloader):
         output_dir: str = "berlin",
         max_workers: int = 128,
         delay: float = 0.05,
-        is_file_system: bool = False,
-        is_embeddings: bool = False,
-        is_store: bool = False,
+        use_file_system: bool = False,
+        use_embeddings: bool = False,
+        use_store: bool = False,
         connection_limit: int = 100,
         connection_limit_per_host: int = 30,
         batch_size: int = 50,
@@ -51,9 +51,9 @@ class Berlin(BaseDataDownloader):
             output_dir: Directory to save data
             max_workers: Number of parallel workers
             delay: Delay between requests in seconds
-            is_file_system: Whether to save datasets to filesystem
-            is_embeddings: Whether to generate embeddings
-            is_store: Whether to save datasets to DB or not
+            use_file_system: Whether to save datasets to filesystem
+            use_embeddings: Whether to generate embeddings
+            use_store: Whether to save datasets to DB or not
             connection_limit: Total connection pool size
             connection_limit_per_host: Per-host connection limit
             batch_size: Size of package batches to process
@@ -62,9 +62,10 @@ class Berlin(BaseDataDownloader):
             output_dir=output_dir,
             max_workers=max_workers,
             delay=delay,
-            is_file_system=is_file_system,
-            is_embeddings=is_embeddings,
-            is_store=is_store,
+            use_file_system=use_file_system,
+            use_embeddings=use_embeddings,
+            use_store=use_store,
+            use_parallel=use_parallel,
             connection_limit=connection_limit,
             connection_limit_per_host=connection_limit_per_host,
             batch_size=batch_size,
@@ -464,7 +465,7 @@ class Berlin(BaseDataDownloader):
         metadata_file = dataset_dir / "metadata.json"
 
         # Skip if already processed successfully
-        if self.is_file_system:
+        if self.use_file_system:
             if metadata_file.exists():
                 self.logger.debug(f"Dataset already processed: {package_name}")
                 await self.update_stats("datasets_processed")
@@ -529,7 +530,7 @@ class Berlin(BaseDataDownloader):
                 await self.mark_dataset_unsuitable(package_name)
                 await self.update_stats("datasets_processed")
                 await self.update_stats("datasets_not_suitable")
-                if self.is_file_system:
+                if self.use_file_system:
                     safe_delete(dataset_dir, self.logger)
                 return True
 
@@ -575,18 +576,18 @@ class Berlin(BaseDataDownloader):
                 )
                 package_meta.fields = extract_fields(data)
 
-                if self.is_file_system:
+                if self.use_file_system:
                     save_file_with_task(metadata_file, package_meta.to_json())
 
-                if self.is_embeddings and self.vector_db_buffer:
+                if self.use_embeddings and self.vector_db_buffer:
                     await self.vector_db_buffer.add(package_meta)
 
-                if self.is_store and self.dataset_db_buffer:
+                if self.use_store and self.dataset_db_buffer:
                     dataset = Dataset(metadata=package_meta, data=data)
                     await self.dataset_db_buffer.add(dataset)
             else:
                 # Clean up empty dataset
-                if self.is_file_system:
+                if self.use_file_system:
                     safe_delete(dataset_dir, self.logger)
 
             await self.update_stats("datasets_processed")
@@ -756,9 +757,9 @@ async def main():
         async with Berlin(
             output_dir=args.output_dir,
             max_workers=args.max_workers,
-            is_file_system=True,
+            use_file_system=True,
             delay=args.delay,
-            is_embeddings=True,
+            use_embeddings=True,
             connection_limit=args.connection_limit,
             batch_size=args.batch_size,
             use_parallel=True,
@@ -767,11 +768,12 @@ async def main():
             await downloader.process_all_datasets()
 
     except KeyboardInterrupt:
-        print("\n\nDownload interrupted by user (Ctrl+C)")
+        print("\n\n⚠️ Download interrupted by user (Ctrl+C)")
         sys.exit(0)
     except asyncio.CancelledError:
-        print("\n\nDownload cancelled")
+        print("\n\n⚠️ Download cancelled")
         sys.exit(0)
+
     except Exception as e:
         print(f"Unexpected error: {e}")
         sys.exit(1)

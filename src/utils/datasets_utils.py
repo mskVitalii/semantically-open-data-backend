@@ -6,12 +6,11 @@ from logging import Logger
 from pathlib import Path
 from typing import Any
 
-import matplotlib
-
-matplotlib.use("Agg")  # Use non-interactive backend to prevent plots from showing
+# import matplotlib
+#
+# matplotlib.use("Agg")  # Use non-interactive backend to prevent plots from showing
 
 import numpy as np
-from fitter import Fitter
 from scipy import stats
 import warnings
 
@@ -21,7 +20,7 @@ from src.infrastructure.logger import get_prefixed_logger
 logger = get_prefixed_logger(__name__, "DATASET_UTILS")
 
 
-def safe_delete(path: Path, logger: Logger | logging.LoggerAdapter):
+def safe_delete(path: Path, _logger: Logger | logging.LoggerAdapter):
     if path.exists():
         if path.is_file():
             path.unlink()
@@ -30,7 +29,7 @@ def safe_delete(path: Path, logger: Logger | logging.LoggerAdapter):
             shutil.rmtree(path)
             # logger.debug(f"Deleted folder: {path}")
     else:
-        logger.debug(f"Path doesn't exist: {path}")
+        _logger.debug(f"Path doesn't exist: {path}")
 
 
 def sanitize_title(filename: str) -> str:
@@ -112,6 +111,8 @@ def detect_distribution(series: np.ndarray, min_size: int = 30) -> str:
                 )
                 if p_norm > 0.05:
                     return "norm"
+
+        from fitter import Fitter
 
         f = Fitter(data.tolist(), distributions=["expon", "lognorm", "gamma"])
         f.fit()
@@ -199,8 +200,8 @@ def extract_fields(data: list[dict]) -> dict[str, Field]:
     keys = data[0].keys()
 
     for key in keys:
-        values = [record[key] for record in data if record[key] is not None]
-        null_count = sum(1 for record in data if record[key] is None)
+        values = [record.get(key) for record in data if record.get(key) is not None]
+        null_count = sum(1 for record in data if record.get(key) is None)
         unique_count = safe_unique_count(values)
 
         if all(isinstance(v, (int, float)) for v in values) and values:

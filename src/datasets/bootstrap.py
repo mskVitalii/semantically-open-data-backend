@@ -20,7 +20,7 @@ async def download_berlin():
     start_time = time.perf_counter()
 
     async with Berlin(
-        output_dir=path, is_file_system=False, is_embeddings=True, is_store=True
+        output_dir=path, use_file_system=False, use_embeddings=True, use_store=True
     ) as downloader:
         await downloader.process_all_datasets()
 
@@ -43,9 +43,9 @@ async def download_chemnitz():
         csv_file,
         output_dir=path,
         batch_size=25,
-        is_file_system=False,
-        is_embeddings=True,
-        is_store=True,
+        use_file_system=False,
+        use_embeddings=True,
+        use_store=True,
     ) as downloader:
         await downloader.process_all_datasets()
 
@@ -61,9 +61,9 @@ async def download_leipzig():
 
     async with Leipzig(
         output_dir=path,
-        is_file_system=False,
-        is_embeddings=True,
-        is_store=True,
+        use_file_system=False,
+        use_embeddings=True,
+        use_store=True,
     ) as downloader:
         await downloader.process_all_datasets()
 
@@ -79,9 +79,9 @@ async def download_dresden():
 
     async with Dresden(
         output_dir=path,
-        is_file_system=False,
-        is_embeddings=True,
-        is_store=True,
+        use_file_system=False,
+        use_embeddings=True,
+        use_store=True,
     ) as downloader:
         await downloader.process_all_datasets()
 

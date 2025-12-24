@@ -27,9 +27,10 @@ class Leipzig(BaseDataDownloader):
         output_dir: str = "leipzig",
         max_workers: int = 128,
         delay: float = 0.05,
-        is_file_system: bool = True,
-        is_embeddings: bool = False,
-        is_store: bool = False,
+        use_file_system: bool = True,
+        use_embeddings: bool = False,
+        use_store: bool = False,
+        use_parallel: bool = True,
         connection_limit: int = 100,
         connection_limit_per_host: int = 30,
         batch_size: int = 50,
@@ -42,9 +43,9 @@ class Leipzig(BaseDataDownloader):
             output_dir: Directory to save data
             max_workers: Number of parallel workers
             delay: Delay between requests in seconds
-            is_file_system: Whether to save datasets to filesystem
-            is_embeddings: Whether to generate embeddings
-            is_store: Whether to save datasets to DB or not
+            use_file_system: Whether to save datasets to filesystem
+            use_embeddings: Whether to generate embeddings
+            use_store: Whether to save datasets to DB or not
             connection_limit: Total connection pool size
             connection_limit_per_host: Per-host connection limit
             batch_size: Size of dataset batches to process
@@ -54,9 +55,10 @@ class Leipzig(BaseDataDownloader):
             output_dir=output_dir,
             max_workers=max_workers,
             delay=delay,
-            is_file_system=is_file_system,
-            is_embeddings=is_embeddings,
-            is_store=is_store,
+            use_file_system=use_file_system,
+            use_embeddings=use_embeddings,
+            use_store=use_store,
+            use_parallel=use_parallel,
             connection_limit=connection_limit,
             connection_limit_per_host=connection_limit_per_host,
             batch_size=batch_size,
@@ -87,28 +89,37 @@ class Leipzig(BaseDataDownloader):
                         response.raise_for_status()
                         if resource_format == "csv":
                             content = await response.read()
-                            try:
-                                df = pd.read_csv(
-                                    io.BytesIO(content),
-                                    encoding="utf-8-sig",
-                                    sep=None,
-                                    engine="python",
-                                )
-                            except UnicodeDecodeError:
+                            encodings_to_try = [
+                                "utf-8-sig",
+                                "utf-8",
+                                "ISO-8859-1",
+                                "latin1",
+                                "cp1252",
+                            ]
+
+                            df = None
+                            last_error = None
+
+                            for encoding in encodings_to_try:
                                 try:
                                     df = pd.read_csv(
                                         io.BytesIO(content),
-                                        encoding="utf-16",
+                                        encoding=encoding,
                                         sep=None,
                                         engine="python",
+                                        on_bad_lines="skip",
                                     )
-                                except UnicodeDecodeError:
-                                    df = pd.read_csv(
-                                        io.BytesIO(content),
-                                        encoding="ISO-8859-1",
-                                        sep=None,
-                                        engine="python",
-                                    )
+                                    break
+                                except (UnicodeDecodeError, pd.errors.ParserError) as e:
+                                    last_error = e
+                                    continue
+
+                            if df is None:
+                                self.logger.error(
+                                    f"\t❌ Failed to parse CSV with all encodings. Last error: {last_error}"
+                                )
+                                return False, None
+
                             features = df.to_dict("records")
                             await self.update_stats("layers_downloaded")
                             return True, features
@@ -124,7 +135,8 @@ class Leipzig(BaseDataDownloader):
 
                                 await self.update_stats("layers_downloaded")
                                 return True, features
-                            except json.JSONDecodeError:
+                            except json.JSONDecodeError as e:
+                                self.logger.error(f"\t❌ JSON parsing error: {e}")
                                 return False, None
 
                         # else:
@@ -180,7 +192,7 @@ class Leipzig(BaseDataDownloader):
             return False, None
 
     # 6.
-    async def download_package(self, metadata: dict) -> bool:
+    async def process_dataset(self, metadata: dict) -> bool:
         """Download all resources for a package"""
         try:
             package_data = metadata["package_data"]
@@ -188,6 +200,20 @@ class Leipzig(BaseDataDownloader):
             package_title = package_data.get("title", metadata["package_id"])
             organization = package_data.get("organization", {}).get("title", "Unknown")
             safe_title = sanitize_title(package_title)
+
+            if self.use_file_system:
+                dataset_dir = self.output_dir / safe_title
+                metadata_file = dataset_dir / "metadata.json"
+                if metadata_file.exists():
+                    self.logger.debug(f"Dataset already processed: {package_title}")
+                    await self.update_stats("datasets_processed")
+                    await self.update_stats("files_downloaded")
+                    return True
+                dataset_dir.mkdir(exist_ok=True)
+
+            self.logger.debug(
+                f"Processing dataset: {package_title} ({len(target_resources)} resources)"
+            )
 
             # Prepare metadata
             package_meta = DatasetMetadataWithFields(
@@ -239,20 +265,20 @@ class Leipzig(BaseDataDownloader):
                 package_meta.fields = extract_fields(data)
 
                 # Save metadata
-                if self.is_file_system:
+                if self.use_file_system:
                     dataset_dir = self.output_dir / safe_title
                     metadata_file = dataset_dir / "metadata.json"
                     save_file_with_task(metadata_file, package_meta.to_json())
 
-                if self.is_embeddings and self.vector_db_buffer:
+                if self.use_embeddings and self.vector_db_buffer:
                     await self.vector_db_buffer.add(package_meta)
 
-                if self.is_store and self.dataset_db_buffer:
+                if self.use_store and self.dataset_db_buffer:
                     dataset = Dataset(metadata=package_meta, data=data)
                     await self.dataset_db_buffer.add(dataset)
             else:
                 # Clean up empty dataset
-                if self.is_file_system:
+                if self.use_file_system:
                     dataset_dir = self.output_dir / safe_title
                     safe_delete(dataset_dir, self.logger)
 
@@ -359,7 +385,7 @@ class Leipzig(BaseDataDownloader):
             # Process packages in batches
             target_packages = []
 
-            semaphore = asyncio.Semaphore(self.max_workers)
+            semaphore = asyncio.Semaphore(self.max_workers if self.use_parallel else 1)
 
             async def analyze_with_semaphore(package_id: str):
                 async with semaphore:
@@ -404,7 +430,7 @@ class Leipzig(BaseDataDownloader):
 
         async def process_with_semaphore(metadata: dict):
             async with semaphore:
-                return await self.download_package(metadata)
+                return await self.process_dataset(metadata)
 
         for i in range(0, len(target_packages), self.batch_size):
             batch = target_packages[i : i + self.batch_size]
@@ -417,9 +443,9 @@ class Leipzig(BaseDataDownloader):
             processed = min(i + self.batch_size, len(target_packages))
             await self.print_progress(processed, len(target_packages))
 
-        if self.is_embeddings:
+        if self.use_embeddings:
             await self.vector_db_buffer.flush()
-        if self.is_store:
+        if self.use_store:
             await self.dataset_db_buffer.flush()
 
         # STATS
@@ -480,6 +506,14 @@ async def async_main():
     elif args.verbose:
         logging.getLogger().setLevel(logging.INFO)
 
+    # Disable noisy third-party library logs
+    logging.getLogger("matplotlib").setLevel(logging.WARNING)
+    logging.getLogger("PIL").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("aiohttp").setLevel(logging.WARNING)
+    logging.getLogger("asyncio").setLevel(logging.WARNING)
+    logging.getLogger("playwright").setLevel(logging.WARNING)
+
     try:
         async with Leipzig(
             output_dir=args.output,
@@ -487,14 +521,20 @@ async def async_main():
             delay=args.delay,
             batch_size=args.batch_size,
             connection_limit=args.connection_limit,
-            is_embeddings=True,
+            use_parallel=False,
+            use_file_system=True,
+            use_embeddings=False,
+            use_store=False,
         ) as downloader:
             await downloader.process_all_datasets()
         return 0
 
     except KeyboardInterrupt:
-        print("⚠️ Download interrupted by user")
-        return 130  # Standard for Ctrl+C
+        print("\n\n⚠️ Download interrupted by user (Ctrl+C)")
+        sys.exit(0)
+    except asyncio.CancelledError:
+        print("\n\n⚠️ Download cancelled")
+        sys.exit(0)
 
     except Exception as e:
         print(f"❌ An error occurred: {e}")
