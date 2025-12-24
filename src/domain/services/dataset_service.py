@@ -14,6 +14,8 @@ from src.datasets_api.datasets_dto import (
     DatasetResponse,
 )
 from src.infrastructure.logger import get_prefixed_logger
+from src.infrastructure.paths import PROJECT_ROOT
+from src.utils.datasets_utils import safe_delete
 from src.vector_search.embedder import embed
 from src.vector_search.vector_db import VectorDB, get_vector_db
 
@@ -97,19 +99,21 @@ class DatasetService:
 
         return results
 
-    async def bootstrap_datasets(self) -> bool:
+    async def bootstrap_datasets(
+        self,
+        clear_store: bool = True,
+        clear_vector_db: bool = True,
+        use_fs_cache: bool = True,
+    ) -> bool:
         """Bootstrap datasets - clear and reload all data"""
         try:
-            # Clear MongoDB
-            await self.repository.delete_all()
-            logger.warning("Deleted all MONGO collections")
-
-            # Clear vector DB
-            await self.vector_db.remove_collection()
-            await self.vector_db.setup_collection()
-
+            await self.clear_all_data(
+                clear_store=clear_store,
+                clear_vector_db=clear_vector_db,
+                clear_fs=not use_fs_cache,
+            )
             # Bootstrap data (this should populate both MongoDB and vector DB)
-            await bootstrap_data()
+            await bootstrap_data(use_fs_cache)
 
             # Create indexes for better performance
             await self.repository.create_indexes()
@@ -121,6 +125,36 @@ class DatasetService:
             return True
         except Exception as e:
             logger.error(f"bootstrap_datasets error: {e}")
+            return False
+
+    async def clear_all_data(
+        self,
+        clear_store: bool = True,
+        clear_vector_db: bool = True,
+        clear_fs: bool = False,
+    ) -> bool:
+        """Clear all data from MongoDB and vector DB"""
+        try:
+            # Clear MongoDB
+            if clear_store:
+                await self.repository.delete_all()
+                logger.warning("Deleted all MONGO collections")
+
+            # Clear vector DB
+            if clear_vector_db:
+                await self.vector_db.remove_collection()
+                await self.vector_db.setup_collection()
+                logger.warning("Cleared vector DB and recreated collection")
+
+            if clear_fs:
+                safe_delete(PROJECT_ROOT / "src" / "datasets" / "dresden", logger)
+                safe_delete(PROJECT_ROOT / "src" / "datasets" / "chemnitz", logger)
+                safe_delete(PROJECT_ROOT / "src" / "datasets" / "berlin", logger)
+                safe_delete(PROJECT_ROOT / "src" / "datasets" / "leipzig", logger)
+
+            return True
+        except Exception as e:
+            logger.error(f"clear_all_data error: {e}")
             return False
 
 

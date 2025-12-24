@@ -19,8 +19,8 @@ from src.datasets.datasets_metadata import (
 )
 from src.infrastructure.logger import get_prefixed_logger
 from src.utils.datasets_utils import (
-    safe_delete,
     extract_fields,
+    load_metadata_from_file,
 )
 from src.utils.file import save_file_with_task
 
@@ -157,30 +157,94 @@ class Berlin(BaseDataDownloader):
 
             return self.browser_context
 
+    async def _find_download_link(self, page) -> str | None:
+        """Find a downloadable link on the page that likely contains data"""
+        try:
+            # Look for links containing download keywords or file extensions
+            download_selectors = [
+                # Links with download-related text
+                'a:has-text("download")',
+                'a:has-text("Download")',
+                'a:has-text("herunterladen")',  # German for download
+                # Links with file extensions
+                'a[href*=".csv"]',
+                'a[href*=".json"]',
+                'a[href*=".xlsx"]',
+                'a[href*=".xls"]',
+                # Buttons with download attributes
+                "a[download]",
+                "button[download]",
+            ]
+
+            for selector in download_selectors:
+                try:
+                    element = await page.query_selector(selector)
+                    if element:
+                        href = await element.get_attribute("href")
+                        if href:
+                            self.logger.debug(f"Found download link: {href}")
+                            return selector
+                except Exception:
+                    continue
+
+            return None
+        except Exception as e:
+            self.logger.debug(f"Error finding download link: {e}")
+            return None
+
     async def download_file_playwright(self, url: str) -> bytes | None:
         """Optimized file download using Playwright with reusable context"""
         context = await self.get_or_create_context()
+
+        if "github.com" in url:
+            self.logger.error(f"Playwright error for {url}: github.com not supported")
+            return None
 
         try:
             page = await context.new_page()
 
             try:
-                # Wait for download to start automatically with shorter timeout
-                async with page.expect_download(timeout=5000) as download_info:
-                    await page.goto(url, wait_until="domcontentloaded", timeout=10000)
+                # Load the page first
+                await page.goto(url, wait_until="networkidle", timeout=10000)
 
-                download = await download_info.value
+                # Strategy 1: Check if there are download links on the page
+                download_selector = await self._find_download_link(page)
 
-                # Read download content directly
-                path = await download.path()
-                with open(path, "rb") as f:
-                    content = f.read()
+                if download_selector:
+                    # Click the download link and wait for download
+                    try:
+                        async with page.expect_download(timeout=10000) as download_info:
+                            await page.click(download_selector)
+                            download = await download_info.value
+                            path = await download.path()
+                            with open(path, "rb") as f:
+                                content = f.read()
 
-                self.logger.debug(
-                    f"Downloaded via Playwright: {download.suggested_filename}"
-                )
-                await self.update_stats("playwright_downloads")
-                return content
+                        self.logger.debug(
+                            f"Downloaded via Playwright (link): {download.suggested_filename}"
+                        )
+                        await self.update_stats("playwright_downloads")
+                        return content
+                    except Exception as e:
+                        self.logger.debug(f"Click download failed: {e}")
+
+                # Strategy 2: No download links found, wait for automatic download
+                # This handles cases where download starts automatically without visible links
+                try:
+                    async with page.expect_download(timeout=15000) as download_info:
+                        download = await download_info.value
+                        path = await download.path()
+                        with open(path, "rb") as f:
+                            content = f.read()
+
+                    self.logger.debug(
+                        f"Downloaded via Playwright (auto): {download.suggested_filename}"
+                    )
+                    await self.update_stats("playwright_downloads")
+                    return content
+                except Exception as e:
+                    self.logger.debug(f"Auto-download timeout: {e}")
+                    return None
 
             finally:
                 # Always close the page to free resources
@@ -470,8 +534,16 @@ class Berlin(BaseDataDownloader):
                 self.logger.debug(f"Dataset already processed: {package_name}")
                 await self.update_stats("datasets_processed")
                 await self.update_stats("files_downloaded")
+
+                # Load metadata from file
+                package_meta = load_metadata_from_file(metadata_file)
+                if package_meta and self.use_embeddings and self.vector_db_buffer:
+                    await self.vector_db_buffer.add(package_meta)
+                # I don't need to store the data...
+                # if self.use_store and self.dataset_db_buffer:
+                #     dataset = Dataset(metadata=package_meta, data=)
+                #     await self.dataset_db_buffer.add(dataset)
                 return True
-            dataset_dir.mkdir(exist_ok=True)
 
         # Minimal delay to respect server
         await asyncio.sleep(self.delay)
@@ -530,8 +602,6 @@ class Berlin(BaseDataDownloader):
                 await self.mark_dataset_unsuitable(package_name)
                 await self.update_stats("datasets_processed")
                 await self.update_stats("datasets_not_suitable")
-                if self.use_file_system:
-                    safe_delete(dataset_dir, self.logger)
                 return True
 
             # Download resources concurrently (but limit to avoid overwhelming)
@@ -577,6 +647,7 @@ class Berlin(BaseDataDownloader):
                 package_meta.fields = extract_fields(data)
 
                 if self.use_file_system:
+                    dataset_dir.mkdir(exist_ok=True)
                     save_file_with_task(metadata_file, package_meta.to_json())
 
                 if self.use_embeddings and self.vector_db_buffer:
@@ -585,10 +656,6 @@ class Berlin(BaseDataDownloader):
                 if self.use_store and self.dataset_db_buffer:
                     dataset = Dataset(metadata=package_meta, data=data)
                     await self.dataset_db_buffer.add(dataset)
-            else:
-                # Clean up empty dataset
-                if self.use_file_system:
-                    safe_delete(dataset_dir, self.logger)
 
             await self.update_stats("datasets_processed")
             return True

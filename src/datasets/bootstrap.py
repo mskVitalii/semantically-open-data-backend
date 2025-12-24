@@ -13,14 +13,15 @@ from src.utils.datasets_utils import safe_delete
 logger = get_prefixed_logger(__name__, "BOOTSTRAP")
 
 
-async def download_berlin():
+async def download_berlin(use_fs_cache: bool = False):
     """Download Berlin datasets."""
     path = PROJECT_ROOT / "src" / "datasets" / "berlin"
-    safe_delete(path, logger)
+    if not use_fs_cache:
+        safe_delete(path, logger)
     start_time = time.perf_counter()
 
     async with Berlin(
-        output_dir=path, use_file_system=False, use_embeddings=True, use_store=True
+        output_dir=path, use_file_system=False, use_embeddings=True, use_store=False
     ) as downloader:
         await downloader.process_all_datasets()
 
@@ -28,7 +29,7 @@ async def download_berlin():
     logger.info(f"✅ Berlin download completed in {elapsed:.2f} seconds!")
 
 
-async def download_chemnitz():
+async def download_chemnitz(use_fs_cache: bool = False):
     """Download Chemnitz datasets."""
     csv_file = PROJECT_ROOT / "src" / "datasets" / "open_data_portal_stadt_chemnitz.csv"
     if not Path(csv_file).exists():
@@ -36,7 +37,8 @@ async def download_chemnitz():
         return
 
     path = PROJECT_ROOT / "src" / "datasets" / "chemnitz"
-    safe_delete(path, logger)
+    if not use_fs_cache:
+        safe_delete(path, logger)
     start_time = time.perf_counter()
 
     async with Chemnitz(
@@ -45,7 +47,7 @@ async def download_chemnitz():
         batch_size=25,
         use_file_system=False,
         use_embeddings=True,
-        use_store=True,
+        use_store=False,
     ) as downloader:
         await downloader.process_all_datasets()
 
@@ -53,17 +55,18 @@ async def download_chemnitz():
     logger.info(f"✅ Chemnitz download completed in {elapsed:.2f} seconds!")
 
 
-async def download_leipzig():
+async def download_leipzig(use_fs_cache: bool = False):
     """Download Leipzig datasets."""
     path = PROJECT_ROOT / "src" / "datasets" / "leipzig"
-    safe_delete(path, logger)
+    if not use_fs_cache:
+        safe_delete(path, logger)
     start_time = time.perf_counter()
 
     async with Leipzig(
         output_dir=path,
         use_file_system=False,
         use_embeddings=True,
-        use_store=True,
+        use_store=False,
     ) as downloader:
         await downloader.process_all_datasets()
 
@@ -71,17 +74,18 @@ async def download_leipzig():
     logger.info(f"✅ Leipzig download completed in {elapsed:.2f} seconds!")
 
 
-async def download_dresden():
+async def download_dresden(use_fs_cache: bool = False):
     """Download Dresden datasets."""
     path = PROJECT_ROOT / "src" / "datasets" / "dresden"
-    safe_delete(path, logger)
+    if not use_fs_cache:
+        safe_delete(path, logger)
     start_time = time.perf_counter()
 
     async with Dresden(
         output_dir=path,
-        use_file_system=False,
+        use_file_system=True,
         use_embeddings=True,
-        use_store=True,
+        use_store=False,
     ) as downloader:
         await downloader.process_all_datasets()
 
@@ -89,17 +93,17 @@ async def download_dresden():
     logger.info(f"✅ Dresden download completed in {elapsed:.2f} seconds!")
 
 
-async def bootstrap_data():
+async def bootstrap_data(use_fs_cache: bool = True):
     """Run all city downloads in parallel."""
     logger.info("🚀 Starting parallel download for all cities...")
     start_time = time.perf_counter()
 
     # Create tasks for each city
     tasks = [
-        download_chemnitz(),
-        download_berlin(),
-        download_leipzig(),
-        download_dresden(),
+        download_chemnitz(use_fs_cache),
+        download_berlin(use_fs_cache),
+        download_leipzig(use_fs_cache),
+        download_dresden(use_fs_cache),
     ]
 
     # Run all tasks concurrently

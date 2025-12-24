@@ -5,16 +5,18 @@ from datetime import datetime
 from logging import Logger
 from pathlib import Path
 from typing import Any
-
-# import matplotlib
-#
-# matplotlib.use("Agg")  # Use non-interactive backend to prevent plots from showing
-
 import numpy as np
 from scipy import stats
 import warnings
 
-from src.datasets.datasets_metadata import Field, FieldString, FieldDate, FieldNumeric
+from src.datasets.datasets_metadata import (
+    Field,
+    FieldString,
+    FieldDate,
+    FieldNumeric,
+    DatasetMetadataWithFields,
+    make_field,
+)
 from src.infrastructure.logger import get_prefixed_logger
 
 logger = get_prefixed_logger(__name__, "DATASET_UTILS")
@@ -89,7 +91,20 @@ def flatten_dict(d, parent_key="", sep="."):
     return dict(items)
 
 
-def detect_distribution(series: np.ndarray, min_size: int = 30) -> str:
+def detect_distribution(
+    series: np.ndarray, min_size: int = 30, max_size: int = 1000
+) -> str:
+    """
+    Detect distribution of data. For performance, skips fitter on large datasets.
+
+    Args:
+        series: Numeric data array
+        min_size: Minimum number of samples required
+        max_size: Maximum size for expensive fitter operations (default: 1000)
+
+    Returns:
+        Distribution name ('norm', 'expon', 'lognorm', 'gamma', or 'none')
+    """
     try:
         data = series.astype(float)
 
@@ -99,6 +114,7 @@ def detect_distribution(series: np.ndarray, min_size: int = 30) -> str:
         if np.ptp(data) == 0:  # range = max - min
             return "none"
 
+        # Quick normality test
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if len(data) <= 5000:
@@ -112,10 +128,27 @@ def detect_distribution(series: np.ndarray, min_size: int = 30) -> str:
                 if p_norm > 0.05:
                     return "norm"
 
+        # Skip expensive fitter operations on large datasets
+        if len(data) > max_size:
+            # logger.debug(
+            #     f"Skipping distribution fitting for large dataset ({len(data)} > {max_size})"
+            # )
+            return "none"
+
+        # Sample data if still large
+        sample_data = data
+        if len(data) > 500:
+            np.random.seed(42)
+            sample_data = np.random.choice(data, size=500, replace=False)
+
         from fitter import Fitter
 
-        f = Fitter(data.tolist(), distributions=["expon", "lognorm", "gamma"])
-        f.fit()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            f = Fitter(
+                sample_data.tolist(), distributions=["expon", "lognorm", "gamma"]
+            )
+            f.fit()
 
         # Check if any distributions were fitted successfully
         if not f.fitted_param:
@@ -138,7 +171,7 @@ def detect_distribution(series: np.ndarray, min_size: int = 30) -> str:
 
         return name
     except Exception:
-        logger.error("Error detecting distribution => none", exc_info=True)
+        logger.debug("Error detecting distribution => none")
         return "none"
 
 
@@ -151,10 +184,8 @@ def safe_unique_count(values: list[Any]) -> int:
 
     try:
         return len(set(values))
-    except TypeError as e:
-        # Handle unhashable types by converting to JSON strings
-        logging.debug(f"Unhashable types detected, converting to JSON: {e}")
-
+    except TypeError:
+        # Handle unhashable types by converting to JSON strings (silently)
         try:
             json_values = []
             for v in values:
@@ -163,31 +194,26 @@ def safe_unique_count(values: list[Any]) -> int:
                         json_values.append(
                             json.dumps(v, sort_keys=True, ensure_ascii=False)
                         )
-                    except (TypeError, ValueError, OverflowError) as json_error:
-                        # Specific JSON serialization errors
-                        logging.debug(
-                            f"Failed to serialize value {type(v)}: {json_error}"
-                        )
+                    except (TypeError, ValueError, OverflowError):
                         json_values.append(f"<unserializable_{type(v).__name__}>")
                 elif v is None:
                     json_values.append("null")
                 else:
                     try:
                         json_values.append(str(v))
-                    except (UnicodeEncodeError, UnicodeDecodeError) as str_error:
-                        logging.debug(f"Failed to convert to string: {str_error}")
+                    except (UnicodeEncodeError, UnicodeDecodeError):
                         json_values.append(f"<unconvertible_{type(v).__name__}>")
 
             return len(set(json_values))
 
         except (MemoryError, RecursionError) as critical_error:
             # Critical errors that we should propagate
-            logging.error(f"Critical error in safe_unique_count: {critical_error}")
+            logger.error(f"Critical error in safe_unique_count: {critical_error}")
             raise
 
         except (AttributeError, RuntimeError) as runtime_error:
             # Runtime issues with the data structure
-            logging.warning(f"Runtime error processing values: {runtime_error}")
+            logger.warning(f"Runtime error processing values: {runtime_error}")
             return len(values)  # Fallback to total count
 
 
@@ -249,3 +275,36 @@ def extract_fields(data: list[dict]) -> dict[str, Field]:
             )
 
     return fields
+
+
+def load_metadata_from_file(metadata_file: Path) -> DatasetMetadataWithFields | None:
+    """
+    Load DatasetMetadataWithFields from JSON file
+
+    Args:
+        metadata_file: Path to metadata.json file
+
+    Returns:
+        DatasetMetadataWithFields object or None if file doesn't exist or error occurs
+    """
+    if not metadata_file.exists():
+        return None
+
+    try:
+        with open(metadata_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        # Extract fields separately
+        raw_fields = data.pop("fields", {})
+
+        # Create metadata object without fields
+        metadata = DatasetMetadataWithFields(**data)
+
+        # Restore fields with proper types
+        if raw_fields:
+            metadata.fields = {k: make_field(v) for k, v in raw_fields.items()}
+
+        return metadata
+    except Exception as e:
+        logger.error(f"Error loading metadata from {metadata_file}: {e}", exc_info=True)
+        return None

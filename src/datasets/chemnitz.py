@@ -16,7 +16,11 @@ from src.datasets.datasets_metadata import (
     DatasetMetadataWithFields,
     Dataset,
 )
-from src.utils.datasets_utils import sanitize_title, safe_delete, extract_fields
+from src.utils.datasets_utils import (
+    sanitize_title,
+    extract_fields,
+    load_metadata_from_file,
+)
 from src.infrastructure.logger import get_prefixed_logger
 from src.utils.file import save_file_with_task
 
@@ -202,8 +206,6 @@ class Chemnitz(BaseDataDownloader):
                 await self.update_stats("failed_datasets", title)
                 return True
 
-                return False
-
             # Prepare metadata
             package_meta = DatasetMetadataWithFields(
                 id=service_info.get("serviceItemId"),
@@ -267,14 +269,11 @@ class Chemnitz(BaseDataDownloader):
                     await self.dataset_db_buffer.add(dataset)
 
                 if self.use_file_system:
+                    dataset_dir = self.output_dir / safe_title
+                    dataset_dir.mkdir(exist_ok=True)
                     save_file_with_task(
-                        self.output_dir / safe_title / "metadata.json",
-                        package_meta.to_json(),
+                        dataset_dir / "metadata.json", package_meta.to_json()
                     )
-            else:
-                # Clean up empty dataset
-                if self.use_file_system:
-                    safe_delete(self.output_dir / safe_title, self.logger)
 
             await self.update_stats("datasets_processed")
             return True
@@ -300,6 +299,17 @@ class Chemnitz(BaseDataDownloader):
             await self.update_stats("datasets_processed")
             await self.update_stats("datasets_not_suitable")
             return True
+
+        if self.use_file_system:
+            metadata_file = self.output_dir / safe_title / "metadata.json"
+            if metadata_file.exists():
+                self.logger.debug(f"Dataset already processed: {title}")
+                await self.update_stats("datasets_processed")
+                await self.update_stats("files_downloaded")
+
+                package_meta = load_metadata_from_file(metadata_file)
+                if package_meta and self.use_embeddings and self.vector_db_buffer:
+                    await self.vector_db_buffer.add(package_meta)
 
         try:
             if "Feature Service" == dataset_type:
@@ -468,7 +478,7 @@ async def async_main():
             connection_limit=args.connection_limit,
             batch_size=args.batch_size,
             max_retries=args.max_retries,
-            use_parallel=False,
+            use_parallel=True,
             use_playwright=True,
         ) as downloader:
             await downloader.process_all_datasets()

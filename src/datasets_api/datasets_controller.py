@@ -53,10 +53,51 @@ async def search_datasets(
 # region Bootstrap
 @router.post("/bootstrap")
 async def bootstrap(
+    use_fs_cache: bool = Query(True, description="Use filesystem cache for datasets"),
+    clear_store: bool = Query(True, description="Clear MongoDB store"),
+    clear_vector_db: bool = Query(True, description="Clear vector database"),
     service: DatasetService = Depends(get_dataset_service),
 ):
+    """
+    Bootstrap datasets - clear and reload all data
+
+    Parameters:
+    - clear_store: Clear MongoDB collections
+    - clear_vector_db: Clear vector database
+    - use_fs_cache: If True, use existing files from filesystem cache. If False, clear and redownload all data.
+    """
     try:
-        result = await service.bootstrap_datasets()
+        result = await service.bootstrap_datasets(
+            use_fs_cache=use_fs_cache,
+            clear_store=clear_store,
+            clear_vector_db=clear_vector_db,
+        )
+        return {"ok": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/clear")
+async def clear_all_data(
+    clear_store: bool = Query(True, description="Clear MongoDB store"),
+    clear_vector_db: bool = Query(True, description="Clear vector database"),
+    clear_fs: bool = Query(False, description="Clear filesystem cache"),
+    service: DatasetService = Depends(get_dataset_service),
+):
+    """
+    Clear data from MongoDB, vector DB, and/or filesystem
+
+    Parameters:
+    - clear_store: Clear MongoDB collections
+    - clear_vector_db: Clear vector database
+    - clear_fs: Clear filesystem cache (downloaded datasets)
+    """
+    try:
+        result = await service.clear_all_data(
+            clear_store=clear_store,
+            clear_vector_db=clear_vector_db,
+            clear_fs=clear_fs,
+        )
         return {"ok": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

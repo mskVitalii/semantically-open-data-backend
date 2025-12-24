@@ -46,13 +46,13 @@ def analyze_metadata_fields():
         field: count for field, count in field_counter.items() if count == 1
     }
 
-
     # Prepare output lines
-    output_lines = []
-    output_lines.append("=" * 80)
-    output_lines.append("FIELD STATISTICS")
-    output_lines.append("=" * 80)
-    output_lines.append(f"Total fields (from all files): {total_fields}")
+    output_lines = [
+        "=" * 80,
+        "FIELD STATISTICS",
+        "=" * 80,
+        f"Total fields (from all files): {total_fields}",
+    ]
     total_check = len(non_duplicate_fields) + sum(duplicate_fields.values())
     output_lines.append(f"Total check (non-dup + sum of dup counts): {total_check}")
     output_lines.append(f"Unique fields: {unique_fields}")
@@ -147,7 +147,7 @@ def plot_field_frequency(stats, top_n=30):
         y=0.98,
     )
 
-    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.96))
 
     # Save chart
     output_path = Path(__file__).parent / "field_frequency_analysis.png"

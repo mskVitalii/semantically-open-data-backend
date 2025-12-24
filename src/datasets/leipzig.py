@@ -13,7 +13,12 @@ from src.datasets.datasets_metadata import (
     Dataset,
 )
 from src.infrastructure.logger import get_prefixed_logger
-from src.utils.datasets_utils import sanitize_title, safe_delete, extract_fields
+from src.utils.datasets_utils import (
+    sanitize_title,
+    safe_delete,
+    extract_fields,
+    load_metadata_from_file,
+)
 from src.utils.file import save_file_with_task
 
 
@@ -138,45 +143,6 @@ class Leipzig(BaseDataDownloader):
                             except json.JSONDecodeError as e:
                                 self.logger.error(f"\t❌ JSON parsing error: {e}")
                                 return False, None
-
-                        # else:
-                        #     # Determine filename
-                        #     safe_name = sanitize_title(resource_name)
-                        #     filename = f"{safe_name}.{resource_format}"
-                        #
-                        #     # region Avoid duplication
-                        #     counter = 1
-                        #     original_filename = filename
-                        #     dataset_dir = self.output_dir / safe_title
-                        #     while (dataset_dir / filename).exists():
-                        #         name, ext = os.path.splitext(original_filename)
-                        #         filename = f"{name}_{counter}{ext}"
-                        #         counter += 1
-                        #     # endregion
-                        #
-                        #     file_path = dataset_dir / filename
-                        #
-                        #     temp_path = file_path.with_suffix(file_path.suffix + ".tmp")
-                        #
-                        #     # Download with streaming
-                        #     async with aiofiles.open(temp_path, "wb") as f:
-                        #         async for chunk in response.content.iter_chunked(
-                        #             65536
-                        #         ):  # 64KB chunks
-                        #             await f.write(chunk)
-                        #
-                        #     # Verify file is not empty
-                        #     if temp_path.stat().st_size == 0:
-                        #         self.logger.warning(
-                        #             f"Downloaded file is empty: {filename}"
-                        #         )
-                        #         temp_path.unlink()
-                        #         await self.mark_url_failed(url)
-                        #         return False, None
-                        #
-                        #     # Atomic rename
-                        #     temp_path.rename(file_path)
-
                 except Exception as e:
                     if attempt < self.max_retries - 1:
                         await self.update_stats("retries")
@@ -208,8 +174,12 @@ class Leipzig(BaseDataDownloader):
                     self.logger.debug(f"Dataset already processed: {package_title}")
                     await self.update_stats("datasets_processed")
                     await self.update_stats("files_downloaded")
+
+                    package_meta = load_metadata_from_file(metadata_file)
+                    if package_meta and self.use_embeddings and self.vector_db_buffer:
+                        await self.vector_db_buffer.add(package_meta)
+
                     return True
-                dataset_dir.mkdir(exist_ok=True)
 
             self.logger.debug(
                 f"Processing dataset: {package_title} ({len(target_resources)} resources)"
@@ -267,6 +237,7 @@ class Leipzig(BaseDataDownloader):
                 # Save metadata
                 if self.use_file_system:
                     dataset_dir = self.output_dir / safe_title
+                    dataset_dir.mkdir(exist_ok=True)
                     metadata_file = dataset_dir / "metadata.json"
                     save_file_with_task(metadata_file, package_meta.to_json())
 
@@ -521,7 +492,7 @@ async def async_main():
             delay=args.delay,
             batch_size=args.batch_size,
             connection_limit=args.connection_limit,
-            use_parallel=False,
+            use_parallel=True,
             use_file_system=True,
             use_embeddings=False,
             use_store=False,

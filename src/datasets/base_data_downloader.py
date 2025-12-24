@@ -25,7 +25,7 @@ class BaseDataDownloader(ABC):
         max_workers: int = 8,
         delay: float = 0.05,
         use_file_system: bool = True,
-        use_embeddings: bool = False,
+        use_embeddings: bool = True,
         use_store: bool = False,
         use_parallel: bool = True,
         connection_limit: int = 100,

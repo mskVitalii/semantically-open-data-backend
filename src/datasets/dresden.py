@@ -20,7 +20,11 @@ from src.datasets.datasets_metadata import (
     Dataset,
 )
 from src.infrastructure.logger import get_prefixed_logger
-from src.utils.datasets_utils import sanitize_title, safe_delete, extract_fields
+from src.utils.datasets_utils import (
+    sanitize_title,
+    extract_fields,
+    load_metadata_from_file,
+)
 from src.utils.file import save_file_with_task
 
 
@@ -404,10 +408,12 @@ class Dresden(BaseDataDownloader):
                 self.logger.debug(f"Dataset already processed: {ds_name}")
                 await self.update_stats("datasets_processed")
                 await self.update_stats("files_downloaded")
-                return True
 
-            # Create new directory with full pattern
-            dataset_dir.mkdir(exist_ok=True)
+                package_meta = load_metadata_from_file(metadata_file)
+                if package_meta and self.use_embeddings and self.vector_db_buffer:
+                    await self.vector_db_buffer.add(package_meta)
+
+                return True
 
         self.logger.debug(f"Processing dataset: {ds_name}")
 
@@ -473,10 +479,6 @@ class Dresden(BaseDataDownloader):
             if self.use_store and self.dataset_db_buffer:
                 dataset = Dataset(metadata=package_meta, data=data)
                 await self.dataset_db_buffer.add(dataset)
-        else:
-            # Clean up empty dataset
-            if self.use_file_system:
-                safe_delete(dataset_dir, self.logger)
 
         await self.update_stats("datasets_processed")
         return success
@@ -674,6 +676,7 @@ async def async_main():
             use_file_system=True,
             use_embeddings=False,
             use_store=False,
+            use_parallel=True,
             connection_limit=args.connection_limit,
             batch_size=args.batch_size,
             max_retries=args.max_retries,
