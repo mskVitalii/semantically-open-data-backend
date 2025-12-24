@@ -1,0 +1,936 @@
+Found 827 metadata.json files
+
+================================================================================
+FIELD STATISTICS
+================================================================================
+Total fields (from all files): 12579
+Total check (non-dup + sum of dup counts): 12579
+Unique fields: 2235
+Duplicate fields: 919
+Non-duplicate fields: 1316
+
+================================================================================
+DUPLICATE FIELDS (sorted by frequency)
+================================================================================
+
+ 283x | id
+ 173x | name
+ 170x | jahr
+ 169x | wert
+ 169x | periode
+ 169x | kategorie_Nr
+ 169x | rubrik_Nr
+ 169x | jahr_Nr
+ 169x | uri
+ 169x | einheit
+ 169x | kategorie
+ 169x | rubrik
+ 124x | merkmal_1
+ 124x | merkmal_2
+ 124x | merkmal_3
+ 124x | merkmal_4
+  99x | BEZ
+  97x | type
+  97x | RAUMID
+  97x | PGR
+  97x | BZR
+  97x | PLR
+  96x | STADTRAUM
+  95x | geometry.type
+  95x | geometry.coordinates
+  95x | ZEIT
+  77x | Unnamed: 1
+  76x | properties.OBJECTID
+  75x | Unnamed: 2
+  52x | properties.ID
+  51x | Unnamed: 3
+  49x | Unnamed: 4
+  48x | ortsteil
+  45x | stadtbezirk
+  38x | Jahr
+  38x | properties.Stichtag
+  34x | Unnamed: 5
+  33x | Unnamed: 6
+  33x | properties.BRW
+  33x | properties.SHAPE__Length
+  32x | properties.SHAPE__Area
+  30x | Unnamed: 7
+  29x | properties.Jahr
+  28x | MH_E
+  25x | Kapitel
+  25x | Titel
+  24x | datum
+  24x | wahl
+  24x | gebiet-name
+  24x | Funktion
+  22x | ags
+  22x | Datum
+  21x | gebiet-nr
+  21x | max-schnellmeldungen
+  21x | anz-schnellmeldungen
+  21x | A1
+  21x | A2
+  21x | A3
+  21x | A
+  21x | B
+  21x | B1
+  21x | C
+  21x | D
+  21x | 2022
+  21x | Unnamed: 8
+  21x | E_E
+  21x | E_EM
+  21x | E_EW
+  21x | E_E00_01
+  21x | E_E01_02
+  21x | E_E02_03
+  21x | E_E03_05
+  21x | E_E05_06
+  21x | E_E06_07
+  21x | E_E07_08
+  21x | E_E08_10
+  21x | E_E10_12
+  21x | E_E12_14
+  21x | E_E14_15
+  21x | E_E15_18
+  21x | E_E18_21
+  21x | E_E21_25
+  21x | E_E25_27
+  21x | E_E27_30
+  21x | E_E30_35
+  21x | E_E35_40
+  21x | E_E40_45
+  21x | E_E45_50
+  21x | E_E50_55
+  21x | E_E55_60
+  21x | E_E60_63
+  21x | E_E63_65
+  21x | E_E65_67
+  21x | E_E67_70
+  21x | E_E70_75
+  21x | E_E75_80
+  21x | E_E80_85
+  21x | E_E85_90
+  21x | E_E90_95
+  21x | E_E95_110
+  20x | Ortsteil
+  20x | properties.FID
+  20x | E_A
+  20x | E_AM
+  20x | E_AW
+  20x | E_A00_01
+  20x | E_A01_02
+  20x | E_A02_03
+  20x | E_A03_05
+  20x | E_A05_06
+  20x | E_A06_07
+  20x | E_A07_08
+  20x | E_A08_10
+  20x | E_A10_12
+  20x | E_A12_14
+  20x | E_A14_15
+  20x | E_A15_18
+  20x | E_A18_21
+  20x | E_A21_25
+  20x | E_A25_27
+  20x | E_A27_30
+  20x | E_A30_35
+  20x | E_A35_40
+  20x | E_A40_45
+  20x | E_A45_50
+  20x | E_A50_55
+  20x | E_A55_60
+  20x | E_A60_63
+  20x | E_A63_65
+  20x | E_A65_67
+  20x | E_A67_70
+  20x | E_A70_75
+  20x | E_A75_80
+  20x | E_A80_85
+  20x | E_A85_90
+  20x | E_A90_95
+  20x | E_A95_110
+  20x | E_AU1
+  20x | E_A1U6
+  20x | E_A6U15
+  20x | E_A15U18
+  20x | E_A18U25
+  20x | E_A25U55
+  20x | E_A55U65
+  20x | E_A65U80
+  20x | E_A80U110
+  20x | properties.PLZ
+  20x | properties.ORT
+  19x | properties.STRASSE
+  18x | Anzahl
+  18x | properties.BEZEICHNUNG
+  18x | properties.TELEFON
+  17x | E
+  17x | D1
+  17x | D2
+  17x | D3
+  17x | D4
+  17x | D5
+  17x | D6
+  17x | D7
+  17x | D8
+  17x | D9
+  17x | D10
+  17x | D11
+  17x | D12
+  17x | D13
+  17x | D14
+  17x | D15
+  17x | D16
+  17x | D17
+  17x | D18
+  16x | 2024
+  16x | Beschreibung
+  16x | properties.WGFZ
+  15x | Datensatztitel
+  15x | Datenstand
+  15x | Unnamed: 9
+  14x | objectid
+  14x | HK_Polen
+  14x | HK_EheJug
+  14x | HK_EheSU
+  14x | HK_Turk
+  14x | HK_Arab
+  14x | HK_Sonst
+  14x | HK_NZOrd
+  14x | MH_EM
+  14x | MH_EW
+  14x | MH_E00_01
+  14x | MH_E01_02
+  14x | MH_E02_03
+  14x | MH_E03_05
+  14x | MH_E05_06
+  14x | MH_E06_07
+  14x | MH_E07_08
+  14x | MH_E08_10
+  14x | MH_E10_12
+  14x | MH_E12_14
+  14x | MH_E14_15
+  14x | MH_E15_18
+  14x | MH_E18_21
+  14x | MH_E21_25
+  14x | MH_E25_27
+  14x | MH_E27_30
+  14x | MH_E30_35
+  14x | MH_E35_40
+  14x | MH_E40_45
+  14x | MH_E45_50
+  14x | MH_E50_55
+  14x | MH_E55_60
+  14x | MH_E60_63
+  14x | MH_E63_65
+  14x | MH_E65_67
+  14x | MH_E67_70
+  14x | MH_E70_75
+  14x | MH_E75_80
+  14x | MH_E80_85
+  14x | MH_E85_90
+  14x | MH_E90_95
+  14x | MH_E95_110
+  14x | MH_U1
+  14x | MH_1U6
+  14x | MH_6U15
+  14x | MH_15U18
+  14x | MH_18U25
+  14x | MH_25U55
+  14x | MH_55U65
+  14x | MH_65U80
+  14x | MH_80U110
+  14x | Unnamed: 10
+  14x | EINW10
+  14x | EINW5
+  14x | PDAU10
+  14x | PDAU5
+  14x | WLNZORD
+  14x | properties.TRAEGER
+  14x | properties.EMAIL
+  13x | F
+  13x | F1
+  13x | F2
+  13x | F3
+  13x | F4
+  13x | F5
+  13x | F6
+  13x | F7
+  13x | F8
+  13x | F9
+  13x | F10
+  13x | F11
+  13x | F12
+  13x | F13
+  13x | F14
+  13x | F15
+  13x | F16
+  13x | F17
+  13x | F18
+  13x | D19
+  13x | D20
+  13x | D21
+  13x | D22
+  13x | D23
+  13x | D24
+  13x | D25
+  13x | D26
+  13x | PLZ
+  13x | Tabellenüberschrift
+  13x | Nummer und Erklärung Fußnote
+  13x | HK_EU15
+  13x | Unnamed: 0
+  13x | Unnamed: 11
+  13x | Unnamed: 12
+  13x | Unnamed: 13
+  13x | WLEINFmL
+  13x | E_U1
+  13x | E_1U6
+  13x | E_6U15
+  13x | E_15U18
+  13x | E_18U25
+  13x | E_25U55
+  13x | E_55U65
+  13x | E_65U80
+  13x | E_80U110
+  13x | Zähler
+  13x | Haushaltsjahr
+  13x | Bkz
+  13x | Unterkonto
+  13x | Kennbuchstabe
+  13x | Ansatz
+  13x | ResteVorjahre
+  13x | Zugang/Abgang
+  13x | Fortgeschriebenes Soll
+  13x | Verfügungsbeschränkung
+  13x | Verfügbares Soll
+  13x | Anordnungssoll
+  13x | Festlegung
+  13x | Gebildete Reste
+  13x | Verfügbare Mittel
+  13x | Ist
+  13x | properties.KURZBEZEICHNUNG
+  12x | FID
+  12x | Bezirk
+  12x | WLEINFoL
+  12x | WLMIToL
+  12x | WLMITmL
+  12x | WLGUToL
+  12x | WLGUTmL
+  12x | properties.LEISTUNGEN
+  12x | properties.Nutzungsart
+  12x | properties.Geschossigkeit
+  12x | properties.Flaeche
+  12x | properties.Grundstueckstiefe
+  12x | properties.Bauweise
+  12x | properties.Satzung
+  11x | Geschlecht
+  11x | fme_tstamp
+  11x | geom
+  11x | Typ
+  11x | Unnamed: 14
+  11x | Bereich
+  11x | Einzelplan
+  11x | Titelbezeichnung
+  11x | properties.FAX
+  10x | Wahl
+  10x | Aggregationsebene
+  10x | Wahlkreis
+  10x | Wahlkreis_Name
+  10x | Ortsteil_Name
+  10x | Stimme
+  10x | Stimme_partei
+  10x | Stimme_text
+  10x | Partei_ID_StatAmtLE
+  10x | Parteiname_harmonisiert_v1_0
+  10x | plz
+  10x | -
+  10x | Bezeichnung Registerkarte
+  10x | Adresse
+  10x | Unnamed: 15
+  10x | Unnamed: 16
+  10x | Titelart
+   9x | F19
+   9x | F20
+   9x | F21
+   9x | F22
+   9x | F23
+   9x | F24
+   9x | F25
+   9x | F26
+   9x | Wahlbezirk
+   9x | Kennzahl
+   9x | 2023
+   9x | D27
+   9x | DAU10
+   9x | DAU5
+   9x | Bezeichnung
+   9x | Bereichsbezeichnung
+   9x | Einzelplanbezeichnung
+   9x | Kapitelbezeichnung
+   9x | Hauptgruppe
+   9x | Hauptgruppenbezeichnung
+   9x | Obergruppe
+   9x | Obergruppenbezeichnung
+   9x | Gruppe
+   9x | Gruppenbezeichnung
+   9x | Hauptfunktion
+   9x | Hauptfunktionsbezeichnung
+   9x | Oberfunktion
+   9x | Oberfunktionsbezeichnung
+   9x | Funktionsbezeichnung
+   9x | properties.SATZUNG
+   9x | properties.FLAECHE
+   9x | properties.Wert
+   9x | properties.Typ
+   9x | properties.Baujahr
+   9x | properties.Marktrichtwert
+   9x | properties.Teilmarkt
+   8x | Name
+   8x | Vorname
+   8x | Hausnummer
+   8x | E_EU1
+   8x | E_E1U6
+   8x | E_E6U15
+   8x | E_E15U18
+   8x | E_E18U25
+   8x | E_E25U55
+   8x | E_E55U65
+   8x | E_E65U80
+   8x | E_E80U110
+   8x | Ort
+   7x | Merkmal
+   7x | Kennziffer
+   7x | Rang
+   7x | adresse
+   7x | 2012
+   7x | HK_EU27
+   7x | Schulart
+   7x | HK_EU28
+   7x | ID
+   7x | Betrag
+   7x | properties.STATUS
+   7x | properties.STICHTAG
+   6x | Rang.1
+   6x | Anzahl.1
+   6x | Vorname.1
+   6x | Geschlecht.1
+   6x | strname
+   6x | bezirk
+   6x | Straßenname
+   6x | 2013
+   6x | Straße
+   6x | Stunde
+   6x | Jahresprofil 2024
+   6x | Energiemenge 2024
+   6x | anschrift
+   6x | BetragTyp
+   6x | properties.STRSCHL
+   6x | properties.TYP
+   5x | Quartal
+   5x | Standort
+   5x | F27
+   5x | anzahl
+   5x | GmlId
+   5x | Shape
+   5x | lat
+   5x | pflanzjahr
+   5x | 2014
+   5x | 2015
+   5x | 2016
+   5x | 2017
+   5x | 2018
+   5x | 2019
+   5x | 2020
+   5x | 2021
+   5x | Nr.
+   5x | internet
+   5x | Schulname
+   5x | Dau10
+   5x | Dau5
+   5x | Registerkarte
+   5x | Einrichtung
+   5x | properties.VNR
+   5x | properties.TITEL_VERFAHREN
+   5x | properties.RECHTSKRAFT
+   5x | properties.PLANZEICHNUNG
+   5x | properties.BEGRUENDUNG
+   5x | properties.URL
+   4x | Gebiet
+   4x | Haltestelle
+   4x | D28
+   4x | D29
+   4x | D30
+   4x | D31
+   4x | D32
+   4x | D33
+   4x | D34
+   4x | vorname
+   4x | geschlecht
+   4x | position
+   4x | lng
+   4x | artdtsch
+   4x | artbot
+   4x | gattungdeutsch
+   4x | standalter
+   4x | standortnr
+   4x | wassermenge
+   4x | wassersumme
+   4x | anzahlg
+   4x | ort
+   4x | Straßenschlüssel
+   4x | B2
+   4x | E1
+   4x | E1_1
+   4x | E1_2
+   4x | E1_3
+   4x | E1_4
+   4x | E1_5
+   4x | E1_6
+   4x | E1_7
+   4x | E1_8
+   4x | E1_9
+   4x | E1_10
+   4x | E1_11
+   4x | E2
+   4x | E2_1
+   4x | E2_2
+   4x | E2_3
+   4x | E2_4
+   4x | E2_5
+   4x | E2_6
+   4x | E2_7
+   4x | E2_8
+   4x | E2_9
+   4x | E2_10
+   4x | E2_11
+   4x | E3
+   4x | E3_1
+   4x | E3_2
+   4x | E3_3
+   4x | E3_4
+   4x | E3_5
+   4x | E3_6
+   4x | E3_7
+   4x | E3_8
+   4x | E3_9
+   4x | E3_10
+   4x | E3_11
+   4x | E4
+   4x | E4_1
+   4x | E4_2
+   4x | E4_3
+   4x | E4_4
+   4x | E4_5
+   4x | E4_6
+   4x | E4_7
+   4x | E4_8
+   4x | E4_9
+   4x | E4_10
+   4x | E4_11
+   4x | E5
+   4x | E5_1
+   4x | E5_2
+   4x | E5_3
+   4x | E5_4
+   4x | E5_5
+   4x | E5_6
+   4x | E5_7
+   4x | E5_8
+   4x | E5_9
+   4x | E5_10
+   4x | E5_11
+   4x | E6
+   4x | E6_1
+   4x | E6_2
+   4x | E6_3
+   4x | E6_4
+   4x | E6_5
+   4x | E6_6
+   4x | E6_7
+   4x | E6_8
+   4x | E6_9
+   4x | E6_10
+   4x | E6_11
+   4x | E7
+   4x | E7_1
+   4x | E7_2
+   4x | E8
+   4x | E8_1
+   4x | E9
+   4x | E9_1
+   4x | E10
+   4x | E10_1
+   4x | E10_2
+   4x | E11
+   4x | E11_1
+   4x | E12
+   4x | E12_1
+   4x | E13
+   4x | E13_1
+   4x | E13_2
+   4x | E13_3
+   4x | E14
+   4x | E14_1
+   4x | E15
+   4x | E15_1
+   4x | Strasse
+   4x | unternehmen
+   4x | nominalkapital
+   4x | anteil
+   4x | bilanzsumme
+   4x | eigenkapital
+   4x | umsatz
+   4x | jahresergebnis
+   4x | zufuehrungen
+   4x | investitionen
+   4x | beschaeftigte
+   4x | logo
+   4x | geschaeftsfuehrung
+   4x | kontrollgremienvorsitz
+   4x | Bemerkungen
+   4x | Schüler (w/m/d)
+   4x | GESIx_2013
+   4x | GESIx_2022
+   4x | ESIx_2013
+   4x | ESIx_2022
+   4x | DI_2013
+   4x | DI_2022
+   4x | DII_2013
+   4x | DII_2022
+   4x | DIII_2013
+   4x | DIII_2022
+   4x | Uhrzeit
+   4x | SEP-Einspeiser
+[kWh]
+   4x | Unnamed: 17
+   4x | Unnamed: 18
+   4x | Unnamed: 19
+   4x | Unnamed: 20
+   4x | Unnamed: 21
+   4x | properties.KATEGORIE
+   4x | properties.ART
+   4x | properties.ENTWURF_AUSLEGUNG
+   4x | properties.AUFSTELLUNG
+   4x | properties.HAUSBEZ
+   4x | properties.NUTZUNGSART
+   4x | properties.GESCHOSSIGKEIT
+   4x | properties.GRUNDSTUECKSTIEFE
+   4x | properties.BAUWEISE
+   4x | properties.JAHR
+   3x | Item
+   3x | Anmerkung
+   3x | OBJECTID
+   3x | UJAHR
+   3x | UMONAT
+   3x | USTUNDE
+   3x | UWOCHENTAG
+   3x | UKATEGORIE
+   3x | UART
+   3x | UTYP1
+   3x | IstRad
+   3x | IstPKW
+   3x | IstFuss
+   3x | IstKrad
+   3x | XGCSWGS84
+   3x | YGCSWGS84
+   3x | Briefwbz
+   3x | Anzahl n
+   3x | wnum
+   3x | gesl
+   3x | gena
+   3x | gasl
+   3x | gabe
+   3x | gema
+   3x | ortst
+   3x | brw
+   3x | stag
+   3x | brke
+   3x | bedw
+   3x | basbe
+   3x | basma
+   3x | bezug
+   3x | entw
+   3x | beit
+   3x | nuta
+   3x | ergnuta
+   3x | bauw
+   3x | gez
+   3x | wgfz
+   3x | grz
+   3x | bmz
+   3x | flae
+   3x | gtie
+   3x | gbrei
+   3x | erve
+   3x | verg
+   3x | verf
+   3x | yverg
+   3x | xverg
+   3x | bod
+   3x | acza
+   3x | grza
+   3x | aufw
+   3x | weer
+   3x | koorwert
+   3x | koorverf
+   3x | bem
+   3x | frei
+   3x | brzname
+   3x | umart
+   3x | lumnum
+   3x | brw_e
+   3x | verf_e
+   3x | genu
+   3x | ywert
+   3x | xwert
+   3x | Einwohnerregister 2018
+   3x | Einwohnerregister 2022
+   3x | Hauptvariante 2022
+   3x | parkingfacilityname
+   3x | dynamicdatasource
+   3x | strasse
+   3x | 2007
+   3x | 2008
+   3x | 2009
+   3x | 2010
+   3x | 2011
+   3x | ungerade Hausnr. von
+   3x | ungerade Hausnr. bis
+   3x | /
+   3x | gerade Hausnr. von
+   3x | -.1
+   3x | gerade Hausnr. bis
+   3x | Träger
+   3x | Adresse Straße
+   3x | Adresse PLZ
+   3x | Wärmeversorgung
+   3x | Wärmeverbrauch witterungsbereinigt
+   3x | Stromverbrauch
+   3x | angebote
+   3x | telefon
+   3x | e_mail
+   3x | traeger
+   3x | bild
+   3x | Telefonnummer
+   3x | Unnamed: 22
+   3x | Unnamed: 23
+   3x | Unnamed: 24
+   3x | Unnamed: 25
+   3x | Postleitzahl
+   3x | properties.VONDATUM
+   3x | properties.BEMERKUNG
+   3x | properties.MARKTRICHTWERT
+   3x | properties.TEILMARKT
+   3x | properties.BAUJAHR
+   3x | properties.WERT
+   3x | properties.NUMMER
+   3x | properties.NAME
+   3x | properties.GEBIETSART
+   3x | properties.DIGIT_DATUM
+   3x | properties.DIGIT_BASIS
+   3x | properties.BESCHLUSSNR
+   3x | properties.INKRAFTDAT
+   2x | Monat
+   2x | Wirtschaftszweig 2-Steller
+   2x | Frage_ID
+   2x | Frage
+   2x | Basis
+   2x | Antwort
+   2x | Anzahl_Anteil
+   2x | ÿþJ a h r 
+   2x | properties.Name
+   2x | E_(utm33_x)
+   2x | N_(UTM33_y)
+   2x | X_(ETRS89_lon)
+   2x | Y_(ETRS89_lat)
+   2x | Jahr 2021
+   2x | Leistungsart
+   2x | Vergabestelle
+   2x | stimmzettelposition
+   2x | stimmen
+   2x | gewaehlt
+   2x | Woche
+   2x | Montag
+   2x | Dienstag
+   2x | Mittwoch
+   2x | Donnerstag
+   2x | Freitag
+   2x | wahlberechtigte
+   2x | waehler-gesamt
+   2x | Anzahl Befragte
+   2x | Wahl_text
+   2x | parkingfacilityoccupancy
+   2x | parkingfacilitystatus
+   2x | parkingfacilitystatustime
+   2x | totalnumoccupiedparkingspaces
+   2x | totalnumvacantparkingspaces
+   2x | totalparkingcapacityoverride
+   2x | publicationtime
+   2x | updateintervalmin
+   2x | stationname
+   2x | counttime
+   2x | count
+   2x | Einwohnerregister 2019
+   2x | Einwohnerregister 2020
+   2x | Einwohnerregister 2021
+   2x | Hauptvariante 2018
+   2x | Hauptvariante 2019
+   2x | Hauptvariante 2021
+   2x | Einwohner_insgesamt
+   2x | Einwohner_Ukrainer
+   2x | Einwohner_Ukrainer_männlich
+   2x | Einwohner_Ukrainer_weiblich
+   2x | Einwohner_Ukrainer-nach-24022022-zugezogen
+   2x | Einwohner_Ukrainer-nach-24022022-zugezogen_männlich
+   2x | Einwohner_Ukrainer-nach-24022022-zugezogen_weiblich
+   2x | kivan_id
+   2x | name_einr
+   2x | hnr_alles
+   2x | sbz
+   2x | gesamtkap
+   2x | art_einr
+   2x | platz_kat
+   2x | status
+   2x | traeg_name
+   2x | frei_traeg
+   2x | traeg_tel
+   2x | ap_anrede
+   2x | ap_vname
+   2x | ap_nname
+   2x | ap_tel
+   2x | ap_fax
+   2x | ap_email
+   2x | link
+   2x | foto
+   2x | gebiet
+   2x | ot
+   2x | stadtbzrk
+   2x | beginn
+   2x | ende
+   2x | neu
+   2x | sparte
+   2x | sperrart
+   2x | meldung
+   2x | Bundestagswahlkreis
+   2x | typ
+   2x | Alter
+   2x | Staat
+   2x | Wohndauer
+   2x | Wbz
+   2x | Barrierefreiheit
+   2x | Vorhaben
+   2x | Kategorie
+   2x | Telefon
+   2x | Breitengrad
+   2x | Längengrad
+   2x | Betreiber
+   2x | Bezirkshaushaltsplan Tempelhof-Schöneberg 2016/2017
+   2x | 1 Mitglieder der Fraktionen des Berliner Abgeordnetenhauses (Parlament) nach den Wahlen 2006, 2011, 2016 und 2021(1)(Quelle: Wahlstatistik; eigene Berechnungen)
+   2x | 1 Mitglieder der Fraktionen des Berliner Abgeordnetenhauses (Parlament) nach den Wahlen 2006, 2011, 2016 und 2023(1)(Quelle: Wahlstatistik; eigene Berechnungen)
+   2x | bezeichnung_des_vorhabens
+   2x | zusammenfassung_des_vorhabens
+   2x | postleitzahl
+   2x | land
+   2x | Website
+   2x |  statistik  Berlin Brandenburg
+   2x | Zeit
+   2x | 1 Verdienste (Bruttostundenverdienste) von Frauen und Männern im Jahr 2022 in Berlin in den unterschiedlichen Altersgruppen (Quelle: Verdiensterhebung Referenzmonat April 2022)
+   2x | Schulzweig
+   2x | Schülergruppe
+   2x | Unterrichtsform
+   2x | Institution
+   2x | Schulnummer
+   2x | PSA 
+Nr.
+   2x | Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2019
+   2x | Baumaßnahme
+   2x | einrichtung
+   2x | altersgruppe
+   2x | ansprechpartner
+   2x | region
+   2x | homepage
+   2x | geaendert
+   2x | Messe
+   2x | Ansprechpartner
+   2x | 1 Bevölkerung in Berlin 2020 nach Quelle des überwiegenden Lebensunterhalts, Altersgruppen und Geschlecht(1) (Quelle: Mikrozensus)
+   2x | LOR
+   2x | Erläuterungen zu den Tabellen
+   2x | LAND
+   2x | LOR_ab_2021
+   2x | ULICHTVERH
+   2x | IstGkfz
+   2x | IstSonstige
+   2x | USTRZUSTAND
+   2x | LINREFX
+   2x | LINREFY
+   2x | Tabellenkopf
+   2x | Nummer Fußnote
+   2x | Nr
+   2x | Unnamed: 26
+   2x | Unnamed: 27
+   2x | Unnamed: 28
+   2x | Unnamed: 29
+   2x | Unnamed: 30
+   2x | Unnamed: 31
+   2x | Unnamed: 32
+   2x | Unnamed: 33
+   2x | Unnamed: 34
+   2x | Unnamed: 35
+   2x | Unnamed: 36
+   2x | Unnamed: 37
+   2x | Unnamed: 38
+   2x | Unnamed: 39
+   2x | Unnamed: 40
+   2x | Unnamed: 41
+   2x | Unnamed: 42
+   2x | Unnamed: 43
+   2x | Unnamed: 44
+   2x | Unnamed: 45
+   2x | Unnamed: 46
+   2x | Unnamed: 47
+   2x | Unnamed: 48
+   2x | Unnamed: 49
+   2x | Unnamed: 50
+   2x | Unnamed: 51
+   2x | Unnamed: 52
+   2x | Unnamed: 53
+   2x | Unnamed: 54
+   2x | Unnamed: 55
+   2x | Unnamed: 56
+   2x | Unnamed: 57
+   2x | Unnamed: 58
+   2x | Unnamed: 59
+   2x | Unnamed: 60
+   2x | Unnamed: 61
+   2x | Unnamed: 62
+   2x | Unnamed: 63
+   2x | Unnamed: 64
+   2x | Unnamed: 65
+   2x | properties.OBJEKTBEZEICHNUNG
+   2x | properties.OBJEKTNUMMER
+   2x | properties.ID1
+   2x | properties.BARRIEREARM
+   2x | properties.AKTDATUM
+   2x | properties.BISDATUM
+   2x | geometry
+   2x | properties.NAME_AMTL
+   2x | properties.NAME_ABKZ
+   2x | properties.LAGE
+   2x | properties.KAPAZITAET
+   2x | properties.KOSTEN
+   2x | properties.PROFIL1
+   2x | properties.PROFIL2
+   2x | properties.STADTTS
+   2x | properties.STADTTNAME
+   2x | properties.ADRESSE
+   2x | properties.OBJEKTART
+   2x | properties.UMFANG
+   2x | properties.STADTTEIL
+   2x | properties.NSONR
+   2x | properties.BEHOERDE
+   2x | properties.SG_NR
+   2x | properties.RVO_DATUM
+   2x | properties.RVO_1
+   2x | properties.RVO_2
