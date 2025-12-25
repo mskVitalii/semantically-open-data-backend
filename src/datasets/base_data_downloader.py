@@ -127,7 +127,7 @@ class BaseDataDownloader(ABC):
         # Call child class initialization if needed
         """Initialize Dresden-specific resources"""
         if self.use_embeddings:
-            vector_db = await get_vector_db(use_grpc=True)
+            vector_db = await get_vector_db()
             self.vector_db_buffer = VectorDBBuffer(vector_db)
 
         if self.use_store:

@@ -15,6 +15,9 @@ class DatasetSearchRequest(BaseModel):
 
     query: Optional[str] = Field(None, description="Search query")
     tags: Optional[List[str]] = Field(None, description="List of tags for filtering")
+    city: Optional[str] = Field(None, description="Filter by city")
+    state: Optional[str] = Field(None, description="Filter by state/region")
+    country: Optional[str] = Field(None, description="Filter by country")
     limit: int = Field(10, ge=1, le=100, description="Number of results")
     offset: int = Field(0, ge=0, description="Offset for pagination")
 

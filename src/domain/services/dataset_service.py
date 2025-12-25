@@ -33,17 +33,16 @@ class DatasetService:
         self, request: DatasetSearchRequest
     ) -> DatasetSearchResponse:
         """Search for datasets"""
-        # Convert DTO to domain object
-        # criteria = SearchCriteria(
-        #     query=request.query,
-        #     tags=request.tags,
-        #     limit=request.limit,
-        #     offset=request.offset,
-        # )
 
         # Generate query embedding
         embedding = await embed(request.query)
-        datasets = await self.vector_db.search(embedding)
+        datasets = await self.vector_db.search(
+            embedding,
+            city_filter=request.city,
+            state_filter=request.state,
+            country_filter=request.country,
+            limit=request.limit,
+        )
 
         metadatas: list[DatasetResponse] = []
         for dataset in datasets:
@@ -54,20 +53,6 @@ class DatasetService:
                 ),
             )
 
-        # logger.info(f"\nFound {len(results)} results:")
-        # for i, result in enumerate(results, 1):
-        #     logger.info(f"\n{i}. Score: {result.score:.4f}")
-        #     logger.info(f"   Title: {result.payload['title']}")
-        #     logger.info(f"   City: {result.payload['city']}")
-        #     logger.info(f"   Organization: {result.payload['organization']}")
-        #     if result.payload.get("description"):
-        #         desc = (
-        #             result.payload["description"][:200] + "..."
-        #             if len(result.payload["description"]) > 200
-        #             else result.payload["description"]
-        #         )
-        #         logger.info(f"   Description: {desc}")
-
         return DatasetSearchResponse(
             datasets=metadatas,
             total=len(metadatas),
@@ -76,9 +61,18 @@ class DatasetService:
         )
 
     async def search_datasets_with_embeddings(
-        self, embeddings: ndarray
+        self,
+        embeddings: ndarray,
+        city_filter: str = None,
+        state_filter: str = None,
+        country_filter: str = None,
     ) -> list[DatasetResponse]:
-        datasets = await self.vector_db.search(embeddings)
+        datasets = await self.vector_db.search(
+            embeddings,
+            city_filter=city_filter,
+            state_filter=state_filter,
+            country_filter=country_filter,
+        )
 
         results = []
         for dataset in datasets:

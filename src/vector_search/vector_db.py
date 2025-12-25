@@ -88,7 +88,7 @@ class VectorDB:
             )
 
             # Create indexes for filtering
-            for field in ["city", "organization"]:
+            for field in ["city", "state", "country", "organization"]:
                 await self.qdrant.create_payload_index(
                     collection_name=QDRANT_COLLECTION_NAME,
                     field_name=field,
@@ -145,16 +145,31 @@ class VectorDB:
         self,
         query_embedding: ndarray,
         city_filter: Optional[str] = None,
+        state_filter: Optional[str] = None,
+        country_filter: Optional[str] = None,
         limit: int = 5,
     ) -> list[ScoredPoint]:
         """Search for datasets using query_points method"""
 
-        # Build filter if city specified
-        search_filter = None
+        # Build filter conditions
+        filter_conditions = []
         if city_filter:
-            search_filter = Filter(
-                must=[FieldCondition(key="city", match=MatchValue(value=city_filter))]
+            filter_conditions.append(
+                FieldCondition(key="city", match=MatchValue(value=city_filter))
             )
+        if state_filter:
+            filter_conditions.append(
+                FieldCondition(key="state", match=MatchValue(value=state_filter))
+            )
+        if country_filter:
+            filter_conditions.append(
+                FieldCondition(key="country", match=MatchValue(value=country_filter))
+            )
+
+        # Create filter if any conditions exist
+        search_filter = None
+        if filter_conditions:
+            search_filter = Filter(must=filter_conditions)
 
         # Use query_points (works with both gRPC and HTTP)
         query_result = await self.qdrant.query_points(
@@ -257,7 +272,7 @@ class VectorDB:
 vector_db: VectorDB | None = None
 
 
-async def get_vector_db(use_grpc: bool = True) -> VectorDB:
+async def get_vector_db() -> VectorDB:
     """Helper function to create and initialize the async Qdrant client"""
     global vector_db
     if vector_db is None:

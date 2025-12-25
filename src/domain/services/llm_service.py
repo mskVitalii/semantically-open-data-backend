@@ -108,20 +108,26 @@ class LLMService:
     system_prompt = """You are an urban data researcher specializing in city analytics and evidence-based urban planning. Your task is to provide data-driven insights based on available datasets from Chemnitz, Saxony, Germany. Always ground your analysis in the specific data provided and clearly reference which datasets support your conclusions."""
 
     async def get_research_questions(self, initial_question: str) -> list[LLMQuestion]:
-        prompt = f"""
-        Question: {initial_question}.
-        Generate N research questions you would need to know to answer the question.
+        prompt = f"""Given this user question: "{initial_question}"
 
-        Output **only** valid JSON, nothing else.
-        Do not include explanations, markdown, code fences or text outside JSON.
-        The output must be an array of objects with fields "question" and "reason".
+Generate 2-4 focused research questions that would help find relevant datasets to answer this question.
 
-        Example:
-        [
-          {{"question": "What is X?", "reason": "Because ..."}},
-          {{"question": "How does Y work?", "reason": "Because ..."}}
-        ]
-        """
+CRITICAL: Your response must be ONLY a JSON array, with absolutely no other text, formatting, or markdown.
+Do NOT wrap the JSON in code blocks (```json), do NOT add explanations before or after.
+Return ONLY the raw JSON array starting with [ and ending with ].
+
+Each research question should:
+- Be specific and searchable against dataset metadata
+- Focus on the key data needed to answer the user's question
+- Include a brief reason explaining why this data is needed
+
+Required JSON format:
+[
+  {{"question": "What datasets contain X data?", "reason": "To understand Y aspect"}},
+  {{"question": "Which datasets track Z metrics?", "reason": "To analyze W patterns"}}
+]
+
+Remember: Output ONLY the JSON array. No markdown, no code blocks, no explanations."""
         result = await self.openai_by_api(
             system_prompt=self.system_prompt, messages=[prompt]
         )
@@ -137,25 +143,35 @@ class LLMService:
     ) -> list[str]:
         context = question.to_llm_context()
         instructions = """
-            ## Analysis Guidelines
+## How to Analyze the Datasets
 
-            1. **Data-Driven Approach**: Base all insights on the specific fields and statistics provided in the datasets above
-            2. **Field Utilization**: Leverage the statistical summaries, distributions, and temporal ranges to provide quantitative insights
-            3. **Cross-Dataset Analysis**: When multiple datasets are relevant, identify potential relationships between their fields
-            4. **Statistical Rigor**: Use the provided metrics (mean, median, quartiles, standard deviation) to describe patterns and outliers
-            5. **Temporal Context**: Consider the creation and modification dates of datasets when interpreting their relevance
-            6. **Data Quality**: Account for null values and unique counts when assessing data completeness and reliability
-            7. **Urban Context**: Frame insights within the specific context of Chemnitz as a mid-sized German city in Saxony
+The datasets above include detailed field information with semantic interpretations. Use this information to provide meaningful insights:
 
-            ## Response Requirements
+**Understanding Field Interpretations:**
+- Each field has a "⇒ Interpretation" section that explains what the data characteristics mean
+- For numeric fields: Look at variation levels (low/medium/high) and skewness notes
+- For temporal fields: Consider the time span (short/medium/long-term)
+- For categorical fields: Use cardinality interpretations to understand data granularity
 
-            - Cite specific dataset names and field names when making claims
-            - Quantify findings using the provided statistical measures
-            - Acknowledge data limitations based on null counts and temporal coverage
-            - Provide actionable insights relevant to urban planning and city management
-            - Structure the response with clear sections for different aspects of the analysis
-            - Only 1 paragraph of text, be laconic
-            - If datasets aren't suitable, just tell 'No suitable datasets', do not make assumptions or suggestions
+**Analysis Approach:**
+1. Focus on fields most relevant to answering the research question
+2. Cite specific field names and their semantic interpretations from the dataset structure
+3. Use the statistical measures (mean, median, range) to quantify your findings
+4. Consider data completeness percentages when assessing reliability
+5. Note any data quality issues (high null counts, skewness) that affect conclusions
+
+**Response Format:**
+- Write a single focused paragraph (3-5 sentences maximum)
+- Start by directly addressing the research question
+- Reference specific dataset names and field names
+- Use quantitative evidence from the field statistics
+- If datasets lack relevant fields or have poor data quality, state "No suitable datasets found" and explain why
+
+**Critical Rules:**
+- ONLY use information explicitly present in the dataset fields and their interpretations
+- DO NOT make assumptions beyond what the data shows
+- DO NOT suggest what "could be" analyzed - only what IS in the data
+- If the answer cannot be determined from available fields, clearly state this
             """
         prompt = f"""{context}\n{instructions}"""
 

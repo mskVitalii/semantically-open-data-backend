@@ -38,6 +38,9 @@ async def search_datasets(
     Supported parameters:
     - query: full-text search by name and description
     - tags: filter by tags
+    - city: filter by city
+    - state: filter by state/region
+    - country: filter by country
     - limit: number of results (1–100)
     - offset: pagination offset
     """
@@ -150,37 +153,66 @@ async def step_1_embeddings(
 
 
 async def generate_events(
-    question: str, datasets_service: DatasetService, llm_service: LLMService
+    question: str,
+    datasets_service: DatasetService,
+    llm_service: LLMService,
+    city: str = None,
+    state: str = None,
+    country: str = None,
+    use_multi_query: bool = True,
+    use_llm_interpretation: bool = True,
 ):
     step = 0
     try:
         # region 0. LLM QUESTIONS
         research_questions: list[LLMQuestion] | None = None
-        if not IS_DOCKER:
-            cached_answer = await check_qa_cache(question, str(step))
-            if cached_answer is not None:
-                research_questions = [
-                    LLMQuestion(cq["question"], reason=cq["reason"])
-                    for cq in cached_answer
-                ]
-        if research_questions is None:
-            research_questions = await step_0_llm_questions(step, question, llm_service)
-        yield f"data: {
-            json.dumps(
-                {
-                    'step': step,
-                    'status': 'OK',
-                    'data': {
-                        'question': question,
-                        'research_questions': [q.to_dict() for q in research_questions],
-                    },
-                }
-            )
-        }\n\n"
-        if not IS_DOCKER:
-            await set_qa_cache(
-                question, str(step), [q.to_dict() for q in research_questions]
-            )
+
+        if use_multi_query:
+            # Multi-query RAG enabled: generate research questions via LLM
+            if not IS_DOCKER:
+                cached_answer = await check_qa_cache(question, str(step))
+                if cached_answer is not None:
+                    research_questions = [
+                        LLMQuestion(cq["question"], reason=cq["reason"])
+                        for cq in cached_answer
+                    ]
+            if research_questions is None:
+                research_questions = await step_0_llm_questions(step, question, llm_service)
+
+            yield f"data: {
+                json.dumps(
+                    {
+                        'step': step,
+                        'status': 'OK',
+                        'data': {
+                            'question': question,
+                            'research_questions': [q.to_dict() for q in research_questions],
+                        },
+                    }
+                )
+            }\n\n"
+            if not IS_DOCKER:
+                await set_qa_cache(
+                    question, str(step), [q.to_dict() for q in research_questions]
+                )
+        else:
+            # Multi-query RAG disabled: use original question directly
+            research_questions = [
+                LLMQuestion(question=question, reason="Direct user query")
+            ]
+            yield f"data: {
+                json.dumps(
+                    {
+                        'step': step,
+                        'status': 'OK',
+                        'data': {
+                            'question': question,
+                            'research_questions': [q.to_dict() for q in research_questions],
+                        },
+                    }
+                )
+            }\n\n"
+
         step += 1
         # endregion
 
@@ -209,7 +241,10 @@ async def generate_events(
         result_questions_with_datasets: list[LLMQuestionWithDatasets] = []
         for i, embedding in enumerate(embeddings):
             datasets = await datasets_service.search_datasets_with_embeddings(
-                embedding.embeddings
+                embedding.embeddings,
+                city_filter=city,
+                state_filter=state,
+                country_filter=country,
             )
             result_questions_with_datasets.append(
                 LLMQuestionWithDatasets(
@@ -240,43 +275,46 @@ async def generate_events(
         # mb choose fields to reduce context and improve results
 
         # region 3. INTERPRETATION
-        logger.info(f"step: {step}. INTERPRETATION start")
-        start_3 = time.perf_counter()
+        if use_llm_interpretation:
+            logger.info(f"step: {step}. INTERPRETATION start")
+            start_3 = time.perf_counter()
 
-        for i, q in enumerate(result_questions_with_datasets):
-            start_3_i = time.perf_counter()
-            logger.info(f"step: {step}.{str(i)} INTERPRETATION STEP start")
-            answer: list[str] | None = None
-            if not IS_DOCKER:
-                cached_answer = await check_qa_cache(question, f"{step}_{i}")
-                if cached_answer is not None:
-                    answer = cached_answer
-            if answer is None:
-                answer = await llm_service.answer_research_question(q)
+            for i, q in enumerate(result_questions_with_datasets):
+                start_3_i = time.perf_counter()
+                logger.info(f"step: {step}.{str(i)} INTERPRETATION STEP start")
+                answer: list[str] | None = None
+                if not IS_DOCKER:
+                    cached_answer = await check_qa_cache(question, f"{step}_{i}")
+                    if cached_answer is not None:
+                        answer = cached_answer
+                if answer is None:
+                    answer = await llm_service.answer_research_question(q)
 
-            logger.info(answer)
-            yield f"data: {
-                json.dumps(
-                    {
-                        'step': step,
-                        'sub_step': i,
-                        'status': 'OK',
-                        'data': {
-                            'question_hash': q.question_hash,
-                            'answer': answer,
-                        },
-                    }
+                logger.info(answer)
+                yield f"data: {
+                    json.dumps(
+                        {
+                            'step': step,
+                            'sub_step': i,
+                            'status': 'OK',
+                            'data': {
+                                'question_hash': q.question_hash,
+                                'answer': answer,
+                            },
+                        }
+                    )
+                }\n\n"
+                if not IS_DOCKER:
+                    await set_qa_cache(question, f"{step}_{i}", answer)
+                elapsed_3_i = time.perf_counter() - start_3_i
+                logger.info(
+                    f"step: {step}.{str(i)} INTERPRETATION STEP end (elapsed: {elapsed_3_i:.2f}s)"
                 )
-            }\n\n"
-            if not IS_DOCKER:
-                await set_qa_cache(question, f"{step}_{i}", answer)
-            elapsed_3_i = time.perf_counter() - start_3_i
-            logger.info(
-                f"step: {step}.{str(i)} INTERPRETATION STEP end (elapsed: {elapsed_3_i:.2f}s)"
-            )
-        elapsed_3 = time.perf_counter() - start_3
-        logger.info(f"step: {step}. INTERPRETATION end (elapsed: {elapsed_3:.2f}s)")
-        step += 1
+            elapsed_3 = time.perf_counter() - start_3
+            logger.info(f"step: {step}. INTERPRETATION end (elapsed: {elapsed_3:.2f}s)")
+            step += 1
+        else:
+            logger.info(f"step: {step}. INTERPRETATION skipped (disabled by user)")
         # endregion
 
         yield "data: [DONE]\n\n"
@@ -290,11 +328,29 @@ async def stream(
     question: str = Query(
         "What is the color of grass in Germany?", description="Ask the system"
     ),
+    city: str = Query(None, description="Filter by city"),
+    state: str = Query(None, description="Filter by state/region"),
+    country: str = Query(None, description="Filter by country"),
+    use_multi_query: bool = Query(
+        True, description="Enable multi-query RAG (generate research questions)"
+    ),
+    use_llm_interpretation: bool = Query(
+        True, description="Enable LLM interpretation of results"
+    ),
     datasets_service: DatasetService = Depends(get_dataset_service),
     llm_service: LLMService = Depends(get_llm_service_dep),
 ):
     return StreamingResponse(
-        generate_events(question, datasets_service, llm_service),
+        generate_events(
+            question,
+            datasets_service,
+            llm_service,
+            city,
+            state,
+            country,
+            use_multi_query,
+            use_llm_interpretation,
+        ),
         media_type="text/event-stream",
     )
 
