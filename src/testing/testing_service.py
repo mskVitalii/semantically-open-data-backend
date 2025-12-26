@@ -90,7 +90,6 @@ class TestingService:
         """Execute a single test with given configuration"""
         start_time = time.perf_counter()
         research_questions = None
-        datasets_found = []
 
         try:
             # Step 1: Generate research questions if multi-query enabled
@@ -228,8 +227,16 @@ class TestingService:
     # region Reports Management
 
     def _save_report(self, report: TestReport):
-        """Save test report to file"""
-        report_file = REPORTS_DIR / f"{report.report_id}.json"
+        """Save test report to file with timestamp-based filename"""
+        # Format: 2025_12_26_01_28.json
+        timestamp = report.created_at.strftime("%Y_%m_%d_%H_%M")
+        report_file = REPORTS_DIR / f"{timestamp}.json"
+
+        # If file exists, add seconds to make it unique
+        if report_file.exists():
+            timestamp = report.created_at.strftime("%Y_%m_%d_%H_%M_%S")
+            report_file = REPORTS_DIR / f"{timestamp}.json"
+
         with open(report_file, "w", encoding="utf-8") as f:
             json.dump(report.model_dump(mode="json"), f, ensure_ascii=False, indent=2)
         logger.info(f"Saved report: {report_file}")
@@ -258,23 +265,25 @@ class TestingService:
         return reports
 
     def get_report(self, report_id: str) -> Optional[TestReport]:
-        """Get specific test report"""
-        report_file = REPORTS_DIR / f"{report_id}.json"
-        if not report_file.exists():
-            return None
+        """Get specific test report by searching through all reports"""
+        # Search through all report files to find the one with matching report_id
+        for report_file in REPORTS_DIR.glob("*.json"):
+            try:
+                with open(report_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if data.get("report_id") == report_id:
+                        return TestReport(**data)
+            except Exception as e:
+                logger.error(f"Error loading report {report_file}: {e}")
+                continue
 
-        try:
-            with open(report_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                return TestReport(**data)
-        except Exception as e:
-            logger.error(f"Error loading report {report_id}: {e}")
-            return None
+        logger.warning(f"Report {report_id} not found")
+        return None
 
     # endregion
 
 
-# Dependency injection
+# region Dependency injection
 _testing_service: Optional[TestingService] = None
 
 
@@ -286,3 +295,6 @@ def get_testing_service(
     if _testing_service is None:
         _testing_service = TestingService(dataset_service, llm_service)
     return _testing_service
+
+
+# endregion

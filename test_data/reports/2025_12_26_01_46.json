@@ -1,0 +1,682 @@
+{
+  "report_id": "3c36f098-0e51-4c9b-a8b6-e950ed929ed7",
+  "created_at": "2025-12-26T01:46:48.496362",
+  "total_tests": 16,
+  "successful_tests": 16,
+  "failed_tests": 0,
+  "total_execution_time_seconds": 3.086098750005476,
+  "results": [
+    {
+      "question": "What are the safest neighborhoods in the city based on recent crime statistics?",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "Kriminalitätsatlas Berlin",
+          "score": 0.5197016000747681,
+          "dataset_id": "658c7ebb-38b1-4cfc-a17f-21f0ff1fff17"
+        },
+        {
+          "title": "Straftaten (Jahreszahlen, kleinräumig)",
+          "score": 0.456407368183136,
+          "dataset_id": "616d67a3-4928-4462-8c00-3902961c1e98"
+        },
+        {
+          "title": "Probleme aus Bürgersicht (ab 2020) (Jahreszahlen)",
+          "score": 0.4394111633300781,
+          "dataset_id": "ad3ff271-387a-4f8a-9ddb-c9ce797220a2"
+        },
+        {
+          "title": "Probleme aus Bürgersicht (Jahreszahlen)",
+          "score": 0.4384472966194153,
+          "dataset_id": "d1afb566-aa9a-4e86-93e4-c229e1cd7b98"
+        },
+        {
+          "title": "Spielplatzöffnungen im Bezirk Pankow",
+          "score": 0.4148441553115845,
+          "dataset_id": "6717896c-47e9-4bae-9a1e-517da7010d1f"
+        }
+      ],
+      "execution_time_seconds": 0.20343720796518028,
+      "research_questions": null,
+      "error": null
+    },
+    {
+      "question": "What are the safest neighborhoods in the city based on recent crime statistics?",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "Kriminalitätsatlas Berlin",
+          "score": 0.5197016000747681,
+          "dataset_id": "658c7ebb-38b1-4cfc-a17f-21f0ff1fff17"
+        },
+        {
+          "title": "Straftaten (Jahreszahlen, kleinräumig)",
+          "score": 0.456407368183136,
+          "dataset_id": "616d67a3-4928-4462-8c00-3902961c1e98"
+        },
+        {
+          "title": "Probleme aus Bürgersicht (ab 2020) (Jahreszahlen)",
+          "score": 0.4394111633300781,
+          "dataset_id": "ad3ff271-387a-4f8a-9ddb-c9ce797220a2"
+        },
+        {
+          "title": "Probleme aus Bürgersicht (Jahreszahlen)",
+          "score": 0.4384472966194153,
+          "dataset_id": "d1afb566-aa9a-4e86-93e4-c229e1cd7b98"
+        },
+        {
+          "title": "Spielplatzöffnungen im Bezirk Pankow",
+          "score": 0.4148441553115845,
+          "dataset_id": "6717896c-47e9-4bae-9a1e-517da7010d1f"
+        }
+      ],
+      "execution_time_seconds": 0.1989411250106059,
+      "research_questions": null,
+      "error": null
+    },
+    {
+      "question": "Where can I find real-time public transit schedules and arrival information?",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "Fahrplan der Fahrbibliothek",
+          "score": 0.5819816589355469,
+          "dataset_id": "38ee8385-296a-462b-8a07-d11eb0ea27e6"
+        },
+        {
+          "title": "Fahrplan der Fahrbibliothek für Schulen",
+          "score": 0.5813809633255005,
+          "dataset_id": "95b2a361-d6fc-44d7-a122-6472bab01dfa"
+        },
+        {
+          "title": "Aktuelle Belegung Park+Ride Anlagen, Stadt Leipzig",
+          "score": 0.5785441398620605,
+          "dataset_id": "55da7549-f64e-448d-a636-b84db35efbe5"
+        },
+        {
+          "title": "Historische Belegung (letzten 30 Tage) Park+Ride Anlagen, Stadt Leipzig",
+          "score": 0.5550851821899414,
+          "dataset_id": "430a768c-7f00-47eb-a2a0-effd50a00023"
+        },
+        {
+          "title": "Standorte der Verkehrsinformationstafeln in Berlin",
+          "score": 0.5505317449569702,
+          "dataset_id": "ed3dcc0d-e3b4-4c70-9423-e8561e577dd3"
+        }
+      ],
+      "execution_time_seconds": 0.2042042919783853,
+      "research_questions": null,
+      "error": null
+    },
+    {
+      "question": "How much does the city spend on road construction and maintenance projects?",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "Schulbausanierung Sommer 2022",
+          "score": 0.5346675515174866,
+          "dataset_id": "0c774279-d300-45e0-a8d4-8a483b181dc4"
+        },
+        {
+          "title": "Schulmensen-Bauprogramm",
+          "score": 0.5257723331451416,
+          "dataset_id": "b0b9538f-1a0e-4bbb-9ee9-5ec6d673cdf6"
+        },
+        {
+          "title": "Investitionen in den Schulbau (Jahreszahlen)",
+          "score": 0.46529439091682434,
+          "dataset_id": "d0bef989-c815-4742-ae56-5886d6c91d03"
+        },
+        {
+          "title": "Einsatz von Haushaltsmitteln (Jahreszahlen)",
+          "score": 0.4574463367462158,
+          "dataset_id": "5ede7e2b-a627-4e5e-9f4a-b0a2bd9ad2f7"
+        },
+        {
+          "title": "Probleme aus Bürgersicht (Jahreszahlen)",
+          "score": 0.44823387265205383,
+          "dataset_id": "d1afb566-aa9a-4e86-93e4-c229e1cd7b98"
+        }
+      ],
+      "execution_time_seconds": 0.1743146670050919,
+      "research_questions": null,
+      "error": null
+    },
+    {
+      "question": "What building permits have been issued in my neighborhood this year?",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "Baugenehmigungen (Quartalszahlen)",
+          "score": 0.5623997449874878,
+          "dataset_id": "6d5a32ee-c4a3-477f-b7d9-10d6c9906c5c"
+        },
+        {
+          "title": "Baugenehmigungen (Jahreszahlen)",
+          "score": 0.5573924779891968,
+          "dataset_id": "f41af93c-a75d-44dc-9cd6-25fd06828903"
+        },
+        {
+          "title": "Baugenehmigungen (Jahreszahlen, kleinräumig)",
+          "score": 0.556337833404541,
+          "dataset_id": "1ef1b11a-0faa-452f-aefe-15501bd10137"
+        },
+        {
+          "title": "Energetischer Sanierungsfahrplan bezirklicher Gebäude - Lichtenberg",
+          "score": 0.4961491525173187,
+          "dataset_id": "253576d2-cdac-48ac-8414-79d38bb946f3"
+        },
+        {
+          "title": "Baufertigstellungen (Jahreszahlen, kleinräumig)",
+          "score": 0.49145638942718506,
+          "dataset_id": "0b46970d-7f65-42fd-aa43-2eee8a7465b1"
+        }
+      ],
+      "execution_time_seconds": 0.1883891670149751,
+      "research_questions": null,
+      "error": null
+    },
+    {
+      "question": "Show me election results by district for the last mayoral election",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "Ergebnisse Oberbürgermeisterwahl seit 1998 (Ortsteile)",
+          "score": 0.545210063457489,
+          "dataset_id": "7e21f971-a9ee-4bf5-a9ff-6b09d466230e"
+        },
+        {
+          "title": "Stadtratswahlen",
+          "score": 0.5418850779533386,
+          "dataset_id": "0bc23baf-5a03-4e60-8d9a-df012e9aec5c"
+        },
+        {
+          "title": "Ergebnisse Oberbürgermeisterwahl seit 1998 (Wahlbezirke)",
+          "score": 0.5417273044586182,
+          "dataset_id": "3b7f0232-e975-4685-9160-af4a4aedd211"
+        },
+        {
+          "title": "Stadtratswahl 2024: Ortsteilergebnisse",
+          "score": 0.5413855910301208,
+          "dataset_id": "4f261ede-a4c6-4815-a773-6d975c0a8ae5"
+        },
+        {
+          "title": "Ergebnisse Stadtratswahl seit 1994 (Wahlbezirke)",
+          "score": 0.5391700267791748,
+          "dataset_id": "81a86e18-7b45-44ee-961c-8312107bc97e"
+        }
+      ],
+      "execution_time_seconds": 0.18936495803063735,
+      "research_questions": null,
+      "error": null
+    },
+    {
+      "question": "Which restaurants failed recent health and food safety inspections?",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "Liste der Badestellen - opendata",
+          "score": 0.3127599060535431,
+          "dataset_id": "a08cdf3d-97aa-4229-8e23-0993bf02191e"
+        },
+        {
+          "title": "KLR Produkt - Vergleichsbericht 2013",
+          "score": 0.31268763542175293,
+          "dataset_id": "1eea3163-45e9-4c6e-9581-565f5c4c1d0d"
+        },
+        {
+          "title": "Gästeankünfte",
+          "score": 0.3073235750198364,
+          "dataset_id": "374b40fc-40e5-4c4c-a53f-1ebe153e3fe4"
+        },
+        {
+          "title": "Eignungsüberprüfung Fahrerlaubnis",
+          "score": 0.3055640459060669,
+          "dataset_id": "862806c0-5273-4fca-9432-290939ccf669"
+        },
+        {
+          "title": "Einschulungen und Nichteinschulungen (Jahreszahlen)",
+          "score": 0.300099641084671,
+          "dataset_id": "0a5a7822-3e5a-4217-88f2-5b322106af4a"
+        }
+      ],
+      "execution_time_seconds": 0.20595570898149163,
+      "research_questions": null,
+      "error": null
+    },
+    {
+      "question": "What is the city's annual budget breakdown by department?",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "Über- und außerplanmäßige Ausgaben und Verpflichtungsermächtigungen Berlin 2023",
+          "score": 0.5531080961227417,
+          "dataset_id": "73f7b89d-5357-44cb-b77c-06adfd384ba3"
+        },
+        {
+          "title": "Überblick Kulturetat",
+          "score": 0.5390509366989136,
+          "dataset_id": "71518641-cd8a-4a5f-ac87-643df99ee926"
+        },
+        {
+          "title": "Stadtbezirksbudget",
+          "score": 0.5389421582221985,
+          "dataset_id": "e94e64b8-bd19-48b5-b181-2a3e43300121"
+        },
+        {
+          "title": "Kamerale Monatsdaten Bezirk Lichtenberg 2019",
+          "score": 0.5165753960609436,
+          "dataset_id": "b8e77e45-c9e0-4962-8c0d-a9102297ea6c"
+        },
+        {
+          "title": "Steuereinnahmen des Landes Berlin 2024",
+          "score": 0.5138933658599854,
+          "dataset_id": "99e4bedf-ebe3-42e1-bdf8-0cfaee73abd8"
+        }
+      ],
+      "execution_time_seconds": 0.1744376250426285,
+      "research_questions": null,
+      "error": null
+    },
+    {
+      "question": "How do I report potholes or request street repairs in my area?",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "Ordnungsamt-Online",
+          "score": 0.5204341411590576,
+          "dataset_id": "8f3cf7b2-6334-45ca-83be-88e0ee54f6c1"
+        },
+        {
+          "title": "Probleme aus Bürgersicht (Jahreszahlen)",
+          "score": 0.49444812536239624,
+          "dataset_id": "d1afb566-aa9a-4e86-93e4-c229e1cd7b98"
+        },
+        {
+          "title": "Verkehrsunfälle (Quartalszahlen)",
+          "score": 0.49284592270851135,
+          "dataset_id": "3140cb43-0960-440f-b125-bc3ae6ac41d8"
+        },
+        {
+          "title": "Probleme aus Bürgersicht (ab 2020) (Jahreszahlen)",
+          "score": 0.4846521317958832,
+          "dataset_id": "ad3ff271-387a-4f8a-9ddb-c9ce797220a2"
+        },
+        {
+          "title": "Verkehrsunfälle (Jahreszahlen)",
+          "score": 0.4806971848011017,
+          "dataset_id": "9ffe4c39-5ad9-4765-a298-65b7adbfc4dd"
+        }
+      ],
+      "execution_time_seconds": 0.2098609170061536,
+      "research_questions": null,
+      "error": null
+    },
+    {
+      "question": "What are the current zoning regulations for commercial development downtown?",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "SatzungBauGB",
+          "score": 0.44945234060287476,
+          "dataset_id": "de4807d188bc4762aa4d0da9d7e1e95d"
+        },
+        {
+          "title": "Gestaltungssatzung",
+          "score": 0.4471626579761505,
+          "dataset_id": "e970616de2924d4fbfa34d0cf4a16c5b"
+        },
+        {
+          "title": "Stadtteile",
+          "score": 0.4435995817184448,
+          "dataset_id": "42a13d7737f649409e981db3f0ba1455"
+        },
+        {
+          "title": "Erhaltungssatzung",
+          "score": 0.4390220046043396,
+          "dataset_id": "3b3be352b2de4d4896f169a013c74a13"
+        },
+        {
+          "title": "Verkehrsraumeinschränkungen (Polygone), Stadt Leipzig",
+          "score": 0.4376147389411926,
+          "dataset_id": "6cb2a607-a09a-4840-a3ce-93825cc9da1a"
+        }
+      ],
+      "execution_time_seconds": 0.19001124997157604,
+      "research_questions": null,
+      "error": null
+    },
+    {
+      "question": "Which companies have won government procurement contracts this fiscal year?",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "Los_7_2024 (Berlin)",
+          "score": 0.44834989309310913,
+          "dataset_id": "8043ac8d-bfa6-42b6-9084-840759f21a81"
+        },
+        {
+          "title": "Los_5_2024 (Berlin)",
+          "score": 0.4477236866950989,
+          "dataset_id": "2861dc04-46da-44ac-94b4-a20ded889041"
+        },
+        {
+          "title": "Los_3_2024 (Berlin)",
+          "score": 0.44618532061576843,
+          "dataset_id": "377f1f3e-d992-4256-94bc-f3968fe74f27"
+        },
+        {
+          "title": "Los_6_2024 (Berlin)",
+          "score": 0.4407185912132263,
+          "dataset_id": "3e170044-4679-4ce7-8e7c-b2da80225188"
+        },
+        {
+          "title": "Los_2_2024 (Berlin)",
+          "score": 0.43963533639907837,
+          "dataset_id": "7815b6a2-d911-44b7-a3c7-35030d8bab29"
+        }
+      ],
+      "execution_time_seconds": 0.2020403750357218,
+      "research_questions": null,
+      "error": null
+    },
+    {
+      "question": "Where are the public parks and recreation facilities located in the city?",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "Kinder_und_Jugend_Freizeiteinrichtungen",
+          "score": 0.5204634666442871,
+          "dataset_id": "12b2e9852be946c18dd619d337f72f78"
+        },
+        {
+          "title": "Park+Ride Anlagen Standorte, Stadt Leipzig",
+          "score": 0.5104643702507019,
+          "dataset_id": "a2c3a1bd-d996-4fb7-9742-e756afe4e306"
+        },
+        {
+          "title": "Nutzung öffentlicher Flächen in Kleingartenanlagen",
+          "score": 0.5074076056480408,
+          "dataset_id": "d5f21df2-b30a-452b-8366-3edc82a7762c"
+        },
+        {
+          "title": "Spielplatzöffnungen im Bezirk Pankow",
+          "score": 0.5007692575454712,
+          "dataset_id": "6717896c-47e9-4bae-9a1e-517da7010d1f"
+        },
+        {
+          "title": "Standorte geförderter Kultureinrichtungen",
+          "score": 0.5000441074371338,
+          "dataset_id": "1db72092-d7f2-4770-9c15-2e6c36a9ea87"
+        }
+      ],
+      "execution_time_seconds": 0.17897745803929865,
+      "research_questions": null,
+      "error": null
+    },
+    {
+      "question": "What environmental data is available for air quality monitoring stations?",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "Luftgütemessdaten",
+          "score": 0.6600408554077148,
+          "dataset_id": "e883fc65-2567-4127-b0c7-188a4720071c"
+        },
+        {
+          "title": "Immissionen (Jahreszahlen)",
+          "score": 0.5593947172164917,
+          "dataset_id": "3f7f4401-d367-4c49-8c79-ab0ec42ff4d0"
+        },
+        {
+          "title": "Wetterdaten (Jahreszahlen)",
+          "score": 0.5489582419395447,
+          "dataset_id": "fefc48c8-ad04-4613-b2e7-698d1ee575ad"
+        },
+        {
+          "title": "Zufriedenheit mit den Lebensbedingungen (Jahreszahlen)",
+          "score": 0.5259932279586792,
+          "dataset_id": "052717ed-1088-447c-87ef-c764f5622216"
+        },
+        {
+          "title": "Liste der Badestellen - opendata",
+          "score": 0.5165776610374451,
+          "dataset_id": "a08cdf3d-97aa-4229-8e23-0993bf02191e"
+        }
+      ],
+      "execution_time_seconds": 0.189500542008318,
+      "research_questions": null,
+      "error": null
+    },
+    {
+      "question": "How many 311 service requests were filed and resolved last month?",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "Kontaktaufnahme Bürgertelefon",
+          "score": 0.4344805181026459,
+          "dataset_id": "a1222ca2-93fc-4d9a-a36c-fb7aae993872"
+        },
+        {
+          "title": "Beglaubigungen",
+          "score": 0.42617690563201904,
+          "dataset_id": "899157f7-ed32-4a28-b8fb-f7d35a02b64c"
+        },
+        {
+          "title": "Liste der Badestellen - opendata",
+          "score": 0.4240962862968445,
+          "dataset_id": "a08cdf3d-97aa-4229-8e23-0993bf02191e"
+        },
+        {
+          "title": "Nachbestellung von Personenstandsurkunden",
+          "score": 0.4239073693752289,
+          "dataset_id": "c0301522-063c-4b7a-8545-030103ea4fc3"
+        },
+        {
+          "title": "Stadtbezirksbeiräte_Sitzungen",
+          "score": 0.4230349063873291,
+          "dataset_id": "5cf0fe8f-5052-4ed3-9f10-26a4ecd54bda"
+        }
+      ],
+      "execution_time_seconds": 0.17735633300617337,
+      "research_questions": null,
+      "error": null
+    },
+    {
+      "question": "What is the unemployment rate and economic development data for different districts?",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "Arbeitssituation Corona-Pandemie nach Geschlecht und Altersgruppen",
+          "score": 0.5175188779830933,
+          "dataset_id": "10b3d24a-8a5b-4fda-9691-4059c8700bff"
+        },
+        {
+          "title": "Arbeitslose 2018ff. (MD1): Quartalszahlen",
+          "score": 0.5088628530502319,
+          "dataset_id": "479/622"
+        },
+        {
+          "title": "Kamerale Monatsdaten Bezirk Lichtenberg 2021",
+          "score": 0.5077099800109863,
+          "dataset_id": "15b12b15-98de-49af-a4e1-c475f4117fb7"
+        },
+        {
+          "title": "Beschäftigte (Jahreszahlen)",
+          "score": 0.5064355134963989,
+          "dataset_id": "a40f735d-0313-4480-a51b-dd6549a8c0f1"
+        },
+        {
+          "title": "Arbeitslose (Jahreszahlen, kleinräumig)",
+          "score": 0.5059808492660522,
+          "dataset_id": "30943d88-4ac9-4968-84bc-35e9b337a85d"
+        }
+      ],
+      "execution_time_seconds": 0.19138649996602908,
+      "research_questions": null,
+      "error": null
+    },
+    {
+      "question": "Where can I find geographic boundary data for council districts and voting precincts?",
+      "config": {
+        "city": null,
+        "state": null,
+        "country": null,
+        "use_multi_query": false,
+        "use_llm_interpretation": false,
+        "limit": 10
+      },
+      "datasets_found": 5,
+      "datasets": [
+        {
+          "title": "Bundestagswahl 2025: Wahlbezirksergebnisse",
+          "score": 0.6153953075408936,
+          "dataset_id": "19ea44b0-1d0f-4e4e-b6e4-4f4d5bcc0c90"
+        },
+        {
+          "title": "Bundestagswahl 2025: Geodaten der Wahllokale",
+          "score": 0.6115560531616211,
+          "dataset_id": "72f1f5fc-dad9-44a2-b3a8-67b3fad88abd"
+        },
+        {
+          "title": "Stadtratswahl 2024: Wahlbezirksergebnisse",
+          "score": 0.5823817849159241,
+          "dataset_id": "1ae46e0e-af40-439e-9ad8-eb5abf81679d"
+        },
+        {
+          "title": "Europawahl 2024: Wahlbezirksergebnisse",
+          "score": 0.5820612907409668,
+          "dataset_id": "bf7b851d-592c-425c-9f11-704966305147"
+        },
+        {
+          "title": "Landtagswahl 2024: Wahlbezirksergebnisse",
+          "score": 0.5806323885917664,
+          "dataset_id": "4db3895e-92a9-4bb7-bb33-f792178d331f"
+        }
+      ],
+      "execution_time_seconds": 0.20657366700470448,
+      "research_questions": null,
+      "error": null
+    }
+  ]
+}
