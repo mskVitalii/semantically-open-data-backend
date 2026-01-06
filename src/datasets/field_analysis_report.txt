@@ -6,8 +6,8 @@ FIELD STATISTICS
 Total fields (from all files): 9552
 Total check (non-dup + sum of dup counts): 9552
 Unique fields: 2267
-Duplicate fields: 721
-Non-duplicate fields: 1546
+Duplicate fields (out of unique): 721
+Non-duplicate fields (out of unique): 1546
 
 ================================================================================
 DUPLICATE FIELDS (sorted by frequency)
@@ -736,3 +736,1579 @@ Nr.
    2x | properties.RVO_DATUM
    2x | properties.RVO_1
    2x | properties.RVO_2
+
+================================================================================
+NON-DUPLICATE FIELDS (sorted alphabetically)
+================================================================================
+
+   1x |  A n z a h l 
+   1x |  A n z a h l   B e f r a g t e 
+   1x |  A n z a h l   d e r   G ä s t e b e t t e n   z u m   3 1 . 0 7 .   d e s   J a h r e s 
+   1x |  A u s l a s t u n g   d e r   G ä s t e b e t t e n   i n   P r o z e n t 
+   1x |  B a u j a h r   1 9 1 9   b i s   1 9 4 5 
+   1x |  B a u j a h r   1 9 4 6   b i s   1 9 6 0 
+   1x |  B a u j a h r   1 9 6 1   b i s   1 9 9 0   P l a t t e n b a u 
+   1x |  B a u j a h r   1 9 6 1   b i s   1 9 9 0   k e i n   P l a t t e n b a u 
+   1x |  B a u j a h r   1 9 9 1   b i s   2 0 0 4 
+   1x |  B a u j a h r   a b   2 0 1 5 
+   1x |  B a u j a h r   v o r   1 9 1 9 
+   1x |  G ä s t e a n k ü n f t e   2 0 2 1 
+   1x |  V e r ä n d e r u n g   v o n   2 0 2 0   z u   2 0 2 1   i n   P r o z e n t 
+   1x |  i n s g e s a m t 
+   1x |  j a 
+   1x |  j a   A r b e i t s p l a t z v e r l u s t 
+   1x |  j a   A r b e i t s p l a t z v e r l u s t   d u r c h   I n s o l v e n z   d e s   A r b e i t g e b e r s 
+   1x |  j a   A r b e i t s p l a t z v e r l u s t   d u r c h   S t e l l e n a b b a u   b e i m   A r b e i t g e b e r 
+   1x |  j a   K u r z a r b e i t 
+   1x |  j a   W e g f a l l   g e p l a n t e r   A r b e i t s g e l e g e n h e i t e n 
+   1x |  j a   W e g f a l l   g e p l a n t e r   b e f r i s t e t e r   o d e r   u n b e f r i s t e t e r   A r b e i t s g e l e g e n h e i t e n 
+   1x |  j a   m e h r   A r b e i t s s t u n d e n   a l s   g e w ö h n l i c h 
+   1x |  j a   v o n   K u r z a r b e i t   b i s   3   M o n a t e 
+   1x |  j a   v o n   K u r z a r b e i t   l ä n g e r   a l s   3   M o n a t e 
+   1x |  j a   v o n   m e h r   A r b e i t s s t u n d e n   a l s   i c h   f ü r   g e w ö h n l i c h   l e i s t e 
+   1x |  j a   v o n   w e n i g e r   A r b e i t s s t u n d e n   a l s   i c h   f ü r   g e w ö h n l i c h   l e i s t e 
+   1x |  j a   w e n i g e r   A r b e i t s s t u n d e n   a l s   g e w ö h n l i c h 
+   1x |  m ä n n l i c h 
+   1x |  n e i n 
+   1x |  n e i n   h a b e   a u c h   k e i n   I n t e r e s s e 
+   1x |  n e i n   h a e t t e   a b e r   I n t e r e s s e 
+   1x |  n e i n   i c h   w a r   v o n   k e i n e r   d e r   g e n a n n t e n   Ä n d e r u n g e n   b e t r o f f e n 
+   1x |  w e i b l i c h 
+   1x | 	MaStR-Nr. des Anlagenbetreibers
+   1x | 
+Institution
+   1x |    Pädagogisches Personal und Verwaltungspersonal - Wochenarbeitsstunden - 25 bis unter 32
+   1x |    Pädagogisches Personal und Verwaltungspersonal - Wochenarbeitsstunden - 32 bis unter 38
+   1x |    Pädagogisches Personal und Verwaltungspersonal - Wochenarbeitsstunden - unter 25
+   1x |    Pädagogisches Personal und Verwaltungspersonal - berufliche Stellung - Praktikanten
+   1x |   Pädagogisches Personal und Verwaltungspersonal - berufliche Stellung -  Angestellte befristet
+   1x |  "2023 Virtuelle Besucher"
+   1x |  Bezirk-ID
+   1x |  Einnahmen Januar 2024 (T EUR)
+   1x |  Einnahmen Januar 2025 (T EUR)
+   1x |  Energiebilanz Baden-Württemberg 1990
+   1x |  Hauptvariante 2020
+   1x |  Jahr 2022
+   1x |  Virtueller-Stein
+   1x |  an dem ich mich beteiligen möchte
+   1x | "Haltestelle","Standort","Uhrzeit","Januar","Februar","MÃ¤rz","April","Mai","Juni"
+   1x | (Alle)
+   1x | 010 Wedding
+   1x | 032 Grunewald
+   1x | 042 Neukölln
+   1x | 077 Buch
+   1x | 085 Friedrichshagen
+   1x | 1  Aus Berliner Krankenhäusern entlassene vollstationäre Behandlungsfälle(1) 2020 mit Wohnsitz in Berlin nach Diagnosekapiteln und Geschlecht (Quelle: Krankenhausstatistik)
+   1x | 1  Aus Berliner Krankenhäusern entlassene vollstationäre Behandlungsfälle(1) 2021 mit Wohnsitz in Berlin nach Diagnosekapiteln und Geschlecht (Quelle: Krankenhausstatistik)
+   1x | 1  Aus Berliner Krankenhäusern entlassene vollstationäre Behandlungsfälle(1) 2022 mit Wohnsitz in Berlin nach Diagnosekapiteln und Geschlecht (Quelle: Krankenhausstatistik)
+   1x | 1  Aus Berliner Krankenhäusern entlassene vollstationäre Behandlungsfälle(1) 2023 mit Wohnsitz in Berlin nach Diagnosekapiteln und Geschlecht (Quelle: Krankenhausstatistik)
+   1x | 1 Anzahl von Berlinerinnen und Berlinern mit einem Einpersonenhaushalt im Jahr 2020 nach Altersgruppen(1) (Quelle: Mikrozensus)
+   1x | 1 Anzahl von Berlinerinnen und Berlinern mit einem Einpersonenhaushalt im Jahr 2021 nach Altersgruppen(1) (Quelle: Mikrozensus)
+   1x | 1 Anzahl von Berlinerinnen und Berlinern mit einem Einpersonenhaushalt im Jahr 2022 nach Altersgruppen(1) (Quelle: Mikrozensus)
+   1x | 1 Anzahl von Berlinerinnen und Berlinern mit einem Einpersonenhaushalt im Jahr 2023 nach Altersgruppen(1) (Quelle: Mikrozensus)
+   1x | 1 Anzahl von Frauen und Männern in der Berliner Bevölkerung nach Alter und Staatsangehörigkeit am 31. Dezember 2020 (Quelle: amtliche Bevölkerungsfortschreibung)
+   1x | 1 Anzahl von Frauen und Männern in der Berliner Bevölkerung nach Alter und Staatsangehörigkeit am 31. Dezember 2021 (Quelle: amtliche Bevölkerungsfortschreibung)
+   1x | 1 Anzahl von Frauen und Männern in der Berliner Bevölkerung nach Alter und Staatsangehörigkeit am 31. Dezember 2022 (Quelle: amtliche Bevölkerungsfortschreibung)
+   1x | 1 Anzahl von Frauen und Männern in der Berliner Bevölkerung nach Alter und Staatsangehörigkeit am 31. Dezember 2023 (Quelle: amtliche Bevölkerungsfortschreibung)
+   1x | 1 Bevölkerung in Berlin 2021 nach Quelle des überwiegenden Lebensunterhalts, Altersgruppen und Geschlecht(1) (Quelle: Mikrozensus)
+   1x | 1 Bevölkerung in Berlin 2022 nach Quelle des überwiegenden Lebensunterhalts, Altersgruppen und Geschlecht(1) (Quelle: Mikrozensus)
+   1x | 1 Bevölkerung in Berlin 2023 nach Quelle des überwiegenden Lebensunterhalts, Altersgruppen und Geschlecht(1) (Quelle: Mikrozensus)
+   1x | 1 Erwerbsquoten(1) 2020 in Berlin nach Altersgruppen und Geschlecht (Quelle: Mikrozensus)
+   1x | 1 Erwerbsquoten(1) 2021 in Berlin nach Altersgruppen und Geschlecht (Quelle: Mikrozensus)
+   1x | 1 Erwerbsquoten(1) 2022 in Berlin nach Altersgruppen und Geschlecht (Quelle: Mikrozensus)
+   1x | 1 Erwerbsquoten(1) 2023 in Berlin nach Altersgruppen und Geschlecht (Quelle: Mikrozensus)
+   1x | 1 Hauptberufliche Professoren:innen an staatlichen Hochschulen in Trägerschaft des Landes Berlin (1)(2) 2016 bis 2023 (Quelle: Hochschulstatistik)
+   1x | 1 Hauptberufliche Professoren:innen an staatlichen Hochschulen in Trägerschaft des Landes Berlin 2015 bis 202 (Quelle: Hochschulstatistik)
+   1x | 1 Hauptberufliche Professoren:innen an staatlichen Hochschulen in Trägerschaft des Landes Berlin 2015 bis 2020 (Quelle: Hochschulstatistik)
+   1x | 1 Hauptberufliche Professoren:innen an staatlichen Hochschulen in Trägerschaft des Landes Berlin 2015 bis 2022 (Quelle: Hochschulstatistik)
+   1x | 1 Schulabgängerinnen und Schulabgänger an allgemeinbildenen Schulen 2019/20 nach Art des Abschlusses (Quelle: Schulstatistik der Senatsverwaltung für Bildung, Jugend und Familie)
+   1x | 1 Schulabgängerinnen und Schulabgänger an allgemeinbildenen Schulen 2020/21 nach Art des Abschlusses (Quelle: Schulstatistik der Senatsverwaltung für Bildung, Jugend und Familie)
+   1x | 1 Schulabgängerinnen und Schulabgänger an allgemeinbildenen Schulen 2021/22 (18) nach Art des Abschlusses (Quelle: Schulstatistik der Senatsverwaltung für Bildung, Jugend und Familie)
+   1x | 1 Schulabgängerinnen und Schulabgänger an allgemeinbildenen Schulen 2022/23 (18) nach Art des Abschlusses (Quelle: Schulstatistik der Senatsverwaltung für Bildung, Jugend und Familie)
+   1x | 1 Straftaten gegen die sexuelle Selbstbestimmung in Berlin 2010 bis 2020 (Erfasste Fälle; Quelle: Polizeiliche Kriminalstatistik)
+   1x | 1 Straftaten gegen die sexuelle Selbstbestimmung in Berlin 2010 bis 2021 (Erfasste Fälle; Quelle: Polizeiliche Kriminalstatistik)
+   1x | 1 Straftaten gegen die sexuelle Selbstbestimmung in Berlin 2010 bis 2022 (Erfasste Fälle; Quelle: Polizeiliche Kriminalstatistik)
+   1x | 1 Straftaten gegen die sexuelle Selbstbestimmung in Berlin 2010 bis 2023 (Erfasste Fälle; Quelle: Polizeiliche Kriminalstatistik)
+   1x | 1 Verdienste (Bruttostundenverdienste) von Frauen und Männern im Jahr 2023 in Berlin in den unterschiedlichen Altersgruppen (Quelle: Verdiensterhebung Referenzmonat April 2023)
+   1x | 1 Vollzeit- und Teilzeiterwerbstätige in Berlin 2020 nach Altersgruppen und Geschlecht(1) (Quelle: Mikrozensus)
+   1x | 1 Vollzeit- und Teilzeiterwerbstätige in Berlin 2021 nach Altersgruppen und Geschlecht(1) (Quelle: Mikrozensus)
+   1x | 1 Vollzeit- und Teilzeiterwerbstätige in Berlin 2022 nach Altersgruppen und Geschlecht(1) (Quelle: Mikrozensus)
+   1x | 1 Vollzeit- und Teilzeiterwerbstätige in Berlin 2023 nach Altersgruppen und Geschlecht(1) (Quelle: Mikrozensus)
+   1x | 117 Schildhornstraße
+   1x | 12/2013
+   1x | 124 Mariendorfer Damm
+   1x | 144 Silbersteinstraße
+   1x | 1455466600
+   1x | 1597492200
+   1x | 1600498200
+   1x | 171 Mitte
+   1x | 174 Frankfurter Allee
+   1x | 190 Leipziger Straße
+   1x | 2005
+   1x | 2006
+   1x | 2013-04 pi
+   1x | 2013-04 pv
+   1x | 2013-05 pi
+   1x | 2013-05 pv
+   1x | 2013-06 pi
+   1x | 2013-06 pv
+   1x | 2013-07 pi
+   1x | 2013-07 pv
+   1x | 2013-08 pi
+   1x | 2013-08 pv
+   1x | 2013-09 pi
+   1x | 2013-09 pv
+   1x | 2013-10 pi
+   1x | 2013-10 pv
+   1x | 2013-11 pi
+   1x | 2013-11 pv
+   1x | 2013-12 pi
+   1x | 2013-12 pv
+   1x | 2014-01 pi
+   1x | 2014-01 pv
+   1x | 2014-02 pi
+   1x | 2014-02 pv
+   1x | 2014-03 pi
+   1x | 2014-03 pv
+   1x | 2014-04 pi
+   1x | 2014-04 pv
+   1x | 2014-05 pi
+   1x | 2014-05 pv
+   1x | 2014-06 pi
+   1x | 2014-06 pv
+   1x | 2014-07 pi
+   1x | 2014-07 pv
+   1x | 2014-08 pi
+   1x | 2014-08 pv
+   1x | 2014-09 pi
+   1x | 2014-09 pv
+   1x | 2014-10 pi
+   1x | 2014-10 pv
+   1x | 2014-11 pi
+   1x | 2014-11 pv
+   1x | 2014-12 pi
+   1x | 2014-12 pv
+   1x | 2015-01 pi
+   1x | 2015-01 pv
+   1x | 2015-02 pi
+   1x | 2015-02 pv
+   1x | 2015-03 pi
+   1x | 2015-03 pv
+   1x | 2015-04 pi
+   1x | 2015-04 pv
+   1x | 2015-05 pi
+   1x | 2015-05 pv
+   1x | 2015-06 pi
+   1x | 2015-06 pv
+   1x | 2015-07 pi
+   1x | 2015-07 pv
+   1x | 2015-08 pi
+   1x | 2015-08 pv
+   1x | 2015-09 pi
+   1x | 2015-09 pv
+   1x | 2015-10 pi
+   1x | 2015-10 pv
+   1x | 2015-11 pi
+   1x | 2015-11 pv
+   1x | 2015-12 pi
+   1x | 2015-12 pv
+   1x | 2016-01 pi
+   1x | 2016-01 pv
+   1x | 2016-02 pi
+   1x | 2016-02 pv
+   1x | 2016-03 pi
+   1x | 2016-03 pv
+   1x | 2016-04 pi
+   1x | 2016-04 pv
+   1x | 2016-05 pi
+   1x | 2016-05 pv
+   1x | 2016-06 pi
+   1x | 2016-06 pv
+   1x | 2016-07 pi
+   1x | 2016-07 pv
+   1x | 2016-08 pi
+   1x | 2016-08 pv
+   1x | 2016-09 pi
+   1x | 2016-09 pv
+   1x | 2016-10 pi
+   1x | 2016-10 pv
+   1x | 2016-11 pi
+   1x | 2016-11 pv
+   1x | 2016-12 pi
+   1x | 2016-12 pv
+   1x | 2017-01 pi
+   1x | 2017-01 pv
+   1x | 2017-02 pi
+   1x | 2017-02 pv
+   1x | 2017-03 pi
+   1x | 2017-03 pv
+   1x | 2017-04 pi
+   1x | 2017-04 pv
+   1x | 2017-05 pi
+   1x | 2017-05 pv
+   1x | 2017-06 pi
+   1x | 2017-06 pv
+   1x | 2017-07 pi
+   1x | 2017-07 pv
+   1x | 2017-08 pi
+   1x | 2017-08 pv
+   1x | 2017-09 pi
+   1x | 2017-09 pv
+   1x | 2017-10 pi
+   1x | 2017-10 pv
+   1x | 2017-11 pi
+   1x | 2017-11 pv
+   1x | 2017-12 pi
+   1x | 2017-12 pv
+   1x | 2018-01 pi
+   1x | 2018-01 pv
+   1x | 2018-02 pi
+   1x | 2018-02 pv
+   1x | 2018-03 pi
+   1x | 2018-03 pv
+   1x | 2018-04 pi
+   1x | 2018-04 pv
+   1x | 2018-05 pi
+   1x | 2018-05 pv
+   1x | 2018-06 pi
+   1x | 2018-06 pv
+   1x | 2018-07 pi
+   1x | 2018-07 pv
+   1x | 2018-08 pi
+   1x | 2018-08 pv
+   1x | 2018-09 pi
+   1x | 2018-09 pv
+   1x | 2018-10 pi
+   1x | 2018-10 pv
+   1x | 2018-11 pi
+   1x | 2018-11 pv
+   1x | 2018-12 pi
+   1x | 2018-12 pv
+   1x | 2022 Besucher
+   1x | 2022 Entleihungen
+   1x | 2022 Virtuelle Besucher
+   1x | 2022-12-31
+   1x | 2023 Besucher
+   1x | 2023 Entleihungen
+   1x | 2023-12-31
+   1x | 2024-12-31
+   1x | 2025
+   1x | 221 Karl-Marx-Straße
+   1x | 24 h/7 Tage
+   1x | 914504004.4401011
+   1x | A - Erwerb von Haus-/Wohneigentum/Bauland oder Erbschaft einer Immobilie; Angaben in Prozent
+   1x | A-Woche_Abfahrt_(Uhrzeit)
+   1x | A-Woche_Ankunft_(Uhrzeit)
+   1x | ABBAUDATUM
+   1x | ABO**
+   1x | AMR_Anträge
+   1x | AMR_Ersteinreisen
+   1x | AMR_Titel
+   1x | ANG
+   1x | ANGELEGT_AM
+   1x | ART_DES_FAHRRADS
+   1x | Abt
+   1x | Abwasser_Temperatur
+   1x | Abwasser_pH
+   1x | Adresse_Begegnungsstätte
+   1x | Algen
+   1x | AltK_13IRB-2-5-9-14-17-24-29-44-59-64-74-84-
+   1x | Alter
+   1x | Alter_in_Jahren
+   1x | Altersgruppe
+   1x | Altersklasse
+   1x | Anmerkungen
+   1x | Ansatz 2010
+ (in Tsd. EUR)
+   1x | Ansatz 2011
+ (in Tsd. EUR)
+   1x | Ansatz 2012 in €
+   1x | Ansatz 2013 T€
+   1x | Ansatz 2013 in €
+   1x | Ansatz 2014 T€
+   1x | Ansatz 2014 in €
+   1x | Ansatz 2015 T€
+   1x | Ansatz 2015 €
+   1x | Ansatz 2018 in 
+   1x | Ansatz 2019 in 
+   1x | Ansatz 2020 in €
+   1x | Ansatz 2021 in €
+   1x | Anschrift
+   1x | Anteil Verfahren in Prozent
+   1x | Anteil Vergabesumme in Prozent
+   1x | Antragsart
+   1x | Antragsteller
+   1x | Anzahl Anträge
+   1x | Anzahl Einwohner
+   1x | Anzahl verkaufte "3 € Tickets" Berliner Bühnen
+   1x | Anzahl1
+   1x | Anzahl_Anfragen
+   1x | Anzahl_SBB_Anträge
+   1x | Anzahl_eingereichte_Antraege
+   1x | Anzeige-Name der Einheit
+   1x | Anzeigen
+   1x | Arbeitslose
+   1x | Arbeitsplatznummer
+   1x | Art
+   1x | Art der Anmeldung
+   1x | Ateliers
+   1x | Ausland
+   1x | Ausleihtyp
+   1x | Ausländische Staatsbürger
+   1x | Ausserplanmäßige Ausgaben
+   1x | Ausserplanmäßige VE
+   1x | Auszubildende
+   1x | Autor:in
+   1x | B - berufliche Gründe bzw. Aufnahme eines Studiums einer Ausbildung; Angaben in Prozent
+   1x | B-Woche_Abfahrt_(Uhrzeit)
+   1x | B-Woche_Ankunft_(Uhrzeit)
+   1x | BEZ
+   1x | BREITE (WGS84)
+   1x | BSL
+   1x | BZR
+   1x | BadName
+   1x | BadestelleLink
+   1x | Baujahr 1919 bis 1945
+   1x | Baujahr 1946 bis 1960
+   1x | Baujahr 1961 bis 1990 Plattenbau
+   1x | Baujahr 1961 bis 1990 kein Plattenbau
+   1x | Baujahr 1991 bis 2004
+   1x | Baujahr ab 2015
+   1x | Baujahr vor 1919
+   1x | Begegnungsstätten (BGST)
+   1x | Beginn des Angebotes
+   1x | Behinderte
+   1x | Bemerkung
+   1x | Bemerkungen
+
+        Angaben
+        werden
+        nicht erhoben
+
+   1x | Benutzergruppe
+   1x | Beratungsmöglichkeiten
+   1x | Berichtszeitraum
+   1x | Berlin Breitbandatlas Verfügbarkeiten Mitte 2017
+   1x | Berlin-
+pass***
+   1x | Berliner Schulnummer
+   1x | Beschlussnummer
+   1x | Beschränkte Ausschreibung
+   1x | Beschäftigte
+   1x | Besuche 
+insgesamt
+   1x | Besuche außerhalb
+Berlins bei
+Gastspielen oder Wanderaus-
+stellungen
+   1x | Besucher 
+   1x | Besucherinnen
+
+
+   1x | Betrag in EUR
+   1x | Betrieb
+   1x | Betriebe
+   1x | Betriebs-Status
+   1x | Betriebsart
+   1x | Bezirk Mitte: Energieverbrauchsübersicht bezirklicher Liegenschaften 2017
+   1x | Bezirk Steglitz-Zehlendorf: Energieverbrauchsübersicht bezirklicher Liegenschaften 2017-2018-2019-2020-2021-2022-2023
+   1x | Bezirk Tempelhof-Schöneberg: Energieverbrauchsübersicht bezirklicher Gebäude für 2010-2019
+   1x | Branche
+   1x | Braunkohlen
+   1x | Brutto-Entgelte (in 1000 EUR)
+   1x | Bruttoleistung der Einheit
+   1x | Bundesfrei-
+willigendienst-
+leistende
+   1x | Bundesland
+   1x | C - familiäre Gründe (z.B. Haushaltsgründung/Scheidung); Angaben in Prozent
+   1x | Cluster
+   1x | Coworking Space
+   1x | D - Überschreiten der Miet-Obergrenze für ALG-II- und Sozialhilfeempfänger; Angaben in Prozent
+   1x | DEINSTALLIERT
+   1x | DELIKT
+   1x | DET_ID15
+   1x | DET_NAME_ALT
+   1x | DET_NAME_NEU
+   1x | Das weiß ich noch nicht; Angaben in Prozent
+   1x | Dat
+   1x | Dat_predict
+   1x | Deutsche Staatsbürger
+   1x | Diplomaten-kennzeichen
+   1x | Durchfluss
+   1x | E - allgemein zu hohe Miete bzw. Betriebskosten; Angaben in Prozent
+   1x | E-Mail
+   1x | E-Mailadresse
+   1x | E/A
+   1x | EAE-Zugänge
+   1x | EMR
+   1x | EMail
+   1x | ERFASSUNGSGRUND
+   1x | E_(Lon_Dezimalgrad)
+   1x | E_(Rechtswert_Gauß-Krüger)
+   1x | E_A
+   1x | E_A00_01
+   1x | E_A01_02
+   1x | E_A02_03
+   1x | E_A03_05
+   1x | E_A05_06
+   1x | E_A06_07
+   1x | E_A07_08
+   1x | E_A08_10
+   1x | E_A10_12
+   1x | E_A12_14
+   1x | E_A14_15
+   1x | E_A15U18
+   1x | E_A15_18
+   1x | E_A18U25
+   1x | E_A18_21
+   1x | E_A1U6
+   1x | E_A21_25
+   1x | E_A25U55
+   1x | E_A25_27
+   1x | E_A27_30
+   1x | E_A30_35
+   1x | E_A35_40
+   1x | E_A40_45
+   1x | E_A45_50
+   1x | E_A50_55
+   1x | E_A55U65
+   1x | E_A55_60
+   1x | E_A60_63
+   1x | E_A63_65
+   1x | E_A65U80
+   1x | E_A65_67
+   1x | E_A67_70
+   1x | E_A6U15
+   1x | E_A70_75
+   1x | E_A75_80
+   1x | E_A80U110
+   1x | E_A80_85
+   1x | E_A85_90
+   1x | E_A90_95
+   1x | E_A95_110
+   1x | E_AM
+   1x | E_AU1
+   1x | E_AW
+   1x | Eco
+   1x | Ehrenamtskarte
+[mehr Infos durch anklicken]
+   1x | Eigentumsgarten/Hausgarten
+   1x | Einnahmen bis Januar 2024 (T EUR)
+   1x | Einnahmen bis Januar 2025 (T EUR)
+   1x | Einrichtung_Größe
+   1x | Einrichtung_Max. Personen
+   1x | Einrichtung_Öffnungszeiten
+   1x | Einrichtungen
+   1x | Eintrag
+   1x | Einwohner mit Hauptwohnsitz
+   1x | Einwohner_insgesamt_männlich
+   1x | Einwohner_insgesamt_weiblich
+   1x | Email
+   1x | Ende
+   1x | Energetischer Sanierungsfahrplan Bezirk Lichtenberg
+   1x | Energetischer Sanierungsfahrplan Bezirk Tempelhof-Schöneberg
+   1x | Energetischer Sanierungsfahrplan Bezirk Treptow-Köpenick
+   1x | Energieträger
+   1x | Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2018
+   1x | Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2020
+   1x | Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2021
+   1x | Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2022
+   1x | Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2023
+   1x | Ente
+   1x | Entfernung
+   1x | Erneuerbare Energieträger
+   1x | Erreger
+   1x | Evaluation Winterspiel- und Bewegungsangebote Berlin-Mitte Saison 2023/2024: Allgemeine Angaben
+   1x | Ewo - Einwohner 31.12.2018
+   1x | Ewo - Einwohner 31.12.2022
+   1x | F - anderes Wohnviertel ist attraktiver; Angaben in Prozent
+   1x | FKZ
+   1x | Faelle in denen Menschen leicht verletzt wurden
+   1x | Faelle in denen Menschen schwer verletzt wurden
+   1x | Faelle in denen ausschliesslich andere Hunde verletzt wurden
+   1x | Familienzentrum
+   1x | Farb_ID
+   1x | Farbe
+   1x | Fläche in m²
+   1x | Freihändige Vergabe
+   1x | Fuktionsbezeichnung
+   1x | Fächerstatistik
+   1x | Fächerstatistik2
+   1x | Förderbereich
+   1x | Fördermaßnahme
+   1x | Förderprojekte
+   1x | G - Wohnung ist zu klein; Angaben in Prozent
+   1x | GT_AM|TATZ
+   1x | Gaeste_Anzahl
+   1x | Garten am Haus
+   1x | Garten in Kleingartensparte
+   1x | Gase
+   1x | Gebaute bzw. geplante Schulplätze
+   1x | Geber
+   1x | Geburten
+   1x | Geburtsjahr
+   1x | Geleistete Arbeitsstunden (gesamt in 1000h)
+   1x | Gemeinschaftsgartenprojekt
+   1x | Geo_X_Koor
+   1x | Geo_Y_Koor
+   1x | Gesamt
+   1x | Gesamtanzahl
+   1x | Gesamtkosten in Euro
+   1x | Gesamtumsatz (in 1000 EUR)
+   1x | Geschlecht1
+   1x | GruppeA
+   1x | GruppeB
+   1x | Gruppen ****
+   1x | Grünau
+   1x | H
+   1x | H - Wohnung ist zu groß; Angaben in Prozent
+   1x | HaltestelleLat
+   1x | HaltestelleLon
+   1x | Hauptvariante
+   1x | Hauptvariante - Einwohner 31.12.2022
+   1x | Hauptvariante 2020
+   1x | Hauptvariante 2023
+   1x | Haushaltsjahr 2014
+   1x | Hauswirtschaftliches und technisches Personal
+   1x | Hnr
+   1x | Hunderassen
+   1x | I - Wohnung/Gebäude ist in schlechtem Zustand bzw. mit Mängeln behaftet; Angaben in Prozent
+   1x | I/A
+   1x | INBETRIEBNAHME
+   1x | INDRING
+   1x | IT_
+   1x | IT_.1
+   1x | IT_ANFANG_DATUM|TATZ
+   1x | IT_ANFANG_STUND
+   1x | Inbetriebnahmedatum der Einheit
+   1x | Innenstadtrand
+   1x | Internet
+   1x | Inventarisierungsdatum
+   1x | Ist 2012 T€
+   1x | IstFuss
+   1x | IstKrad
+   1x | IstPKW
+   1x | IstRad
+   1x | IstSonstig
+   1x | IstStrasse
+   1x | Jahr 2020
+   1x | Jahr 2022
+   1x | Jahr 2023
+   1x | Jahresquartal
+   1x | Jury
+   1x | K - Wohnviertel ist zu laut bzw. zu dicht bebaut; Angaben in Prozent
+   1x | KB
+   1x | KOMMENTAR
+   1x | Kapazität nach Baumaßnahme
+   1x | Kennzahlen
+   1x | Kennzeichen, Juli 2012
+   1x | Kinder - Entwicklung 2021 zu 2022 in Prozent
+   1x | Kinder - Jungen
+   1x | Kinder - Mädchen
+   1x | Kinder gesamt
+   1x | Kinder und 
+Jugendliche
+   1x | Kindergartenkinder
+   1x | Kinderkrippenkinder
+   1x | Kitaliste Nov 2025
+   1x | Kleingarten in einem Kleingartenverein
+   1x | Klärwerk
+   1x | Kohorte
+   1x | Kommentare
+   1x | Kontakt_Telefon
+   1x | Kontaktperson
+   1x | Koordinaten
+   1x | Kosten
+   1x | Kosten in Euro 
+   1x | Kurzbezeichnung
+   1x | Kurzbericht über die Entwicklung des Kulturetats der Hauptverwaltung [in EUR]
+   1x | L
+   1x | L - zu wenig öffentliches Grün im Wohnviertel; Angaben in Prozent
+   1x | LIKT|
+   1x | LOR
+   1x | Land
+   1x | Landtagswahlkreis
+   1x | Lat
+   1x | Latitude
+   1x | Leipzig
+   1x | Leipzig. Frauen
+   1x | Leipzig. Männer
+   1x | Leipziger Bevölkerungsvorausschätzung 2019 Hauptvariante
+   1x | Leipziger Bevölkerungsvorausschätzung 2019 Oberes Szenario
+   1x | Leipziger Bevölkerungsvorausschätzung 2019 Unteres Szenario
+   1x | Letzte Aktualisierung
+   1x | Lfd. Nr.
+   1x | Lfd.-Nr.
+   1x | Link
+   1x | Lon
+   1x | Longitude
+   1x | LÄNGE (WGS84)
+   1x | M - gesundheitliche Gründe (Wohnung ist nicht alten- bzw. behindertengerecht); Angaben in Prozent
+   1x | MQ_ID15
+   1x | MQ_KURZNAME
+   1x | MaStR-Nr. der Einheit
+   1x | Mail
+   1x | Mediennummer
+   1x | Medientypcode
+   1x | Messwert
+   1x | Methode
+   1x | Mig. Hinter-grund
+   1x | Mig. Hintergrund
+   1x | Mig.Hinter-grund
+   1x | Mineralöle und Mineralölprodukte 
+   1x | Modelltyp
+   1x | Monat
+   1x | N - Entmietung Sanierung Abriss des Gebäudes; Angaben in Prozent
+   1x | ND
+   1x | ND.1
+   1x | NSHO
+   1x | N_(Hochwert_Gauß-Krüger)
+   1x | N_(Lat_Dezimalgrad)
+   1x | N_IN_KFZ|
+   1x | Nachname
+   1x | Name 
+   1x | Name des Anlagenbetreibers (nur Org.)
+   1x | Nettonennleistung der Einheit
+   1x | Nettospiel-
+fläche m² (netto)
+   1x | Nichtoffenes Verfahren
+   1x | Nutzungsentgelt 
+   1x | Nutzungsübergabe
+   1x | O - Kündigung durch den Vermieter; Angaben in Prozent
+   1x | OBJECTID
+   1x | OE_DI
+   1x | OE_DO
+   1x | OE_FR
+   1x | OE_MI
+   1x | OE_MO
+   1x | OE_SA
+   1x | Obere Variante - Einwohner 31.12.2022
+   1x | Obere_Variante
+   1x | Objekt/Straße
+   1x | Objekt_Zusatz
+   1x | Objektadresse
+   1x | Objektname
+   1x | Objektnummer
+   1x | Oeffnungszeiten
+   1x | Offenes Verfahren
+   1x | Ort/Termin
+   1x | Ortschaften
+   1x | Ortschaftsgebiet
+   1x | Ortsteil- bzw. Stadtbezirksnummer
+   1x | Ortsteil-ID
+   1x | Ortsteil_nach
+   1x | Ortsteil_vor
+   1x | Ortsteilnummer
+   1x | Ostdeutschland ohne Sachsen
+   1x | P - vermehrte Arbeit im Homeoffice; Angaben in Prozent
+   1x | PDFLink
+   1x | PGR
+   1x | PLR
+   1x | POSITION
+   1x | POS_DETAIL
+   1x | Pachtgarten nicht in einem Kleingartenverein
+   1x | Partei_ID
+   1x | Partei_Name
+   1x | Patenbesuch
+   1x | Personal insgesamt
+   1x | Personen 20 m²/ Pers.
+   1x | Politikbereich
+   1x | Preise 
+(von/bis)
+   1x | Prio
+   1x | Probennummer
+   1x | Produkt - Vergleichsbericht
+   1x | Produkte/Sektoren
+   1x | Profil
+   1x | ProfilLink
+   1x | PrognoseLink
+   1x | Pädagogisches Personal und Verwaltungspersonal
+   1x | Pädagogisches Personal und Verwaltungspersonal - Alter - 25 bis unter 40 Jahre 
+   1x | Pädagogisches Personal und Verwaltungspersonal - Alter - 40 bis unter 54 Jahre
+   1x | Pädagogisches Personal und Verwaltungspersonal - Alter - 55 Jahre und älter
+   1x | Pädagogisches Personal und Verwaltungspersonal - Alter - unter 25 Jahre
+   1x | Pädagogisches Personal und Verwaltungspersonal - Geschlecht - männlich
+   1x | Pädagogisches Personal und Verwaltungspersonal - Geschlecht - weiblich
+   1x | Pädagogisches Personal und Verwaltungspersonal - Wochenarbeitsstunden - 38 und mehr 
+   1x | Pädagogisches Personal und Verwaltungspersonal - berufliche Stellung - Angestellte
+   1x | Pädagogisches Personal und Verwaltungspersonal - berufliche Stellung - Personen im freiwilligen sozialen Jahr/ BFD
+   1x | Pädagogisches Personal und Verwaltungspersonal - berufliche Stellung - Sonstige
+   1x | Q - anderer Grund (bitte nennen); Angaben in Prozent
+   1x | Quartal
+   1x | RAUMID
+   1x | RICHTUNG
+   1x | RLANGT
+   1x | RSS_Name
+   1x | RSUCH|D
+   1x | Rang1
+   1x | Registrierungsdatum der Einheit
+   1x | Rentner
+   1x | SBB
+   1x | SBB_Anzahl
+   1x | SCHADENSHOEHE
+   1x | SPUR
+   1x | STADTRAUM
+   1x | STRASSE
+   1x | SUBahn
+   1x | SUEntfernung
+   1x | S_GUT
+   1x | Sachgruppe
+   1x | Sachsen ohne Umlandkreise
+   1x | Schlagworte
+   1x | Schul-Nr.
+   1x | Schulbausanierung Maßnahme
+   1x | Schulnr.
+   1x | Schulplätze
+   1x | Schüler
+   1x | Senatsverwaltung für Mobilität, Verkehr, Klimaschutz und Umwelt
+   1x | Sicht
+   1x | Sigel ausführende Bibliothek
+   1x | Sigel besitzende Bibliothek
+   1x | Sitzung_stattgefunden
+   1x | Sitzungsart
+   1x | Sitzungsdauer_in_Minuten
+   1x | Sonderthemen
+   1x | Sonstige Informationen
+   1x | Sonstiges
+   1x | Sozialversicherungspflichtig Beschäftigte
+   1x | Sprachen
+   1x | StaLa Sachsen 2020 7. regionalisierte Prog. V1
+   1x | StaLa Sachsen 2020 7. regionalisierte Prog. V2
+   1x | Staat
+   1x | Stadt
+   1x | Stadt bzw. Landkreis
+   1x | Stadtbezirk
+   1x | Stadtbezirk mit zugeordneten Ortschaften
+   1x | Stadtbezirksbeirat
+   1x | Stadtratswahkreis
+   1x | Stadtraum
+   1x | Stadtteil
+   1x | Stand
+   1x | Start
+   1x | Station
+   1x | Statistischer Bezirk
+   1x | Status 
+(grün=offen, gelb: Öffnung steht bevor, rot: noch geschlossen)
+   1x | Steinkohlen
+   1x | Steuereinnahmen Berlins im Monat Januar 2014
+   1x | Strassenschluessel
+   1x | Straße + Hausnummer
+   1x | Strom und andere Energieträger
+   1x | Stromverbrauch [kWh]
+   1x | Studenten
+   1x | Summe in TEUR
+   1x | Symbol
+   1x | TATZEIT_ANFANG_DATUM
+   1x | TATZEIT_ANFANG_STUNDE
+   1x | TATZEIT_ENDE_DATUM
+   1x | TATZEIT_ENDE_STUNDE
+   1x | TN_VW
+   1x | Tage
+   1x | Target
+   1x | Tarifzone
+   1x | Tarifzone (Erläuterung: 1 = 1€, 2 = 2€, 3 = 3€)
+   1x | Teilverkehrszelle
+   1x | Temp
+   1x | Termin
+   1x | Termin bis
+   1x | Termin von
+   1x | Tielbezeichnung
+   1x | Tourismus
+   1x | Traeger 
+   1x | Träger 
+   1x | Träger bzw. Verantwortlicher
+   1x | Trägerwohnraum in der psychiatrischen, ambulanten Pflichtversorgung Berlin-Mitte
+   1x | UART
+   1x | UGEMEINDE
+   1x | UJAHR
+   1x | UKATEGORIE
+   1x | UKREIS
+   1x | ULAND
+   1x | UMONAT
+   1x | UREGBEZ
+   1x | USTUNDE
+   1x | UTYP1
+   1x | UWOCHENTAG
+   1x | UWW_Code
+   1x | UWW_Name
+   1x | Umlandkreise - Nordsachsen und LK Leipzig
+   1x | Umzugsdatum
+   1x | Unbekannt
+   1x | Unnamed: 100
+   1x | Unnamed: 101
+   1x | Unnamed: 102
+   1x | Unnamed: 103
+   1x | Unnamed: 104
+   1x | Unnamed: 105
+   1x | Unnamed: 106
+   1x | Unnamed: 107
+   1x | Unnamed: 108
+   1x | Unnamed: 109
+   1x | Unnamed: 110
+   1x | Unnamed: 111
+   1x | Unnamed: 112
+   1x | Unnamed: 113
+   1x | Unnamed: 114
+   1x | Unnamed: 115
+   1x | Unnamed: 116
+   1x | Unnamed: 117
+   1x | Unnamed: 118
+   1x | Unnamed: 119
+   1x | Unnamed: 120
+   1x | Unnamed: 121
+   1x | Unnamed: 122
+   1x | Unnamed: 123
+   1x | Unnamed: 124
+   1x | Unnamed: 125
+   1x | Unnamed: 126
+   1x | Unnamed: 127
+   1x | Unnamed: 128
+   1x | Unnamed: 129
+   1x | Unnamed: 130
+   1x | Unnamed: 131
+   1x | Unnamed: 132
+   1x | Unnamed: 133
+   1x | Unnamed: 134
+   1x | Unnamed: 135
+   1x | Unnamed: 136
+   1x | Unnamed: 137
+   1x | Unnamed: 138
+   1x | Unnamed: 139
+   1x | Unnamed: 140
+   1x | Unnamed: 141
+   1x | Unnamed: 142
+   1x | Unnamed: 143
+   1x | Unnamed: 144
+   1x | Unnamed: 145
+   1x | Unnamed: 146
+   1x | Unnamed: 147
+   1x | Unnamed: 148
+   1x | Unnamed: 149
+   1x | Unnamed: 150
+   1x | Unnamed: 151
+   1x | Unnamed: 152
+   1x | Unnamed: 153
+   1x | Unnamed: 154
+   1x | Unnamed: 155
+   1x | Unnamed: 156
+   1x | Unnamed: 157
+   1x | Unnamed: 158
+   1x | Unnamed: 159
+   1x | Unnamed: 160
+   1x | Unnamed: 161
+   1x | Unnamed: 162
+   1x | Unnamed: 163
+   1x | Unnamed: 164
+   1x | Unnamed: 165
+   1x | Unnamed: 166
+   1x | Unnamed: 167
+   1x | Unnamed: 168
+   1x | Unnamed: 169
+   1x | Unnamed: 170
+   1x | Unnamed: 171
+   1x | Unnamed: 172
+   1x | Unnamed: 173
+   1x | Unnamed: 174
+   1x | Unnamed: 175
+   1x | Unnamed: 176
+   1x | Unnamed: 177
+   1x | Unnamed: 178
+   1x | Unnamed: 179
+   1x | Unnamed: 180
+   1x | Unnamed: 181
+   1x | Unnamed: 182
+   1x | Unnamed: 183
+   1x | Unnamed: 184
+   1x | Unnamed: 185
+   1x | Unnamed: 186
+   1x | Unnamed: 187
+   1x | Unnamed: 188
+   1x | Unnamed: 189
+   1x | Unnamed: 190
+   1x | Unnamed: 191
+   1x | Unnamed: 192
+   1x | Unnamed: 193
+   1x | Unnamed: 194
+   1x | Unnamed: 195
+   1x | Unnamed: 196
+   1x | Unnamed: 197
+   1x | Unnamed: 198
+   1x | Unnamed: 199
+   1x | Unnamed: 200
+   1x | Unnamed: 201
+   1x | Unnamed: 202
+   1x | Unnamed: 203
+   1x | Unnamed: 204
+   1x | Unnamed: 205
+   1x | Unnamed: 206
+   1x | Unnamed: 207
+   1x | Unnamed: 208
+   1x | Unnamed: 209
+   1x | Unnamed: 210
+   1x | Unnamed: 211
+   1x | Unnamed: 212
+   1x | Unnamed: 213
+   1x | Unnamed: 214
+   1x | Unnamed: 215
+   1x | Unnamed: 216
+   1x | Unnamed: 217
+   1x | Unnamed: 218
+   1x | Unnamed: 219
+   1x | Unnamed: 220
+   1x | Unnamed: 221
+   1x | Unnamed: 222
+   1x | Unnamed: 223
+   1x | Unnamed: 224
+   1x | Unnamed: 225
+   1x | Unnamed: 226
+   1x | Unnamed: 227
+   1x | Unnamed: 228
+   1x | Unnamed: 229
+   1x | Unnamed: 230
+   1x | Unnamed: 231
+   1x | Unnamed: 232
+   1x | Unnamed: 233
+   1x | Unnamed: 234
+   1x | Unnamed: 235
+   1x | Unnamed: 236
+   1x | Unnamed: 237
+   1x | Unnamed: 238
+   1x | Unnamed: 239
+   1x | Unnamed: 240
+   1x | Unnamed: 241
+   1x | Unnamed: 242
+   1x | Unnamed: 243
+   1x | Unnamed: 244
+   1x | Unnamed: 245
+   1x | Unnamed: 246
+   1x | Unnamed: 247
+   1x | Unnamed: 248
+   1x | Unnamed: 249
+   1x | Unnamed: 250
+   1x | Unnamed: 251
+   1x | Unnamed: 252
+   1x | Unnamed: 253
+   1x | Unnamed: 254
+   1x | Unnamed: 255
+   1x | Unnamed: 256
+   1x | Unnamed: 66
+   1x | Unnamed: 67
+   1x | Unnamed: 68
+   1x | Unnamed: 69
+   1x | Unnamed: 70
+   1x | Unnamed: 71
+   1x | Unnamed: 72
+   1x | Unnamed: 73
+   1x | Unnamed: 74
+   1x | Unnamed: 75
+   1x | Unnamed: 76
+   1x | Unnamed: 77
+   1x | Unnamed: 78
+   1x | Unnamed: 79
+   1x | Unnamed: 80
+   1x | Unnamed: 81
+   1x | Unnamed: 82
+   1x | Unnamed: 83
+   1x | Unnamed: 84
+   1x | Unnamed: 85
+   1x | Unnamed: 86
+   1x | Unnamed: 87
+   1x | Unnamed: 88
+   1x | Unnamed: 89
+   1x | Unnamed: 90
+   1x | Unnamed: 91
+   1x | Unnamed: 92
+   1x | Unnamed: 93
+   1x | Unnamed: 94
+   1x | Unnamed: 95
+   1x | Unnamed: 96
+   1x | Unnamed: 97
+   1x | Unnamed: 98
+   1x | Unnamed: 99
+   1x | Untere_Variante
+   1x | Untergruppe
+   1x | Unterkunftsart_nach
+   1x | Unterkunftsart_vor
+   1x | Unterrichtsräume
+   1x | Url zu Biografie
+   1x | VERSUCH
+   1x | Veranstaltungsort
+   1x | Verfgbare Mittel
+   1x | Verfgbares Soll
+   1x | Verfgungsbeschr?nkung
+   1x | Vergabeart
+   1x | Vergabesumme in TEUR
+   1x | Verhandlungsverfahren mit Teilnahmewettbewerb
+   1x | Verhandlungsverfahren ohne Teilnahmewettbewerb
+   1x | Verkauft seit Beginn des Angebotes bis 31.12.06
+   1x | Versorgungsgrad Kindergarten in %
+   1x | Versorgungsgrad Kinderkrippe in %
+   1x | Vertrag
+   1x | Veröffentlichungsjahr
+   1x | Vorlagen_und_Antraege
+   1x | Vorname1
+   1x | Wahlobjekt
+   1x | Wahlraum
+   1x | Wanderungssaldo 2018
+   1x | Wanderungssaldo 2019
+   1x | Wanderungssaldo 2020
+   1x | Wanderungssaldo 2021
+   1x | Wanderungssaldo 2022
+   1x | Wasserqualitaet
+   1x | Wasserqualitaet_lageso
+   1x | Wasserqualitaet_predict
+   1x | Wbz
+   1x | Wegzug - alte Definition
+   1x | Wegzug - revidiert
+   1x | Weitere Öffnungszeiten
+   1x | Weitere_Hinweise
+   1x | Westdeutschland
+   1x | Wickeltisch
+   1x | Wochenendgrundstück
+   1x | Wochentag
+   1x | Wohndauer
+   1x | Wärmemedium
+   1x | Wärmeverbrauch witterungsbereinigt [kWh]
+   1x | X-Koordinate
+   1x | XGCSWGS84
+   1x | Y-Koordinate
+   1x | YGCSWGS84
+   1x | Z?hler
+   1x | ZEIT
+   1x | Zahlungsart
+   1x | Zentrum
+   1x | Zentrum in Transformation
+   1x | Zielgruppe
+   1x | Zukunftsort
+   1x | Zuordnung
+   1x | Zusammengefasste Geburtenziffer 
+   1x | Zusatz
+   1x | Zuzug - alte Definition
+   1x | Zuzug - revidiert
+   1x | Zweck
+   1x | Zügigkeit nach Baumaßnahme
+   1x | _DATUM|TATZ
+   1x | _STUND
+   1x | abmasse
+   1x | abs_nr
+   1x | abs_nr17
+   1x | absolut
+   1x | aenderungsmitteilung
+   1x | aktenplannummer
+   1x | aktentitel
+   1x | aktenzeichen
+   1x | aktive technik verbaut 
+   1x | aktueller status
+   1x | altersgruppe
+   1x | amtliche Einwohnerzahl Basis: Zensus 2011
+   1x | annotation
+   1x | anschluss nutzbar
+   1x | anschlussltg_kw
+   1x | ansprechpartner
+   1x | ansprechperson_anrede
+   1x | ansprechperson_email
+   1x | ansprechperson_name
+   1x | art
+   1x | art_der_ermaessigung
+   1x | art_des_gebiets
+   1x | art_dtsch
+   1x | aufbewahrungsfrist
+   1x | aufbewahrungsfrist_jahre
+   1x | aus_der_reihe
+   1x | ballspielen
+   1x | band
+   1x | barrierearm
+   1x | barrierefrei
+   1x | barrierefreiheit
+   1x | baulast
+   1x | baumhoehe
+   1x | baumnr
+   1x | baumnummer
+   1x | begehung 
+   1x | behindertengerecht
+   1x | bemerkung
+   1x | bemerkungen
+   1x | benennung
+   1x | benutzung
+   1x | beschlussfähig
+   1x | beschreibungstext
+   1x | bestelladresse
+   1x | bestellbarkeit
+   1x | betrag
+   1x | betreffseinheit
+   1x | betreffseinheitsnummer
+   1x | betreiber
+   1x | bewaesserungsmenge_in_liter
+   1x | bezID
+   1x | bezNAME
+   1x | bike_lft
+   1x | bike_rgt
+   1x | bike_total
+   1x | bis_str
+   1x | bis_str_nr
+   1x | briefwaehler
+   1x | bzrID
+   1x | bzrNAME
+   1x | car_lft
+   1x | car_rgt
+   1x | car_speed0
+   1x | car_speed10
+   1x | car_speed20
+   1x | car_speed30
+   1x | car_speed40
+   1x | car_speed50
+   1x | car_speed60
+   1x | car_speed70
+   1x | car_total
+   1x | cb
+   1x | classification
+   1x | content
+   1x | create_date
+   1x | date_local
+   1x | datenschutzrelevanz
+   1x | datum_des_beginns
+   1x | datum_des_beginns_des_vorhabens
+   1x | datum_des_endes
+   1x | datum_des_endes_des_vorhabens
+   1x | davon ohne Angabe
+   1x | deutsch sprechen männlich
+   1x | deutsch sprechen weiblich
+   1x | deutsch verstehen männlich
+   1x | deutsch verstehen weiblich
+   1x | dokument_url
+   1x | dt_name
+   1x | dynamicdata
+   1x | eMail
+   1x | einmal
+   1x | einrichtung_projekte
+   1x | einwilligung
+   1x | einwilligung_zielgruppen_teaser
+   1x | email2
+   1x | empfaenger_recipient
+   1x | empfaenger_subject
+   1x | empfaengerid
+   1x | ergänzende Informationen
+   1x | erscheinungsjahr
+   1x | erschlname
+   1x | facilitylocationwgs84lat
+   1x | facilitylocationwgs84lon
+   1x | feldbezeichner
+   1x | finanzierungsform
+   1x | flaeche
+   1x | freigabe
+   1x | ga_lang_deutsch
+   1x | ga_lang_wiss
+   1x | gar nicht
+   1x | gattung
+   1x | gattung_deutsch
+   1x | geaendert
+   1x | geber
+   1x | gefahrdrohendes Anspringen von Menschen
+   1x | gesamtbetrag_der_fšrderfŠhigen_ausgaben_des_vorhabens
+   1x | gesamtbetrag_förderfähiger_ausgaben
+   1x | gilt_bis
+   1x | gilt_von
+   1x | globalid
+   1x | gratis
+   1x | gruppe
+   1x | gruppennummer
+   1x | gueltige_stimmen
+   1x | hauptgruppe
+   1x | haushaltsid
+   1x | haushaltstyp
+   1x | heavy_lft
+   1x | heavy_rgt
+   1x | heavy_total
+   1x | herausgeber_autor
+   1x | herkunftsregion
+   1x | hnr_z
+   1x | homepage
+   1x | im Ausland; Angaben in Prozent
+   1x | im selben Stadtbezirk; Angaben in Prozent
+   1x | im selben Wohnviertel wie bisher; Angaben in Prozent
+   1x | in %
+   1x | in %.1
+   1x | in %.2
+   1x | in Sachsen außer Leipzig und näherer Umgebung; Angaben in Prozent
+   1x | in der näheren Umgebung Leipzigs max. 30 Min. mit dem Pkw von Leipzig entfernt; Angaben in Prozent
+   1x | in einem Gemeinschaftsgarten
+   1x | in einem anderen Stadtbezirk Leipzigs; Angaben in Prozent
+   1x | in einem anderen der neuen Bundesländer außer nähere Umgebung; Angaben in Prozent
+   1x | in einem der alten Bundesländer; Angaben in Prozent
+   1x | inbetrieb_am
+   1x | insgesamt
+   1x | interventionskategorie
+   1x | ja; Angaben in Prozent
+   1x | kandidat_akadgrad
+   1x | kandidat_beruftaetigkeit
+   1x | kandidat_gebiet_name
+   1x | kandidat_gebiet_nr
+   1x | kandidat_listennr
+   1x | kandidat_name
+   1x | kandidat_partei_kurzname
+   1x | kandidat_partei_langname
+   1x | kandidat_vorname
+   1x | kandidierende
+   1x | kat_erschl
+   1x | kat_sstrgs
+   1x | kategorien
+   1x | kein Garten, habe aber Interesse daran
+   1x | kein Garten, habe auch kein Interesse daran
+   1x | kinderzahl
+   1x | klass_netz
+   1x | klinik
+   1x | knoten
+   1x | knoten_01
+   1x | kofinanzierung_aus_nationalen_öffentlichen_Mitteln
+   1x | kofinanzierungssatz_in_prozent
+   1x | kontakt
+   1x | kr_durchm
+   1x | kum. Ist bis Monat:
+   1x | kurzbeschreibung_des_anbieters
+   1x | kurzbeschreibung_des_angebots
+   1x | ladeart
+   1x | ladeeinr_art
+   1x | laenge_m
+   1x | landesarchiv
+   1x | laufende Nummer    
+   1x | letzte_bewaesserung
+   1x | long
+   1x | mehrfach
+   1x | möglicherweise; Angaben in Prozent
+   1x | nachpflanzung_geplant
+   1x | name_anbieter
+   1x | name_des_beguenstigten
+   1x | name_des_begünstigten
+   1x | nein; Angaben in Prozent
+   1x | nicht zahlende Besucherinnen
+und Besucher
+   1x | nr_senatsverwaltung
+   1x | nr_senstadtum
+   1x | nummer
+   1x | obergruppe
+   1x | objektkuerzel
+   1x | oeffnungszeiten
+   1x | original names
+   1x | original_bild
+   1x | originalbild
+   1x | ortsd_text
+   1x | ortsdurchf
+   1x | ortsteilname
+   1x | ortsteilnummer
+   1x | p1_kw
+   1x | p2_5
+   1x | p2_kw
+   1x | p3_kw
+   1x | p4_kw
+   1x | p50
+   1x | p90
+   1x | p95
+   1x | p97_5
+   1x | page
+   1x | parkingfacility_hnr
+   1x | parkingfacility_hnr_z
+   1x | parkingfacility_ort
+   1x | parkingfacility_plz
+   1x | parkingfacility_str
+   1x | parkingfacilityaddressinfo
+   1x | parkingfacilitycost
+   1x | parkingfacilitydisabledparking
+   1x | parkingfacilityecharging
+   1x | parkingfacilityopen
+   1x | parkingfacilityopeninfo
+   1x | parkingfacilitytype
+   1x | parkingfacilityurl
+   1x | partei-stimmzettel-position
+   1x | patenschaftsnummer
+   1x | ped_lft
+   1x | ped_rgt
+   1x | ped_total
+   1x | personenzahl
+   1x | pgrID
+   1x | pgrNAME
+   1x | plrID
+   1x | plrNAME
+   1x | plz_ort
+   1x | plz_und_ort_des_angebots
+   1x | politikbereich
+   1x | projektnummer
+   1x | properties.ANORDNUNG
+   1x | properties.ANZAHL_LADEPUNKTE
+   1x | properties.ANZAHL_LADESAEULEN
+   1x | properties.AREA_HA
+   1x | properties.AREA_QM
+   1x | properties.ATTRIBUT_DATUM
+   1x | properties.AUSLAGESTELLE
+   1x | properties.AUSLEGUNG
+   1x | properties.Auslegung
+   1x | properties.BARRIEREFREI
+   1x | properties.BAUMART
+   1x | properties.BAUMNUMMER
+   1x | properties.BAUMSCHLUESSEL
+   1x | properties.BEKANNTMACHUNG
+   1x | properties.BESCHLUSS
+   1x | properties.BETRIEBSSTATUS
+   1x | properties.BEZAHLSYSTEM
+   1x | properties.BEZEICHNUNGZUSATZ
+   1x | properties.BEZUGNR
+   1x | properties.B_NR
+   1x | properties.Betriebsbe
+   1x | properties.CreationDate
+   1x | properties.Creator
+   1x | properties.DAMENTOILETTE
+   1x | properties.DIG_DATUM
+   1x | properties.Di
+   1x | properties.Do
+   1x | properties.EINLEITUNG
+   1x | properties.EINRICHTUNGSNAME
+   1x | properties.EINZUGSGEBIET
+   1x | properties.ERKLAERUNG
+   1x | properties.EditDate
+   1x | properties.Editor
+   1x | properties.Fr
+   1x | properties.GEBIET
+   1x | properties.GEBIETNR
+   1x | properties.GEBIETSARTNUMMER
+   1x | properties.GEBIETSNAME
+   1x | properties.GEBNR
+   1x | properties.GEMEINDESCHLUESSEL
+   1x | properties.GENEHMIGUNG
+   1x | properties.GEWAESSER
+   1x | properties.GEWORDNUNG
+   1x | properties.Gewaesser
+   1x | properties.GewaesserOrdnung
+   1x | properties.GlobalID
+   1x | properties.HAUSNUMMER
+   1x | properties.HERRENTOILETTE
+   1x | properties.HORT
+   1x | properties.INBETRIEBNAHMEDATUM
+   1x | properties.INFO
+   1x | properties.INKRAFTSEIT
+   1x | properties.INTEGRATIV
+   1x | properties.KGGS
+   1x | properties.KITA
+   1x | properties.LANDKREIS
+   1x | properties.LFDNR
+   1x | properties.Mi
+   1x | properties.Mo
+   1x | properties.NENNLEISTUNG
+   1x | properties.NUTZNR
+   1x | properties.NUTZUNG
+   1x | properties.NUTZUNG_LANG
+   1x | properties.OBJEKTSCHLUESSEL
+   1x | properties.OEFFNUNGSZEITEN
+   1x | properties.ORIENTATION
+   1x | properties.OT
+   1x | properties.PFLANZDATUM
+   1x | properties.PROFILE
+   1x | properties.RECHTSSTATUS
+   1x | properties.RECHT_URL
+   1x | properties.ROLLSTUHLGERECHT
+   1x | properties.RSS-Beschreibung
+   1x | properties.RSS-Titel
+   1x | properties.SBZ
+   1x | properties.SCHUTZZONE
+   1x | properties.SNUMMER
+   1x | properties.SPRACHEN
+   1x | properties.STADTNAME
+   1x | properties.STANDORT
+   1x | properties.STANDORTTYP
+   1x | properties.STB
+   1x | properties.Sa
+   1x | properties.Shape__Area
+   1x | properties.Shape__Length
+   1x | properties.So
+   1x | properties.Status
+   1x | properties.TEILZONE
+   1x | properties.TRAEGERTYP
+   1x | properties.TYPE
+   1x | properties.TYP_ERWEITERT
+   1x | properties.UML_NR
+   1x | properties.VERBUND
+   1x | properties.VERFUEGBARE_STECKERTYPEN
+   1x | properties.WAHLBEZIRK
+   1x | properties.WICKELTISCH
+   1x | properties.WWW
+   1x | properties.XPLANUNG
+   1x | properties.action
+   1x | properties.area
+   1x | properties.b_type
+   1x | properties.bemerkungen
+   1x | properties.bezirk
+   1x | properties.bis
+   1x | properties.closed-exc
+   1x | properties.closed-exc-readable
+   1x | properties.email
+   1x | properties.hours-exc
+   1x | properties.hours-exc-readable
+   1x | properties.id
+   1x | properties.ignore
+   1x | properties.image
+   1x | properties.immer-kostenlos
+   1x | properties.inKraftseit
+   1x | properties.inter_id
+   1x | properties.international
+   1x | properties.job_id
+   1x | properties.lat
+   1x | properties.lng
+   1x | properties.merged
+   1x | properties.name
+   1x | properties.oeffnungszeiten
+   1x | properties.plz_ort
+   1x | properties.short_distance
+   1x | properties.shortname
+   1x | properties.strasse
+   1x | properties.train
+   1x | properties.train_distance
+   1x | properties.urheberschaft
+   1x | properties.veranstalter
+   1x | properties.von
+   1x | properties.w3
+   1x | publictoilet
+   1x | publictransportbarrierfree
+   1x | publictransportbarrierfreeinfo
+   1x | publictransportlineheavyrail
+   1x | publictransportlinetram
+   1x | publictransporturl
+   1x | quelle
+   1x | region
+   1x | schulart
+   1x | schule
+   1x | schulnummer
+   1x | schutzzweck
+   1x | segment_id
+   1x | sekundäres_ESF-Thema
+   1x | sitze
+   1x | so_av_id
+   1x | so_av_tx
+   1x | so_beg
+   1x | so_bof
+   1x | so_change
+   1x | so_end
+   1x | so_entf
+   1x | so_fun_id
+   1x | so_fun_tx
+   1x | so_gid
+   1x | so_id
+   1x | so_kt
+   1x | so_la_id
+   1x | so_la_tx
+   1x | so_lb_id
+   1x | so_lb_tx
+   1x | so_lc_id
+   1x | so_lc_tx
+   1x | so_ld_id
+   1x | so_ld_tx
+   1x | so_mat_id
+   1x | so_mat_tx
+   1x | so_prj
+   1x | so_seg_id
+   1x | so_seg_sb
+   1x | so_seg_sid
+   1x | so_seg_sn
+   1x | so_sym_id
+   1x | so_sym_tx
+   1x | so_sym_wk
+   1x | so_typ
+   1x | so_vs
+   1x | so_x
+   1x | so_y
+   1x | so_zu_id
+   1x | so_zu_tx
+   1x | sonstige Form des Gärtnerns
+   1x | spielplatzart
+   1x | sstrgsname
+   1x | st_durchm
+   1x | st_umfang
+   1x | stadtbez
+   1x | stadtteile
+   1x | stammumfang
+   1x | standort beauftragt
+   1x | standzeitraum
+   1x | status_patenbaum
+   1x | steckertyp_1
+   1x | steckertyp_2
+   1x | steckertyp_3
+   1x | steckertyp_4
+   1x | str
+   1x | str_nr
+   1x | strasse_und_hausnummer_des_angebots
+   1x | teilaktenplan
+   1x | territoriale_umsetzungsmechanismen
+   1x | themenfeld
+   1x | tiefbau 
+   1x | timestamp
+   1x | tischtennis_anzahl
+   1x | titel
+   1x | totalparkingcapacity
+   1x | tstamp
+   1x | typ
+   1x | ungueltige_stimmzettel
+   1x | unions-kofinanzierungssatz_pro_prioritŠtsachse
+   1x | untertitel
+   1x | update_date
+   1x | uptime
+   1x | v85
+   1x | von_str
+   1x | von_str_nr
+   1x | vz_aufst
+   1x | vz_bez
+   1x | vz_ftyp
+   1x | vz_gr
+   1x | vz_kat_nr
+   1x | vz_lr
+   1x | vz_nr
+   1x | vz_pos
+   1x | vz_rtg_id
+   1x | vz_rtg_tx
+   1x | vz_seg_id
+   1x | vz_seg_sid
+   1x | vz_seg_sn
+   1x | vz_var
+   1x | vz_wnkl
+   1x | vz_zus_tx
+   1x | waehler-t1
+   1x | waehler-t2
+   1x | waehler-t3
+   1x | waehler-t4
+   1x | waehler-t5
+   1x | waehler-t6
+   1x | waehler-t7
+   1x | waehler-t8
+   1x | wahlobjekte
+   1x | wahlobjekte-fremd
+   1x | wahlobjekte-staedtisch-schulen
+   1x | wahlobjekte-staedtisch-sonstige
+   1x | wahlraeume
+   1x | wahlraeume-barrierefrei
+   1x | website
+   1x | wintkat
+   1x | wiss_name
+   1x | x_wert
+   1x | y_wert
+   1x | zahlende 
+Besucherinnen
+und  Besucher
+   1x | zeitraum-ende
+   1x | zeitraum-start
+   1x | zielgruppen
+   1x | zusatzname
+   1x | zw
+   1x | zweck
+   1x | |LOR|SCHAD
+   1x | |TATZ
+   1x | |V
+   1x | Öffnung
+   1x | Öffnungszeiten
+   1x | Öffnungszeiten Ende
+   1x | Öffnungszeiten Start
+   1x | Über uns
+   1x | Überplanmäßige Ausgaben
+   1x | Überplanmäßige VE
+   1x | öffentliche Ausschreibung
+   1x | ÿþB e f r a g t e 
+   1x | ÿþG e s c h l e c h t 
+   1x | ÿþG e s c h l e c h t   u n d   A l t e r s g r u p p e 
+   1x | ÿþR e g i o n 
+   1x | ÿþS t a d t 

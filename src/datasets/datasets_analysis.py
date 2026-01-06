@@ -56,8 +56,10 @@ def analyze_metadata_fields():
     total_check = len(non_duplicate_fields) + sum(duplicate_fields.values())
     output_lines.append(f"Total check (non-dup + sum of dup counts): {total_check}")
     output_lines.append(f"Unique fields: {unique_fields}")
-    output_lines.append(f"Duplicate fields: {len(duplicate_fields)}")
-    output_lines.append(f"Non-duplicate fields: {len(non_duplicate_fields)}")
+    output_lines.append(f"Duplicate fields (out of unique): {len(duplicate_fields)}")
+    output_lines.append(
+        f"Non-duplicate fields (out of unique): {len(non_duplicate_fields)}"
+    )
     output_lines.append(f"\n{'=' * 80}")
     output_lines.append("DUPLICATE FIELDS (sorted by frequency)")
     output_lines.append(f"{'=' * 80}\n")
@@ -69,6 +71,17 @@ def analyze_metadata_fields():
 
     for field_name, count in sorted_duplicates:
         output_lines.append(f"{count:4d}x | {field_name}")
+
+    # Add non-duplicate fields section
+    output_lines.append(f"\n{'=' * 80}")
+    output_lines.append("NON-DUPLICATE FIELDS (sorted alphabetically)")
+    output_lines.append(f"{'=' * 80}\n")
+
+    # Sort non-duplicate fields alphabetically
+    sorted_non_duplicates = sorted(non_duplicate_fields.keys())
+
+    for field_name in sorted_non_duplicates:
+        output_lines.append(f"   1x | {field_name}")
 
     # Print to console
     for line in output_lines:
