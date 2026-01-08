@@ -347,11 +347,31 @@ class Dresden(BaseDataDownloader):
             self.logger.warning(f"Missing metadata for dataset {context_id}/{entry_id}")
             return False
 
+        # Extract entry metadata (created/modified dates, etc.)
+        info_metadata = dataset_info.get("info", {})
+        created_date = None
+        modified_date = None
+
+        # Extract created and modified dates from info section
+        for uri, predicates in info_metadata.items():
+            if uri.startswith("http"):
+                created_info = predicates.get("http://purl.org/dc/terms/created", [])
+                if created_info:
+                    created_date = created_info[0].get("value")
+
+                modified_info = predicates.get("http://purl.org/dc/terms/modified", [])
+                if modified_info:
+                    modified_date = modified_info[0].get("value")
+
         # Extract dataset information
         title = "Unknown Dataset"
         dataset_uri = None
         keywords = []
         description = None
+        publisher = None
+        license_info = None
+        author = None
+        organization = None
 
         # Find dataset URI, title, keywords, and description
         for uri, predicates in dataset_metadata.items():
@@ -388,6 +408,42 @@ class Dresden(BaseDataDownloader):
                     if description_info:
                         description = description_info[0].get("value")
 
+                    # Extract publisher URI
+                    publisher_info = predicates.get("http://purl.org/dc/terms/publisher", [])
+                    if publisher_info:
+                        publisher = publisher_info[0].get("value")
+
+                    # Extract license
+                    license_data = predicates.get("http://purl.org/dc/terms/license", [])
+                    if license_data:
+                        license_info = license_data[0].get("value")
+
+                    # Extract modified date from dataset metadata (fallback)
+                    if not modified_date:
+                        mod_info = predicates.get("http://purl.org/dc/terms/modified", [])
+                        if mod_info:
+                            modified_date = mod_info[0].get("value")
+
+                    # Extract maintainer (author)
+                    maintainer_info = predicates.get("http://dcat-ap.de/def/dcatde/maintainer", [])
+                    if maintainer_info:
+                        maintainer_uri = maintainer_info[0].get("value")
+                        # Try to get maintainer name from metadata
+                        if maintainer_uri and maintainer_uri.startswith("_:"):
+                            maintainer_data = dataset_metadata.get(maintainer_uri, {})
+                            name_info = maintainer_data.get("http://xmlns.com/foaf/0.1/name", [])
+                            if name_info:
+                                author = name_info[0].get("value")
+
+                    # Try to extract organization from publisher
+                    if publisher and not organization:
+                        # Publisher is a URI, try to get its name from metadata
+                        if publisher in dataset_metadata:
+                            publisher_data = dataset_metadata[publisher]
+                            org_name = publisher_data.get("http://xmlns.com/foaf/0.1/name", [])
+                            if org_name:
+                                organization = org_name[0].get("value")
+
                     break
 
         if not dataset_uri:
@@ -417,13 +473,17 @@ class Dresden(BaseDataDownloader):
 
         self.logger.debug(f"Processing dataset: {ds_name}")
 
-        # Prepare metadata
+        # Prepare metadata with all available fields
         package_meta = DatasetMetadataWithFields(
             id=f"{context_id}/{entry_id}",
             url=dataset_uri,
             title=title,
             description=description,
+            organization=organization,
+            metadata_created=created_date,
+            metadata_modified=modified_date,
             tags=keywords,
+            author=author,
             city="Dresden",
             state="Saxony",
             country="Germany",
