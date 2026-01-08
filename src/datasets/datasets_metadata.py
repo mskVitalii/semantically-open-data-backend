@@ -5,6 +5,7 @@ from dataclasses import dataclass, asdict, field
 from datetime import datetime
 from typing import Any, Optional
 
+from src.infrastructure.config import EmbedderModel, DEFAULT_EMBEDDER_MODEL
 from src.utils.embeddings_utils import format_metadata_text
 
 
@@ -25,6 +26,7 @@ class DatasetMetadata:
     groups: Optional[list[str]] = None
     url: Optional[str] = None
     author: Optional[str] = None
+    embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL
 
     def to_searchable_text(self) -> str:
         """Combine title and description for embedding"""
@@ -60,6 +62,7 @@ class DatasetMetadata:
             "groups": self.groups,
             "url": self.url,
             "author": self.author,
+            "embedder_model": self.embedder_model.value,
         }
 
     def to_dict(self) -> dict[str, Any]:

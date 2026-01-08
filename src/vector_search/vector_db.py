@@ -21,8 +21,10 @@ from src.infrastructure.config import (
     QDRANT_GRPC_PORT,
     QDRANT_HOST,
     QDRANT_HTTP_PORT,
-    EMBEDDING_DIM,
-    QDRANT_COLLECTION_NAME,
+    EmbedderModel,
+    DEFAULT_EMBEDDER_MODEL,
+    get_collection_name,
+    get_embedding_dim,
 )
 from src.infrastructure.logger import get_prefixed_logger
 from src.vector_search.embedder import embed_batch
@@ -72,37 +74,75 @@ class VectorDB:
 
     # endregion
 
-    async def setup_collection(self):
-        """Create Qdrant collection if not exists"""
-        logger.info("setup_collection")
+    async def setup_collection(self, embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL):
+        """Create Qdrant collection if not exists for specific embedder model"""
+        collection_name = get_collection_name(embedder_model)
+        embedding_dim = get_embedding_dim(embedder_model)
+        logger.info(
+            f"setup_collection for {embedder_model.value} (dimension: {embedding_dim})"
+        )
         collections_response = await self.qdrant.get_collections()
         collections = collections_response.collections
 
-        if not any(c.name == QDRANT_COLLECTION_NAME for c in collections):
-            logger.info(f"Creating collection {QDRANT_COLLECTION_NAME}")
+        collection_exists = any(c.name == collection_name for c in collections)
+
+        if collection_exists:
+            # Check if existing collection has the correct dimension
+            try:
+                collection_info = await self.qdrant.get_collection(collection_name)
+                existing_dim = collection_info.config.params.vectors.size
+
+                if existing_dim != embedding_dim:
+                    logger.warning(
+                        f"Collection {collection_name} exists with wrong dimension "
+                        f"(expected {embedding_dim}, got {existing_dim}). Recreating..."
+                    )
+                    await self.qdrant.delete_collection(collection_name)
+                    collection_exists = False
+                else:
+                    logger.info(
+                        f"Collection {collection_name} already exists with correct dimension {embedding_dim}"
+                    )
+            except Exception as e:
+                logger.error(f"Error checking collection dimension: {e}")
+                # If we can't check, assume it needs recreation
+                await self.qdrant.delete_collection(collection_name)
+                collection_exists = False
+
+        if not collection_exists:
+            logger.info(
+                f"Creating collection {collection_name} with dimension {embedding_dim}"
+            )
             await self.qdrant.create_collection(
-                collection_name=QDRANT_COLLECTION_NAME,
+                collection_name=collection_name,
                 vectors_config=VectorParams(
-                    size=EMBEDDING_DIM, distance=Distance.COSINE
+                    size=embedding_dim, distance=Distance.COSINE
                 ),
             )
 
             # Create indexes for filtering
-            for field in ["city", "state", "country", "organization"]:
+            for field in ["city", "state", "country", "organization", "embedder_model"]:
                 await self.qdrant.create_payload_index(
-                    collection_name=QDRANT_COLLECTION_NAME,
+                    collection_name=collection_name,
                     field_name=field,
                     field_schema=PayloadSchemaType.KEYWORD,
                 )
-            logger.info("Collection created with indexes")
-        else:
-            logger.info(f"Collection {QDRANT_COLLECTION_NAME} already exists")
+            logger.info(f"Collection {collection_name} created with indexes")
 
     async def index_datasets(
-        self, datasets: List[DatasetMetadataWithFields], batch_size: int = 100
+        self,
+        datasets: List[DatasetMetadataWithFields],
+        embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
+        batch_size: int = 100,
     ):
-        """Index multiple datasets with batching for better performance"""
-        logger.info(f"Indexing {len(datasets)} datasets...")
+        """Index multiple datasets with batching for better performance using specified embedder"""
+        collection_name = get_collection_name(embedder_model)
+        logger.info(
+            f"Indexing {len(datasets)} datasets with {embedder_model.value}..."
+        )
+
+        # Ensure collection exists
+        await self.setup_collection(embedder_model)
 
         # Prepare texts for embedding
         try:
@@ -111,8 +151,8 @@ class VectorDB:
         except Exception as e:
             logger.error("exception!", exc_info=e)
             return
-        # Generate embeddings in batches
-        embeddings = await embed_batch(texts)
+        # Generate embeddings in batches using specified embedder
+        embeddings = await embed_batch(texts, embedder_model=embedder_model)
 
         # Prepare points for Qdrant
         points = [
@@ -130,7 +170,7 @@ class VectorDB:
         for i in range(0, total_points, batch_size):
             batch = points[i : i + batch_size]
             await self.qdrant.upsert(
-                collection_name=QDRANT_COLLECTION_NAME,
+                collection_name=collection_name,
                 points=batch,
                 wait=True,  # Ensure consistency
             )
@@ -139,17 +179,21 @@ class VectorDB:
                     f"Uploaded batch {i // batch_size + 1}/{(total_points + batch_size - 1) // batch_size}"
                 )
 
-        logger.info(f"Successfully indexed {len(datasets)} datasets")
+        logger.info(
+            f"Successfully indexed {len(datasets)} datasets to {collection_name}"
+        )
 
     async def search(
         self,
         query_embedding: ndarray,
+        embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
         city_filter: Optional[str] = None,
         state_filter: Optional[str] = None,
         country_filter: Optional[str] = None,
         limit: int = 5,
     ) -> list[ScoredPoint]:
-        """Search for datasets using query_points method"""
+        """Search for datasets using query_points method in specific embedder collection"""
+        collection_name = get_collection_name(embedder_model)
 
         # Build filter conditions
         filter_conditions = []
@@ -173,7 +217,7 @@ class VectorDB:
 
         # Use query_points (works with both gRPC and HTTP)
         query_result = await self.qdrant.query_points(
-            collection_name=QDRANT_COLLECTION_NAME,
+            collection_name=collection_name,
             query=query_embedding.tolist(),
             query_filter=search_filter,
             limit=limit,
@@ -185,13 +229,20 @@ class VectorDB:
         return results
 
     async def batch_search(
-        self, queries: List[str], city_filter: Optional[str] = None, limit: int = 5
+        self,
+        queries: List[str],
+        embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
+        city_filter: Optional[str] = None,
+        limit: int = 5,
     ):
-        """Batch search - especially efficient with gRPC"""
-        logger.info(f"\nBatch searching for {len(queries)} queries")
+        """Batch search - especially efficient with gRPC using specific embedder"""
+        collection_name = get_collection_name(embedder_model)
+        logger.info(
+            f"\nBatch searching for {len(queries)} queries in {collection_name}"
+        )
 
-        # Generate embeddings for all queries concurrently
-        query_embeddings = await embed_batch(queries)
+        # Generate embeddings for all queries concurrently using specified embedder
+        query_embeddings = await embed_batch(queries, embedder_model=embedder_model)
 
         # Build filter
         search_filter = None
@@ -202,7 +253,7 @@ class VectorDB:
 
         # Batch query - very efficient with gRPC
         batch_results = await self.qdrant.query_batch_points(
-            collection_name=QDRANT_COLLECTION_NAME,
+            collection_name=collection_name,
             requests=[
                 QueryRequest(
                     query=emb.tolist(),
@@ -223,10 +274,11 @@ class VectorDB:
 
         return all_results
 
-    async def get_stats(self):
-        """Get collection statistics"""
-        info = await self.qdrant.get_collection(QDRANT_COLLECTION_NAME)
-        logger.info("\nCollection stats:")
+    async def get_stats(self, embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL):
+        """Get collection statistics for specific embedder"""
+        collection_name = get_collection_name(embedder_model)
+        info = await self.qdrant.get_collection(collection_name)
+        logger.info(f"\nCollection stats for {collection_name}:")
         logger.info(f"  Vectors count: {info.vectors_count}")
         logger.info(f"  Points count: {info.points_count}")
         logger.info(f"  Indexed vectors: {info.indexed_vectors_count}")
@@ -234,18 +286,19 @@ class VectorDB:
         return info
 
     async def remove_collection(
-        self, collection_name: str = QDRANT_COLLECTION_NAME
+        self, embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL
     ) -> bool:
         """
-        Remove a collection from Qdrant.
+        Remove a collection from Qdrant for specific embedder model.
 
         Args:
-            collection_name: Name of the collection to remove.
-                            Defaults to QDRANT_COLLECTION_NAME if not provided.
+            embedder_model: Embedder model whose collection should be removed.
+                           Defaults to DEFAULT_EMBEDDER_MODEL.
 
         Returns:
             bool: True if collection was removed successfully, False otherwise.
         """
+        collection_name = get_collection_name(embedder_model)
         try:
             # Check if collection exists
             collections_response = await self.qdrant.get_collections()

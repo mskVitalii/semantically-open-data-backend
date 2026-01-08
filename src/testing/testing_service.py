@@ -103,18 +103,21 @@ class TestingService:
                     LLMQuestion(question=question, reason="Direct user query")
                 ]
 
-            # Step 2: Generate embeddings
+            # Step 2: Generate embeddings with specified embedder model
             questions_list = [
                 {"text": q.question, "id": q.question_hash}
                 for q in research_questions_objs
             ]
-            embeddings = await embed_batch_with_ids(questions_list)
+            embeddings = await embed_batch_with_ids(
+                questions_list, embedder_model=config.embedder_model
+            )
 
-            # Step 3: Search for each research question
+            # Step 3: Search for each research question using specified embedder
             all_datasets = []
             for emb in embeddings:
                 datasets = await self.dataset_service.search_datasets_with_embeddings(
                     emb["embedding"],
+                    embedder_model=config.embedder_model,
                     city_filter=config.city,
                     state_filter=config.state,
                     country_filter=config.country,

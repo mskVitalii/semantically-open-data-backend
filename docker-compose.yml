@@ -41,8 +41,14 @@ services:
     depends_on:
       qdrant:
         condition: service_healthy
-      embedder:
-        condition: service_started
+#      embedder-baai-bge-m3:
+#        condition: service_started
+#      embedder-intfloat-multilingual-e5-base:
+#        condition: service_started
+#      embedder-jinaai-jina-embeddings-v3:
+#        condition: service_started
+#      embedder-sentence-transformers-labse:
+#        condition: service_started
 #      ollama:
 #        condition: service_healthy
     env_file:
@@ -63,10 +69,57 @@ services:
       retries: 3
       start_period: 5s
 
-  embedder:
-    image: mskkote/open-data-embedder:latest
+  # Embedder services - different models for experiments
+  embedder-baai-bge-m3:
+    image: mskkote/embedder-baai-bge-m3:latest
+    container_name: embedder-baai-bge-m3
     ports:
       - "8080:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/healthz" ]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - app_network
+
+  embedder-intfloat-multilingual-e5-base:
+    image: mskkote/embedder-intfloat-multilingual-e5-base:latest
+    container_name: embedder-intfloat-multilingual-e5-base
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/healthz" ]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - app_network
+
+  embedder-jinaai-jina-embeddings-v3:
+    image: mskkote/embedder-jinaai-jina-embeddings-v3:latest
+    container_name: embedder-jinaai-jina-embeddings-v3
+    ports:
+      - "8082:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/healthz" ]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - app_network
+
+  embedder-sentence-transformers-labse:
+    image: mskkote/embedder-sentence-transformers-labse:latest
+    container_name: embedder-sentence-transformers-labse
+    ports:
+      - "8083:8080"
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/healthz" ]

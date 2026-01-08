@@ -290,9 +290,21 @@ def load_metadata_from_file(metadata_file: Path) -> DatasetMetadataWithFields | 
     if not metadata_file.exists():
         return None
 
+    # Check if file is empty
+    if metadata_file.stat().st_size == 0:
+        logger.warning(f"Metadata file is empty: {metadata_file}")
+        return None
+
     try:
         with open(metadata_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
+            content = f.read().strip()
+
+            # Check if content is empty after stripping whitespace
+            if not content:
+                logger.warning(f"Metadata file has no content: {metadata_file}")
+                return None
+
+            data = json.loads(content)
 
         # Extract fields separately
         raw_fields = data.pop("fields", {})
@@ -305,6 +317,9 @@ def load_metadata_from_file(metadata_file: Path) -> DatasetMetadataWithFields | 
             metadata.fields = {k: make_field(v) for k, v in raw_fields.items()}
 
         return metadata
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in metadata file {metadata_file}: {e}")
+        return None
     except Exception as e:
         logger.error(f"Error loading metadata from {metadata_file}: {e}", exc_info=True)
         return None

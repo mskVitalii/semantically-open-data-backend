@@ -1,6 +1,7 @@
 import asyncio
 
 from src.datasets.datasets_metadata import DatasetMetadataWithFields
+from src.infrastructure.config import EmbedderModel, DEFAULT_EMBEDDER_MODEL
 from src.infrastructure.logger import get_prefixed_logger
 from src.utils.buffer_abc import AsyncBuffer
 from src.vector_search.vector_db import VectorDB
@@ -11,15 +12,22 @@ logger = get_prefixed_logger(__name__, "VECTOR_BUFFER")
 class VectorDBBuffer(AsyncBuffer[DatasetMetadataWithFields]):
     """Buffer for batching dataset indexing operations"""
 
-    def __init__(self, vector_db: VectorDB, buffer_size: int = 150):
+    def __init__(
+        self,
+        vector_db: VectorDB,
+        embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
+        buffer_size: int = 150,
+    ):
         """
         Initialize the buffer
 
         Args:
             vector_db: The AsyncVectorDB instance to use for indexing
+            embedder_model: The embedder model to use for creating embeddings
             buffer_size: Maximum number of records to hold before auto-flushing
         """
         self.vector_db = vector_db
+        self.embedder_model = embedder_model
         self.buffer_size = buffer_size
         self._buffer: list[DatasetMetadataWithFields] = []
         self._lock = asyncio.Lock()  # Async lock for thread safety
@@ -108,12 +116,14 @@ class VectorDBBuffer(AsyncBuffer[DatasetMetadataWithFields]):
             async def index_and_cleanup():
                 try:
                     await self.vector_db.index_datasets(
-                        data_to_index, batch_size=self.buffer_size
+                        data_to_index,
+                        embedder_model=self.embedder_model,
+                        batch_size=self.buffer_size,
                     )
                     async with self._lock:
                         self._total_indexed += data_count
                     logger.info(
-                        f"Successfully flushed {data_count} datasets. Total indexed: {self._total_indexed}"
+                        f"Successfully flushed {data_count} datasets to {self.embedder_model.value}. Total indexed: {self._total_indexed}"
                     )
 
                 except Exception as _e:

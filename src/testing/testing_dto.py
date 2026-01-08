@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel, Field
 
+from src.infrastructure.config import EmbedderModel, DEFAULT_EMBEDDER_MODEL
+
 
 class DatasetResultItem(BaseModel):
     """Single dataset result with title and score"""
@@ -22,6 +24,9 @@ class TestQuestion(BaseModel):
 class TestConfig(BaseModel):
     """Configuration for a single test run"""
 
+    embedder_model: EmbedderModel = Field(
+        DEFAULT_EMBEDDER_MODEL, description="Embedder model to use"
+    )
     city: Optional[str] = Field(None, description="Filter by city")
     state: Optional[str] = Field(None, description="Filter by state/region")
     country: Optional[str] = Field(None, description="Filter by country")

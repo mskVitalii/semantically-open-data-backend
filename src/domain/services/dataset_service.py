@@ -13,6 +13,7 @@ from src.datasets_api.datasets_dto import (
     DatasetSearchResponse,
     DatasetResponse,
 )
+from src.infrastructure.config import EmbedderModel, DEFAULT_EMBEDDER_MODEL
 from src.infrastructure.logger import get_prefixed_logger
 from src.infrastructure.paths import PROJECT_ROOT
 from src.utils.datasets_utils import safe_delete
@@ -30,14 +31,17 @@ class DatasetService:
         self.repository = repository
 
     async def search_datasets(
-        self, request: DatasetSearchRequest
+        self,
+        request: DatasetSearchRequest,
+        embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
     ) -> DatasetSearchResponse:
-        """Search for datasets"""
+        """Search for datasets using specified embedder model"""
 
-        # Generate query embedding
-        embedding = await embed(request.query)
+        # Generate query embedding with specified embedder
+        embedding = await embed(request.query, embedder_model=embedder_model)
         datasets = await self.vector_db.search(
             embedding,
+            embedder_model=embedder_model,
             city_filter=request.city,
             state_filter=request.state,
             country_filter=request.country,
@@ -63,12 +67,15 @@ class DatasetService:
     async def search_datasets_with_embeddings(
         self,
         embeddings: ndarray,
+        embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
         city_filter: str = None,
         state_filter: str = None,
         country_filter: str = None,
     ) -> list[DatasetResponse]:
+        """Search for datasets using pre-computed embeddings and specified embedder model"""
         datasets = await self.vector_db.search(
             embeddings,
+            embedder_model=embedder_model,
             city_filter=city_filter,
             state_filter=state_filter,
             country_filter=country_filter,
@@ -121,24 +128,111 @@ class DatasetService:
             logger.error(f"bootstrap_datasets error: {e}")
             return False
 
+    async def index_existing_datasets(
+        self, embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL
+    ) -> dict:
+        """Index existing datasets from filesystem into vector DB with specified embedder"""
+        try:
+            from pathlib import Path
+            from src.utils.datasets_utils import load_metadata_from_file
+
+            # Cities to scan
+            cities = ["berlin", "chemnitz", "leipzig", "dresden"]
+            datasets_to_index: list[DatasetMetadataWithFields] = []
+
+            # Scan each city directory
+            for city in cities:
+                city_path = PROJECT_ROOT / "src" / "datasets" / city
+                if not city_path.exists():
+                    logger.warning(f"City directory not found: {city_path}")
+                    continue
+
+                logger.info(f"Scanning {city} datasets...")
+
+                # Iterate through all dataset directories
+                for dataset_dir in city_path.iterdir():
+                    if not dataset_dir.is_dir():
+                        continue
+
+                    metadata_file = dataset_dir / "metadata.json"
+                    if not metadata_file.exists():
+                        logger.debug(
+                            f"Skipping {dataset_dir.name} - no metadata.json found"
+                        )
+                        continue
+
+                    # Load metadata from file
+                    metadata = load_metadata_from_file(metadata_file)
+                    if metadata is None:
+                        logger.warning(f"Failed to load metadata from {metadata_file}")
+                        continue
+
+                    # Update embedder_model to the one we're indexing with
+                    metadata.embedder_model = embedder_model
+
+                    datasets_to_index.append(metadata)
+
+            if not datasets_to_index:
+                logger.warning("No datasets found in filesystem to index")
+                return {
+                    "ok": False,
+                    "message": "No datasets found in filesystem",
+                    "indexed": 0,
+                }
+
+            logger.info(
+                f"Found {len(datasets_to_index)} datasets in filesystem. Indexing with {embedder_model.value}..."
+            )
+
+            # Ensure collection exists for this embedder
+            await self.vector_db.setup_collection(embedder_model)
+
+            # Index datasets in vector DB
+            await self.vector_db.index_datasets(
+                datasets_to_index, embedder_model=embedder_model
+            )
+
+            logger.info(
+                f"Successfully indexed {len(datasets_to_index)} datasets with {embedder_model.value}"
+            )
+
+            return {
+                "ok": True,
+                "message": f"Indexed {len(datasets_to_index)} datasets from filesystem",
+                "indexed": len(datasets_to_index),
+                "embedder_model": embedder_model.value,
+            }
+
+        except Exception as e:
+            logger.error(f"index_existing_datasets error: {e}", exc_info=True)
+            return {"ok": False, "message": str(e), "indexed": 0}
+
     async def clear_all_data(
         self,
         clear_store: bool = True,
         clear_vector_db: bool = True,
         clear_fs: bool = False,
     ) -> bool:
-        """Clear all data from MongoDB and vector DB"""
+        """Clear all data from MongoDB and vector DB (all embedder collections)"""
         try:
             # Clear MongoDB
             if clear_store:
                 await self.repository.delete_all()
                 logger.warning("Deleted all MONGO collections")
 
-            # Clear vector DB
+            # Clear vector DB - remove collections for all embedder models
             if clear_vector_db:
-                await self.vector_db.remove_collection()
-                await self.vector_db.setup_collection()
-                logger.warning("Cleared vector DB and recreated collection")
+                for embedder_model in EmbedderModel:
+                    try:
+                        await self.vector_db.remove_collection(embedder_model)
+                        await self.vector_db.setup_collection(embedder_model)
+                        logger.warning(
+                            f"Cleared vector DB collection for {embedder_model.value}"
+                        )
+                    except Exception as e:
+                        logger.error(
+                            f"Error clearing collection for {embedder_model.value}: {e}"
+                        )
 
             if clear_fs:
                 safe_delete(PROJECT_ROOT / "src" / "datasets" / "dresden", logger)

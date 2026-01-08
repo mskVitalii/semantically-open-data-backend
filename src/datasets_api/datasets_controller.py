@@ -17,7 +17,7 @@ from ..domain.services.llm_service import (
     LLMService,
     get_llm_service_dep,
 )
-from ..infrastructure.config import IS_DOCKER
+from ..infrastructure.config import IS_DOCKER, EmbedderModel, DEFAULT_EMBEDDER_MODEL
 from ..infrastructure.logger import get_prefixed_logger
 from ..vector_search.embedder import embed_batch_with_ids
 
@@ -37,6 +37,7 @@ async def search_datasets(
 
     Supported parameters:
     - query: full-text search by name and description
+    - embedder_model: embedder model to use for search (baai-bge-m3, intfloat-multilingual-e5-base, jinaai-jina-embeddings-v3, sentence-transformers-labse)
     - tags: filter by tags
     - city: filter by city
     - state: filter by state/region
@@ -45,7 +46,7 @@ async def search_datasets(
     - offset: pagination offset
     """
     try:
-        return await service.search_datasets(request)
+        return await service.search_datasets(request, embedder_model=request.embedder_model)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -59,6 +60,9 @@ async def bootstrap(
     use_fs_cache: bool = Query(True, description="Use filesystem cache for datasets"),
     clear_store: bool = Query(True, description="Clear MongoDB store"),
     clear_vector_db: bool = Query(True, description="Clear vector database"),
+    index_all_embedders: bool = Query(
+        False, description="Index datasets with all available embedders after bootstrap"
+    ),
     service: DatasetService = Depends(get_dataset_service),
 ):
     """
@@ -68,6 +72,7 @@ async def bootstrap(
     - clear_store: Clear MongoDB collections
     - clear_vector_db: Clear vector database
     - use_fs_cache: If True, use existing files from filesystem cache. If False, clear and redownload all data.
+    - index_all_embedders: If True, index datasets with all available embedders (not just default)
     """
     try:
         result = await service.bootstrap_datasets(
@@ -75,7 +80,53 @@ async def bootstrap(
             clear_store=clear_store,
             clear_vector_db=clear_vector_db,
         )
-        return {"ok": result}
+
+        # Optionally index with all embedders
+        indexing_results = []
+        if result and index_all_embedders:
+            logger.info("Indexing datasets with all available embedders...")
+            for embedder_model in EmbedderModel:
+                if embedder_model != DEFAULT_EMBEDDER_MODEL:
+                    logger.info(f"Indexing with {embedder_model.value}...")
+                    index_result = await service.index_existing_datasets(
+                        embedder_model=embedder_model
+                    )
+                    indexing_results.append(index_result)
+
+        return {
+            "ok": result,
+            "additional_indexing": indexing_results if index_all_embedders else None,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/index")
+async def index_datasets(
+    embedder_model: EmbedderModel = Query(
+        DEFAULT_EMBEDDER_MODEL, description="Embedder model to use for indexing"
+    ),
+    service: DatasetService = Depends(get_dataset_service),
+):
+    """
+    Index existing datasets from MongoDB into vector DB with specified embedder model
+
+    This endpoint takes datasets that are already stored in MongoDB and indexes them
+    into the vector database using the specified embedder model. Useful for:
+    - Re-indexing datasets with a different embedder model
+    - Creating indexes for new embedder models without re-downloading data
+    - Experimenting with different embedders on the same dataset
+
+    Parameters:
+    - embedder_model: The embedder model to use for generating embeddings and indexing
+    """
+    try:
+        result = await service.index_existing_datasets(embedder_model=embedder_model)
+        if not result.get("ok"):
+            raise HTTPException(status_code=500, detail=result.get("message"))
+        return result
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -124,15 +175,17 @@ async def step_0_llm_questions(
 
 
 async def step_1_embeddings(
-    step: int, research_questions: list[LLMQuestion]
+    step: int,
+    research_questions: list[LLMQuestion],
+    embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
 ) -> list[LLMQuestionWithEmbeddings]:
-    logger.info(f"step: {step}. EMBEDDINGS start")
+    logger.info(f"step: {step}. EMBEDDINGS start ({embedder_model.value})")
     start_1 = time.perf_counter()
 
     questions_list = [
         {"text": q.question, "id": q.question_hash} for q in research_questions
     ]
-    embeddings = await embed_batch_with_ids(questions_list)
+    embeddings = await embed_batch_with_ids(questions_list, embedder_model=embedder_model)
 
     embeddings_map: dict[str, np.ndarray] = {
         str(e["id"]): e["embedding"] for e in embeddings
@@ -156,6 +209,7 @@ async def generate_events(
     question: str,
     datasets_service: DatasetService,
     llm_service: LLMService,
+    embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
     city: str = None,
     state: str = None,
     country: str = None,
@@ -221,7 +275,7 @@ async def generate_events(
         # mb I should provide IDs within the full system to keep the order & do not mix questions embeddings
 
         # region 1. EMBEDDINGS
-        embeddings = await step_1_embeddings(step, research_questions)
+        embeddings = await step_1_embeddings(step, research_questions, embedder_model)
         yield f"data: {
             json.dumps(
                 {
@@ -235,13 +289,14 @@ async def generate_events(
         # endregion
 
         # region 2. VECTOR SEARCH
-        logger.info(f"step: {step}. VECTOR SEARCH start")
+        logger.info(f"step: {step}. VECTOR SEARCH start ({embedder_model.value})")
         start_2 = time.perf_counter()
 
         result_questions_with_datasets: list[LLMQuestionWithDatasets] = []
         for i, embedding in enumerate(embeddings):
             datasets = await datasets_service.search_datasets_with_embeddings(
                 embedding.embeddings,
+                embedder_model=embedder_model,
                 city_filter=city,
                 state_filter=state,
                 country_filter=country,
@@ -328,6 +383,9 @@ async def stream(
     question: str = Query(
         "What is the color of grass in Germany?", description="Ask the system"
     ),
+    embedder_model: EmbedderModel = Query(
+        DEFAULT_EMBEDDER_MODEL, description="Embedder model to use"
+    ),
     city: str = Query(None, description="Filter by city"),
     state: str = Query(None, description="Filter by state/region"),
     country: str = Query(None, description="Filter by country"),
@@ -345,6 +403,7 @@ async def stream(
             question,
             datasets_service,
             llm_service,
+            embedder_model,
             city,
             state,
             country,

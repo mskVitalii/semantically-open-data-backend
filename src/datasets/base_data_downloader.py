@@ -10,6 +10,7 @@ import logging
 
 from src.domain.repositories.dataset_repository import get_dataset_repository
 from src.domain.services.dataset_buffer import DatasetDBBuffer
+from src.infrastructure.config import EmbedderModel, DEFAULT_EMBEDDER_MODEL
 from src.infrastructure.mongo_db import get_mongo_database
 from src.vector_search.vector_db import get_vector_db
 from src.vector_search.vector_db_buffer import VectorDBBuffer
@@ -32,6 +33,7 @@ class BaseDataDownloader(ABC):
         connection_limit_per_host: int = 30,
         batch_size: int = 50,
         max_retries: int = 1,
+        embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
     ):
         """
         Initialize base downloader
@@ -46,6 +48,7 @@ class BaseDataDownloader(ABC):
             connection_limit_per_host: Per-host connection limit
             batch_size: Size of dataset batches to process
             max_retries: Maximum retry attempts for failed requests
+            embedder_model: The embedder model to use for creating embeddings
         """
         self.use_file_system = use_file_system
         self.output_dir = Path(output_dir)
@@ -60,6 +63,7 @@ class BaseDataDownloader(ABC):
         self.use_embeddings = use_embeddings
         self.use_store = use_store
         self.use_parallel = use_parallel
+        self.embedder_model = embedder_model
 
         # Connection configuration
         self.connection_limit = connection_limit
@@ -128,7 +132,9 @@ class BaseDataDownloader(ABC):
         """Initialize Dresden-specific resources"""
         if self.use_embeddings:
             vector_db = await get_vector_db()
-            self.vector_db_buffer = VectorDBBuffer(vector_db)
+            self.vector_db_buffer = VectorDBBuffer(
+                vector_db, embedder_model=self.embedder_model
+            )
 
         if self.use_store:
             database = await get_mongo_database()

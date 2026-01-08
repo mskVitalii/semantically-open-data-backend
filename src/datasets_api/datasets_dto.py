@@ -8,12 +8,16 @@ from src.datasets.datasets_metadata import (
     DatasetMetadataWithFields,
     DatasetJSONEncoder,
 )
+from src.infrastructure.config import EmbedderModel, DEFAULT_EMBEDDER_MODEL
 
 
 class DatasetSearchRequest(BaseModel):
     """DTO for dataset search request"""
 
     query: Optional[str] = Field(None, description="Search query")
+    embedder_model: EmbedderModel = Field(
+        DEFAULT_EMBEDDER_MODEL, description="Embedder model to use for search"
+    )
     tags: Optional[List[str]] = Field(None, description="List of tags for filtering")
     city: Optional[str] = Field(None, description="Filter by city")
     state: Optional[str] = Field(None, description="Filter by state/region")
