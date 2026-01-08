@@ -42,6 +42,8 @@ async def search_datasets(
     - city: filter by city
     - state: filter by state/region
     - country: filter by country
+    - year_from: filter datasets created from this year (inclusive)
+    - year_to: filter datasets created until this year (inclusive)
     - limit: number of results (1–100)
     - offset: pagination offset
     """
@@ -213,6 +215,8 @@ async def generate_events(
     city: str = None,
     state: str = None,
     country: str = None,
+    year_from: int = None,
+    year_to: int = None,
     use_multi_query: bool = True,
     use_llm_interpretation: bool = True,
 ):
@@ -300,6 +304,8 @@ async def generate_events(
                 city_filter=city,
                 state_filter=state,
                 country_filter=country,
+                year_from=year_from,
+                year_to=year_to,
             )
             result_questions_with_datasets.append(
                 LLMQuestionWithDatasets(
@@ -389,6 +395,8 @@ async def stream(
     city: str = Query(None, description="Filter by city"),
     state: str = Query(None, description="Filter by state/region"),
     country: str = Query(None, description="Filter by country"),
+    year_from: int = Query(None, description="Filter datasets created from this year (inclusive)"),
+    year_to: int = Query(None, description="Filter datasets created until this year (inclusive)"),
     use_multi_query: bool = Query(
         True, description="Enable multi-query RAG (generate research questions)"
     ),
@@ -407,6 +415,8 @@ async def stream(
             city,
             state,
             country,
+            year_from,
+            year_to,
             use_multi_query,
             use_llm_interpretation,
         ),

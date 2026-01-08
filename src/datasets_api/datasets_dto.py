@@ -22,6 +22,8 @@ class DatasetSearchRequest(BaseModel):
     city: Optional[str] = Field(None, description="Filter by city")
     state: Optional[str] = Field(None, description="Filter by state/region")
     country: Optional[str] = Field(None, description="Filter by country")
+    year_from: Optional[int] = Field(None, description="Filter datasets created from this year (inclusive)")
+    year_to: Optional[int] = Field(None, description="Filter datasets created until this year (inclusive)")
     limit: int = Field(10, ge=1, le=100, description="Number of results")
     offset: int = Field(0, ge=0, description="Offset for pagination")
 

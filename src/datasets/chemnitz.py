@@ -193,11 +193,12 @@ class Chemnitz(BaseDataDownloader):
     # 4.
     async def download_feature_service_data(
         self,
-        service_url: str,
-        title: str,
-        description: str = "",
+        csv_metadata: Dict[str, str],
     ) -> bool:
         """Download all data from a feature service with optimized concurrency"""
+        service_url = csv_metadata["url"]
+        title = csv_metadata["title"]
+
         try:
             # Get service info
             service_info = await self.get_service_info_by_api(service_url)
@@ -206,14 +207,28 @@ class Chemnitz(BaseDataDownloader):
                 await self.update_stats("failed_datasets", title)
                 return True
 
-            # Prepare metadata
+            # Parse tags and categories from CSV
+            tags_str = csv_metadata.get("tags", "")
+            tags = [t.strip() for t in tags_str.split(",")] if tags_str else None
+
+            categories_str = csv_metadata.get("categories", "")
+            groups = [c.strip() for c in categories_str.split(",")] if categories_str else None
+
+            # Prepare metadata with all available fields
             package_meta = DatasetMetadataWithFields(
-                id=service_info.get("serviceItemId"),
+                id=service_info.get("serviceItemId") or csv_metadata.get("id"),
                 title=title,
-                description=description,
+                description=csv_metadata.get("description"),
+                organization=csv_metadata.get("source"),
+                metadata_created=csv_metadata.get("created"),
+                metadata_modified=csv_metadata.get("modified"),
                 city="Chemnitz",
                 state="Saxony",
                 country="Germany",
+                tags=tags,
+                groups=groups,
+                url=csv_metadata.get("url"),
+                author=csv_metadata.get("owner"),
             )
 
             # Get all features
@@ -289,9 +304,7 @@ class Chemnitz(BaseDataDownloader):
     async def process_dataset(self, metadata: Dict[str, str]) -> bool:
         """Process a single dataset"""
         title = metadata["title"]
-        url = metadata["url"]
         dataset_type = metadata["type"]
-        description = metadata.get("description", "")
 
         safe_title = sanitize_title(title)
         if await self.is_dataset_unsuitable(safe_title):
@@ -313,7 +326,7 @@ class Chemnitz(BaseDataDownloader):
 
         try:
             if "Feature Service" == dataset_type:
-                return await self.download_feature_service_data(url, title, description)
+                return await self.download_feature_service_data(metadata)
             else:
                 return False
 
@@ -336,12 +349,28 @@ class Chemnitz(BaseDataDownloader):
 
         for row in reader:
             if row.get("url") and row.get("url").strip():
+                # Extract all available metadata from CSV
                 datasets.append(
                     {
+                        "id": row.get("id", "").strip(),
+                        "owner": row.get("owner", "").strip(),
+                        "created": row.get("created", "").strip(),
+                        "modified": row.get("modified", "").strip(),
                         "title": row.get("title", "").strip(),
-                        "url": row.get("url").strip(),
                         "type": row.get("type", "").strip(),
                         "description": row.get("description", "").strip(),
+                        "tags": row.get("tags", "").strip(),
+                        "snippet": row.get("snippet", "").strip(),
+                        "categories": row.get("categories", "").strip(),
+                        "accessInformation": row.get("accessInformation", "").strip(),
+                        "licenseInfo": row.get("licenseInfo", "").strip(),
+                        "culture": row.get("culture", "").strip(),
+                        "url": row.get("url").strip(),
+                        "access": row.get("access", "").strip(),
+                        "license": row.get("license", "").strip(),
+                        "source": row.get("source", "").strip(),
+                        "extent": row.get("extent", "").strip(),
+                        "industries": row.get("industries", "").strip(),
                     }
                 )
         await self.update_stats("datasets_found", len(datasets))
