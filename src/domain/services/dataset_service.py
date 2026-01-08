@@ -45,6 +45,8 @@ class DatasetService:
             city_filter=request.city,
             state_filter=request.state,
             country_filter=request.country,
+            year_from=request.year_from,
+            year_to=request.year_to,
             limit=request.limit,
         )
 
@@ -71,6 +73,8 @@ class DatasetService:
         city_filter: str = None,
         state_filter: str = None,
         country_filter: str = None,
+        year_from: int = None,
+        year_to: int = None,
     ) -> list[DatasetResponse]:
         """Search for datasets using pre-computed embeddings and specified embedder model"""
         datasets = await self.vector_db.search(
@@ -79,6 +83,8 @@ class DatasetService:
             city_filter=city_filter,
             state_filter=state_filter,
             country_filter=country_filter,
+            year_from=year_from,
+            year_to=year_to,
         )
 
         results = []

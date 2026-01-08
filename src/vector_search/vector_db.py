@@ -13,6 +13,7 @@ from qdrant_client.models import (
     FieldCondition,
     MatchValue,
     PayloadSchemaType,
+    Range,
 )
 
 from src.datasets.datasets_metadata import DatasetMetadataWithFields
@@ -127,6 +128,13 @@ class VectorDB:
                     field_name=field,
                     field_schema=PayloadSchemaType.KEYWORD,
                 )
+
+            # Create integer index for year filtering
+            await self.qdrant.create_payload_index(
+                collection_name=collection_name,
+                field_name="year",
+                field_schema=PayloadSchemaType.INTEGER,
+            )
             logger.info(f"Collection {collection_name} created with indexes")
 
     async def index_datasets(
@@ -190,6 +198,8 @@ class VectorDB:
         city_filter: Optional[str] = None,
         state_filter: Optional[str] = None,
         country_filter: Optional[str] = None,
+        year_from: Optional[int] = None,
+        year_to: Optional[int] = None,
         limit: int = 5,
     ) -> list[ScoredPoint]:
         """Search for datasets using query_points method in specific embedder collection"""
@@ -208,6 +218,18 @@ class VectorDB:
         if country_filter:
             filter_conditions.append(
                 FieldCondition(key="country", match=MatchValue(value=country_filter))
+            )
+
+        # Add year range filter if specified
+        if year_from is not None or year_to is not None:
+            range_config = {}
+            if year_from is not None:
+                range_config["gte"] = year_from
+            if year_to is not None:
+                range_config["lte"] = year_to
+
+            filter_conditions.append(
+                FieldCondition(key="year", range=Range(**range_config))
             )
 
         # Create filter if any conditions exist

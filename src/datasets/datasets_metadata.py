@@ -9,6 +9,43 @@ from src.infrastructure.config import EmbedderModel, DEFAULT_EMBEDDER_MODEL
 from src.utils.embeddings_utils import format_metadata_text
 
 
+def extract_year_from_date(date_str: Optional[str]) -> Optional[int]:
+    """Extract year from date string in various formats"""
+    if not date_str:
+        return None
+
+    try:
+        # Try parsing GMT format: "Wed, 01 Dec 2021 13:29:47 GMT"
+        from datetime import datetime
+
+        # Try different date formats
+        formats = [
+            "%a, %d %b %Y %H:%M:%S %Z",  # GMT format
+            "%Y-%m-%dT%H:%M:%S",  # ISO format without timezone
+            "%Y-%m-%d %H:%M:%S",  # Standard datetime
+            "%Y-%m-%d",  # Just date
+        ]
+
+        for fmt in formats:
+            try:
+                dt = datetime.strptime(date_str.strip(), fmt)
+                return dt.year
+            except ValueError:
+                continue
+
+        # If all formats fail, try to extract year with regex
+        import re
+
+        year_match = re.search(r"\b(19|20)\d{2}\b", date_str)
+        if year_match:
+            return int(year_match.group(0))
+
+    except Exception:
+        pass
+
+    return None
+
+
 @dataclass
 class DatasetMetadata:
     """Simple dataset metadata structure"""
@@ -48,6 +85,9 @@ class DatasetMetadata:
 
     def to_payload(self) -> dict[str, Any]:
         """Convert to Qdrant payload"""
+        # Extract year from metadata_created for filtering
+        year = extract_year_from_date(self.metadata_created)
+
         return {
             "id": self.id,
             "title": self.title,
@@ -63,6 +103,7 @@ class DatasetMetadata:
             "url": self.url,
             "author": self.author,
             "embedder_model": self.embedder_model.value,
+            "year": year,  # Add year for range filtering
         }
 
     def to_dict(self) -> dict[str, Any]:
