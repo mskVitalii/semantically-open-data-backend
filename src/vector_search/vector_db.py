@@ -75,7 +75,9 @@ class VectorDB:
 
     # endregion
 
-    async def setup_collection(self, embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL):
+    async def setup_collection(
+        self, embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL
+    ):
         """Create Qdrant collection if not exists for specific embedder model"""
         collection_name = get_collection_name(embedder_model)
         embedding_dim = get_embedding_dim(embedder_model)
@@ -191,7 +193,7 @@ class VectorDB:
         country_filter: Optional[str] = None,
         year_from: Optional[int] = None,
         year_to: Optional[int] = None,
-        limit: int = 5,
+        limit: int = 25,
     ) -> list[ScoredPoint]:
         """Search for datasets using query_points method in specific embedder collection"""
         collection_name = get_collection_name(embedder_model)

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
-from typing import Optional
+from fastapi.responses import FileResponse
+from typing import Optional, List
 
 from src.domain.services.dataset_service import DatasetService, get_dataset_service
 from src.domain.services.llm_service import LLMService, get_llm_service_dep
@@ -10,6 +11,7 @@ from src.testing.testing_dto import (
     BulkTestRequest,
     TestReport,
     TestConfig,
+    UpdateRelevanceRequest,
 )
 from src.testing.testing_service import get_testing_service
 
@@ -211,6 +213,107 @@ async def get_report(
         raise
     except Exception as e:
         logger.error(f"Failed to get report: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# endregion
+
+
+# region Relevance Rating
+
+
+@router.post("/reports/{report_id}/relevance")
+async def update_relevance_rating(
+    report_id: str,
+    request: UpdateRelevanceRequest,
+    dataset_service: DatasetService = Depends(get_dataset_service),
+    llm_service: LLMService = Depends(get_llm_service_dep),
+):
+    """
+    Update relevance rating for a dataset in a test result
+
+    Relevance rating scale:
+    - 0: Not relevant
+    - 0.5: Partially relevant
+    - 1: Fully relevant
+
+    This rating is used to calculate weighted scores when comparing experiments.
+    """
+    try:
+        testing_service = get_testing_service(dataset_service, llm_service)
+        success = testing_service.update_relevance_rating(
+            report_id=report_id,
+            question=request.question,
+            dataset_id=request.dataset_id,
+            relevance_rating=request.relevance_rating,
+        )
+
+        if success:
+            return {"ok": True, "message": "Relevance rating updated successfully"}
+        else:
+            raise HTTPException(
+                status_code=404, detail="Dataset not found in the specified question"
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update relevance rating: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# endregion
+
+
+# region Excel Export
+
+
+@router.get("/export/excel")
+async def export_to_excel(
+    report_ids: str = Query(
+        ...,
+        description="Comma-separated list of report IDs to compare (e.g., 'report1,report2,report3')",
+    ),
+    dataset_service: DatasetService = Depends(get_dataset_service),
+    llm_service: LLMService = Depends(get_llm_service_dep),
+):
+    """
+    Export comparison of multiple reports to Excel
+
+    Creates an Excel file with three sheets:
+    1. **Weighted Scores**: Average weighted score (score * relevance_rating) per question per experiment
+    2. **Relevance Metrics**: Percentage of relevant datasets (rating >= 0.5) per question per experiment
+    3. **Detailed Ratings**: All datasets with their scores and relevance ratings
+
+    The Excel file is structured as:
+    - Sheets 1-2: Rows = Questions, Columns = Experiments (different configurations/models)
+    - Sheet 3: Detailed list of all datasets with ratings
+
+    Example usage:
+    GET /testing/export/excel?report_ids=report1,report2,report3
+
+    Returns the Excel file for download.
+    """
+    try:
+        # Parse report IDs
+        report_id_list = [rid.strip() for rid in report_ids.split(",")]
+
+        if not report_id_list:
+            raise HTTPException(
+                status_code=400, detail="At least one report ID must be provided"
+            )
+
+        testing_service = get_testing_service(dataset_service, llm_service)
+        excel_file = testing_service.export_to_excel(report_ids=report_id_list)
+
+        return FileResponse(
+            excel_file,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            filename=f"experiment_comparison.xlsx",
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Failed to export to Excel: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
