@@ -139,7 +139,6 @@ class DatasetService:
     ) -> dict:
         """Index existing datasets from filesystem into vector DB with specified embedder"""
         try:
-            from pathlib import Path
             from src.utils.datasets_utils import load_metadata_from_file
 
             # Cities to scan
@@ -186,26 +185,43 @@ class DatasetService:
                     "indexed": 0,
                 }
 
+            total_datasets = len(datasets_to_index)
             logger.info(
-                f"Found {len(datasets_to_index)} datasets in filesystem. Indexing with {embedder_model.value}..."
+                f"Found {total_datasets} datasets in filesystem. Indexing with {embedder_model.value}..."
             )
 
             # Ensure collection exists for this embedder
             await self.vector_db.setup_collection(embedder_model)
 
-            # Index datasets in vector DB
-            await self.vector_db.index_datasets(
-                datasets_to_index, embedder_model=embedder_model
-            )
+            # Index datasets in batches of 100
+            batch_size = 10
+            total_batches = (total_datasets + batch_size - 1) // batch_size
+
+            for i in range(0, total_datasets, batch_size):
+                batch = datasets_to_index[i : i + batch_size]
+                batch_num = i // batch_size + 1
+
+                logger.info(
+                    f"Processing batch {batch_num}/{total_batches} ({len(batch)} datasets)..."
+                )
+
+                # Index this batch
+                await self.vector_db.index_datasets(
+                    batch, embedder_model=embedder_model
+                )
+
+                logger.info(
+                    f"✓ Batch {batch_num}/{total_batches} completed ({i + len(batch)}/{total_datasets} total)"
+                )
 
             logger.info(
-                f"Successfully indexed {len(datasets_to_index)} datasets with {embedder_model.value}"
+                f"Successfully indexed all {total_datasets} datasets with {embedder_model.value}"
             )
 
             return {
                 "ok": True,
-                "message": f"Indexed {len(datasets_to_index)} datasets from filesystem",
-                "indexed": len(datasets_to_index),
+                "message": f"Indexed {total_datasets} datasets from filesystem",
+                "indexed": total_datasets,
                 "embedder_model": embedder_model.value,
             }
 

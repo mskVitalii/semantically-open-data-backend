@@ -20,7 +20,6 @@ from src.datasets.datasets_metadata import (
 from src.infrastructure.logger import get_prefixed_logger
 from src.utils.datasets_utils import (
     extract_fields,
-    load_metadata_from_file,
 )
 from src.utils.file import save_file_with_task
 
@@ -529,21 +528,21 @@ class Berlin(BaseDataDownloader):
         metadata_file = dataset_dir / "metadata.json"
 
         # Skip if already processed successfully
-        if self.use_file_system:
-            if metadata_file.exists():
-                self.logger.debug(f"Dataset already processed: {package_name}")
-                await self.update_stats("datasets_processed")
-                await self.update_stats("files_downloaded")
-
-                # Load metadata from file
-                package_meta = load_metadata_from_file(metadata_file)
-                if package_meta and self.use_embeddings and self.vector_db_buffer:
-                    await self.vector_db_buffer.add(package_meta)
-                # I don't need to store the data...
-                # if self.use_store and self.dataset_db_buffer:
-                #     dataset = Dataset(metadata=package_meta, data=)
-                #     await self.dataset_db_buffer.add(dataset)
-                return True
+        # if self.use_file_system:
+        #     if metadata_file.exists():
+        #         self.logger.debug(f"Dataset already processed: {package_name}")
+        #         await self.update_stats("datasets_processed")
+        #         await self.update_stats("files_downloaded")
+        #
+        #         # Load metadata from file
+        #         package_meta = load_metadata_from_file(metadata_file)
+        #         if package_meta and self.use_embeddings and self.vector_db_buffer:
+        #             await self.vector_db_buffer.add(package_meta)
+        #         # I don't need to store the data...
+        #         # if self.use_store and self.dataset_db_buffer:
+        #         #     dataset = Dataset(metadata=package_meta, data=)
+        #         #     await self.dataset_db_buffer.add(dataset)
+        #         return True
 
         # Minimal delay to respect server
         await asyncio.sleep(self.delay)
@@ -625,6 +624,19 @@ class Berlin(BaseDataDownloader):
             )
 
             if success_count > 0:
+                # Extract author/maintainer
+                author = package.get("author")
+                maintainer = package.get("maintainer")
+                maintainer_email = package.get("maintainer_email")
+
+                # Combine author information
+                author_str = author if author else None
+                if maintainer:
+                    if author_str:
+                        author_str = f"{author_str}, {maintainer}"
+                    else:
+                        author_str = maintainer
+
                 package_meta = DatasetMetadataWithFields(
                     id=meta_id,
                     title=title,
@@ -632,6 +644,10 @@ class Berlin(BaseDataDownloader):
                     organization=package.get("organization", {}).get("title"),
                     tags=[tag.get("name") for tag in package.get("tags", [])],
                     description=package.get("notes"),
+                    metadata_created=package.get("metadata_created"),
+                    metadata_modified=package.get("metadata_modified"),
+                    author=author_str,
+                    url=package.get("url"),
                     city="Berlin",
                     state="Berlin",
                     country="Germany",
@@ -826,11 +842,12 @@ async def main():
             max_workers=args.max_workers,
             use_file_system=True,
             delay=args.delay,
-            use_embeddings=True,
+            use_store=False,
+            use_embeddings=False,
             connection_limit=args.connection_limit,
             batch_size=args.batch_size,
             use_parallel=True,
-            use_playwright=True,
+            use_playwright=False,
         ) as downloader:
             await downloader.process_all_datasets()
 

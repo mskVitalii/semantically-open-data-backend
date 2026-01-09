@@ -1,22 +1,21 @@
-Found 716 metadata.json files
+Found 664 metadata.json files
 
 ================================================================================
 FIELD STATISTICS
 ================================================================================
-Total fields (from all files): 9552
-Total check (non-dup + sum of dup counts): 9552
-Unique fields: 2267
-Duplicate fields (out of unique): 721
-Non-duplicate fields (out of unique): 1546
+Total fields (from all files): 9100
+Total check (non-dup + sum of dup counts): 9100
+Unique fields: 1989
+Duplicate fields (out of unique): 695
+Non-duplicate fields (out of unique): 1294
 
 ================================================================================
 DUPLICATE FIELDS (sorted by frequency)
 ================================================================================
 
- 290x | id
- 176x | name
+ 279x | id
+ 174x | name
  172x | jahr
- 171x | kategorie
  170x | wert
  170x | periode
  170x | kategorie_Nr
@@ -24,6 +23,7 @@ DUPLICATE FIELDS (sorted by frequency)
  170x | jahr_Nr
  170x | uri
  170x | einheit
+ 170x | kategorie
  170x | rubrik
  124x | merkmal_1
  124x | merkmal_2
@@ -32,33 +32,33 @@ DUPLICATE FIELDS (sorted by frequency)
   98x | type
   96x | geometry.type
   96x | geometry.coordinates
-  95x | Unnamed: 1
-  80x | Unnamed: 2
+  88x | Unnamed: 1
+  77x | Unnamed: 2
   76x | properties.OBJECTID
-  55x | Unnamed: 3
-  53x | Unnamed: 4
+  52x | Unnamed: 3
   51x | properties.ID
-  49x | ortsteil
+  50x | Unnamed: 4
+  48x | ortsteil
   46x | stadtbezirk
-  38x | Unnamed: 5
-  37x | Unnamed: 6
   37x | properties.Stichtag
-  34x | Jahr
-  34x | Unnamed: 7
+  35x | Unnamed: 5
+  34x | Unnamed: 6
   33x | properties.SHAPE__Length
+  32x | Jahr
   32x | properties.BRW
   32x | properties.SHAPE__Area
-  31x | Titel
-  30x | Kapitel
+  30x | Unnamed: 7
+  30x | Titel
+  29x | Kapitel
   28x | Funktion
   28x | properties.Jahr
-  26x | Unnamed: 0
   24x | datum
   24x | wahl
   24x | gebiet-name
-  23x | Unnamed: 8
+  23x | Unnamed: 0
   22x | ags
   22x | Datum
+  22x | Unnamed: 8
   21x | gebiet-nr
   21x | max-schnellmeldungen
   21x | anz-schnellmeldungen
@@ -73,11 +73,10 @@ DUPLICATE FIELDS (sorted by frequency)
   21x | 2022
   20x | properties.PLZ
   20x | properties.ORT
-  19x | Ortsteil
   19x | properties.FID
   19x | properties.STRASSE
+  18x | Ortsteil
   18x | Anzahl
-  18x | Unnamed: 9
   18x | properties.BEZEICHNUNG
   18x | properties.TELEFON
   17x | E
@@ -99,22 +98,19 @@ DUPLICATE FIELDS (sorted by frequency)
   17x | D16
   17x | D17
   17x | D18
+  17x | Unnamed: 9
   16x | 2024
-  16x | Beschreibung
-  16x | Unnamed: 10
-  16x | Unnamed: 11
-  16x | Unnamed: 12
-  16x | Unnamed: 13
   16x | properties.WGFZ
-  15x | Datensatztitel
-  15x | Datenstand
-  15x | Bereich
-  15x | Titelbezeichnung
-  15x | Haushaltsjahr
+  15x | Unnamed: 10
+  15x | Unnamed: 11
+  15x | Unnamed: 12
+  15x | Unnamed: 13
   14x | objectid
-  14x | PLZ
   14x | Typ
+  14x | Bereich
   14x | Einzelplan
+  14x | Titelbezeichnung
+  14x | Haushaltsjahr
   14x | Bkz
   14x | Unterkonto
   14x | Kennbuchstabe
@@ -155,9 +151,6 @@ DUPLICATE FIELDS (sorted by frequency)
   13x | D24
   13x | D25
   13x | D26
-  13x | FID
-  13x | Tabellenüberschrift
-  13x | Nummer und Erklärung Fußnote
   13x | Unnamed: 14
   13x | Titelart
   13x | Zähler
@@ -165,8 +158,7 @@ DUPLICATE FIELDS (sorted by frequency)
   13x | Verfügbares Soll
   13x | Verfügbare Mittel
   13x | properties.KURZBEZEICHNUNG
-  12x | plz
-  12x | Bezirk
+  12x | FID
   12x | Unnamed: 15
   12x | Unnamed: 16
   12x | Bezeichnung
@@ -190,7 +182,6 @@ DUPLICATE FIELDS (sorted by frequency)
   12x | properties.Grundstueckstiefe
   12x | properties.Bauweise
   12x | properties.Satzung
-  11x | Geschlecht
   11x | fme_tstamp
   11x | geom
   11x | Funktionsbezeichnung
@@ -205,8 +196,11 @@ DUPLICATE FIELDS (sorted by frequency)
   10x | Stimme_text
   10x | Partei_ID_StatAmtLE
   10x | Parteiname_harmonisiert_v1_0
+  10x | Geschlecht
   10x | -
-  10x | Bezeichnung Registerkarte
+  10x | Datensatztitel
+  10x | Beschreibung
+  10x | Datenstand
   10x | properties.Typ
    9x | F19
    9x | F20
@@ -219,7 +213,9 @@ DUPLICATE FIELDS (sorted by frequency)
    9x | Kennzahl
    9x | 2023
    9x | D27
-   9x | Adresse
+   9x | PLZ
+   9x | Tabellenüberschrift
+   9x | Nummer und Erklärung Fußnote
    9x | properties.SATZUNG
    9x | properties.FLAECHE
    9x | properties.Wert
@@ -228,35 +224,31 @@ DUPLICATE FIELDS (sorted by frequency)
    9x | properties.Teilmarkt
    8x | Merkmal
    8x | Wahlbezirk
-   8x | Name
    8x | Vorname
-   8x | Hausnummer
-   8x | Ort
    7x | Kennziffer
    7x | Rang
    7x | strname
-   7x | bezirk
-   7x | adresse
    7x | 2012
    7x | Straße
-   7x | internet
-   7x | Schulart
+   7x | Bezirk
    7x | ID
-   7x | Betrag
    7x | properties.STATUS
    7x | properties.STICHTAG
+   6x | Name
+   6x | plz
    6x | Rang.1
    6x | Anzahl.1
    6x | Vorname.1
    6x | Geschlecht.1
    6x | lat
    6x | pflanzjahr
-   6x | Straßenname
+   6x | bezirk
    6x | 2013
    6x | Stunde
    6x | Jahresprofil 2024
    6x | Energiemenge 2024
    6x | BetragTyp
+   6x | Betrag
    6x | Unnamed: 17
    6x | Unnamed: 18
    6x | Unnamed: 19
@@ -264,13 +256,11 @@ DUPLICATE FIELDS (sorted by frequency)
    6x | Unnamed: 21
    6x | properties.STRSCHL
    6x | properties.TYP
-   5x | Standort
    5x | F27
-   5x | anzahl
    5x | GmlId
    5x | Shape
    5x | lng
-   5x | strasse
+   5x | Hausnummer
    5x | 2014
    5x | 2015
    5x | 2016
@@ -281,7 +271,8 @@ DUPLICATE FIELDS (sorted by frequency)
    5x | 2021
    5x | Nr.
    5x | anschrift
-   5x | Schulname
+   5x | internet
+   5x | Bezeichnung Registerkarte
    5x | Unnamed: 22
    5x | Registerkarte
    5x | Einrichtung
@@ -291,7 +282,7 @@ DUPLICATE FIELDS (sorted by frequency)
    5x | properties.PLANZEICHNUNG
    5x | properties.BEGRUENDUNG
    5x | properties.URL
-   4x | Haltestelle
+   4x | Standort
    4x | D28
    4x | D29
    4x | D30
@@ -299,6 +290,7 @@ DUPLICATE FIELDS (sorted by frequency)
    4x | D32
    4x | D33
    4x | D34
+   4x | anzahl
    4x | vorname
    4x | geschlecht
    4x | position
@@ -311,6 +303,7 @@ DUPLICATE FIELDS (sorted by frequency)
    4x | wassersumme
    4x | anzahlg
    4x | Straßenschlüssel
+   4x | Straßenname
    4x | B2
    4x | E1
    4x | E1_1
@@ -406,7 +399,6 @@ DUPLICATE FIELDS (sorted by frequency)
    4x | E14_1
    4x | E15
    4x | E15_1
-   4x | Strasse
    4x | unternehmen
    4x | nominalkapital
    4x | anteil
@@ -420,6 +412,8 @@ DUPLICATE FIELDS (sorted by frequency)
    4x | logo
    4x | geschaeftsfuehrung
    4x | kontrollgremienvorsitz
+   4x | Schulart
+   4x | Adresse
    4x | Bemerkungen
    4x | Schüler (w/m/d)
    4x | Unnamed: 25
@@ -451,6 +445,7 @@ DUPLICATE FIELDS (sorted by frequency)
    3x | Briefwbz
    3x | Anzahl n
    3x | Gebiet
+   3x | Haltestelle
    3x | wnum
    3x | gesl
    3x | gena
@@ -509,7 +504,7 @@ DUPLICATE FIELDS (sorted by frequency)
    3x | Hauptvariante 2022
    3x | parkingfacilityname
    3x | dynamicdatasource
-   3x | ort
+   3x | adresse
    3x | 2007
    3x | 2008
    3x | 2009
@@ -521,7 +516,7 @@ DUPLICATE FIELDS (sorted by frequency)
    3x | gerade Hausnr. von
    3x | -.1
    3x | gerade Hausnr. bis
-   3x | bild
+   3x | Strasse
    3x | Träger
    3x | Unnamed: 26
    3x | Unnamed: 27
@@ -536,11 +531,9 @@ DUPLICATE FIELDS (sorted by frequency)
    3x | Wärmeversorgung
    3x | Wärmeverbrauch witterungsbereinigt
    3x | Stromverbrauch
-   3x | telefon
-   3x | Telefonnummer
+   3x | Ort
    3x | Unnamed: 23
    3x | Unnamed: 24
-   3x | Postleitzahl
    3x | properties.VONDATUM
    3x | properties.BEMERKUNG
    3x | properties.MARKTRICHTWERT
@@ -603,6 +596,7 @@ DUPLICATE FIELDS (sorted by frequency)
    2x | kivan_id
    2x | name_einr
    2x | hnr_alles
+   2x | ort
    2x | sbz
    2x | gesamtkap
    2x | art_einr
@@ -620,6 +614,7 @@ DUPLICATE FIELDS (sorted by frequency)
    2x | link
    2x | foto
    2x | gebiet
+   2x | strasse
    2x | ot
    2x | stadtbzrk
    2x | beginn
@@ -633,12 +628,10 @@ DUPLICATE FIELDS (sorted by frequency)
    2x | Vorhaben
    2x | Kategorie
    2x | Telefon
-   2x | Breitengrad
-   2x | Längengrad
-   2x | Betreiber
    2x | Bezirkshaushaltsplan Tempelhof-Schöneberg 2016/2017
    2x | 1 Mitglieder der Fraktionen des Berliner Abgeordnetenhauses (Parlament) nach den Wahlen 2006, 2011, 2016 und 2021(1)(Quelle: Wahlstatistik; eigene Berechnungen)
    2x | 1 Mitglieder der Fraktionen des Berliner Abgeordnetenhauses (Parlament) nach den Wahlen 2006, 2011, 2016 und 2023(1)(Quelle: Wahlstatistik; eigene Berechnungen)
+   2x | Schulname
    2x | bezeichnung_des_vorhabens
    2x | zusammenfassung_des_vorhabens
    2x | postleitzahl
@@ -646,38 +639,18 @@ DUPLICATE FIELDS (sorted by frequency)
    2x | Website
    2x |  statistik  Berlin Brandenburg
    2x | 1 Verdienste (Bruttostundenverdienste) von Frauen und Männern im Jahr 2022 in Berlin in den unterschiedlichen Altersgruppen (Quelle: Verdiensterhebung Referenzmonat April 2022)
-   2x | standort
-   2x | north_etrs89
-   2x | east_etrs89
-   2x | breitengrad
-   2x | laengengrad
    2x | Schulzweig
    2x | Schülergruppe
    2x | Unterrichtsform
-   2x | Institution
-   2x | Schulnummer
-   2x | Steuerart
-   2x | Ertragshoheit
-   2x | PSA 
-Nr.
    2x | Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2019
-   2x | Baumaßnahme
-   2x | einrichtung
-   2x | angebote
-   2x | e_mail
-   2x | traeger
-   2x | Messe
-   2x | Ansprechpartner
    2x | Ansatz 2016 in €
    2x | Ansatz 2017 in €
-   2x | email
    2x | 1 Bevölkerung in Berlin 2020 nach Quelle des überwiegenden Lebensunterhalts, Altersgruppen und Geschlecht(1) (Quelle: Mikrozensus)
    2x | Erläuterungen zu den Tabellen
+   2x | Postleitzahl
    2x | Samstag
    2x | Sonntag
-   2x | Tabellenkopf
-   2x | Nummer Fußnote
-   2x | Nr
+   2x | Telefonnummer
    2x | Unnamed: 29
    2x | Unnamed: 35
    2x | Unnamed: 36
@@ -774,7 +747,6 @@ NON-DUPLICATE FIELDS (sorted alphabetically)
    1x |  n e i n   h a e t t e   a b e r   I n t e r e s s e 
    1x |  n e i n   i c h   w a r   v o n   k e i n e r   d e r   g e n a n n t e n   Ä n d e r u n g e n   b e t r o f f e n 
    1x |  w e i b l i c h 
-   1x | 	MaStR-Nr. des Anlagenbetreibers
    1x | 
 Institution
    1x |    Pädagogisches Personal und Verwaltungspersonal - Wochenarbeitsstunden - 25 bis unter 32
@@ -784,8 +756,6 @@ Institution
    1x |   Pädagogisches Personal und Verwaltungspersonal - berufliche Stellung -  Angestellte befristet
    1x |  "2023 Virtuelle Besucher"
    1x |  Bezirk-ID
-   1x |  Einnahmen Januar 2024 (T EUR)
-   1x |  Einnahmen Januar 2025 (T EUR)
    1x |  Energiebilanz Baden-Württemberg 1990
    1x |  Hauptvariante 2020
    1x |  Jahr 2022
@@ -1011,13 +981,10 @@ Institution
    1x | Abwasser_Temperatur
    1x | Abwasser_pH
    1x | Adresse_Begegnungsstätte
-   1x | Algen
-   1x | AltK_13IRB-2-5-9-14-17-24-29-44-59-64-74-84-
    1x | Alter
    1x | Alter_in_Jahren
    1x | Altersgruppe
    1x | Altersklasse
-   1x | Anmerkungen
    1x | Ansatz 2010
  (in Tsd. EUR)
    1x | Ansatz 2011
@@ -1033,41 +1000,28 @@ Institution
    1x | Ansatz 2019 in 
    1x | Ansatz 2020 in €
    1x | Ansatz 2021 in €
-   1x | Anschrift
    1x | Anteil Verfahren in Prozent
    1x | Anteil Vergabesumme in Prozent
    1x | Antragsart
    1x | Antragsteller
-   1x | Anzahl Anträge
-   1x | Anzahl Einwohner
    1x | Anzahl verkaufte "3 € Tickets" Berliner Bühnen
    1x | Anzahl1
    1x | Anzahl_Anfragen
    1x | Anzahl_SBB_Anträge
    1x | Anzahl_eingereichte_Antraege
-   1x | Anzeige-Name der Einheit
    1x | Anzeigen
    1x | Arbeitslose
    1x | Arbeitsplatznummer
-   1x | Art
    1x | Art der Anmeldung
-   1x | Ateliers
    1x | Ausland
    1x | Ausleihtyp
    1x | Ausländische Staatsbürger
-   1x | Ausserplanmäßige Ausgaben
-   1x | Ausserplanmäßige VE
    1x | Auszubildende
    1x | Autor:in
    1x | B - berufliche Gründe bzw. Aufnahme eines Studiums einer Ausbildung; Angaben in Prozent
    1x | B-Woche_Abfahrt_(Uhrzeit)
    1x | B-Woche_Ankunft_(Uhrzeit)
-   1x | BEZ
    1x | BREITE (WGS84)
-   1x | BSL
-   1x | BZR
-   1x | BadName
-   1x | BadestelleLink
    1x | Baujahr 1919 bis 1945
    1x | Baujahr 1946 bis 1960
    1x | Baujahr 1961 bis 1990 Plattenbau
@@ -1078,7 +1032,6 @@ Institution
    1x | Begegnungsstätten (BGST)
    1x | Beginn des Angebotes
    1x | Behinderte
-   1x | Bemerkung
    1x | Bemerkungen
 
         Angaben
@@ -1091,10 +1044,8 @@ Institution
    1x | Berlin Breitbandatlas Verfügbarkeiten Mitte 2017
    1x | Berlin-
 pass***
-   1x | Berliner Schulnummer
    1x | Beschlussnummer
    1x | Beschränkte Ausschreibung
-   1x | Beschäftigte
    1x | Besuche 
 insgesamt
    1x | Besuche außerhalb
@@ -1107,22 +1058,17 @@ stellungen
 
    1x | Betrag in EUR
    1x | Betrieb
-   1x | Betriebe
-   1x | Betriebs-Status
    1x | Betriebsart
    1x | Bezirk Mitte: Energieverbrauchsübersicht bezirklicher Liegenschaften 2017
    1x | Bezirk Steglitz-Zehlendorf: Energieverbrauchsübersicht bezirklicher Liegenschaften 2017-2018-2019-2020-2021-2022-2023
    1x | Bezirk Tempelhof-Schöneberg: Energieverbrauchsübersicht bezirklicher Gebäude für 2010-2019
-   1x | Branche
    1x | Braunkohlen
-   1x | Brutto-Entgelte (in 1000 EUR)
-   1x | Bruttoleistung der Einheit
+   1x | Breitengrad
    1x | Bundesfrei-
 willigendienst-
 leistende
    1x | Bundesland
    1x | C - familiäre Gründe (z.B. Haushaltsgründung/Scheidung); Angaben in Prozent
-   1x | Cluster
    1x | Coworking Space
    1x | D - Überschreiten der Miet-Obergrenze für ALG-II- und Sozialhilfeempfänger; Angaben in Prozent
    1x | DEINSTALLIERT
@@ -1131,13 +1077,10 @@ leistende
    1x | DET_NAME_ALT
    1x | DET_NAME_NEU
    1x | Das weiß ich noch nicht; Angaben in Prozent
-   1x | Dat
-   1x | Dat_predict
    1x | Deutsche Staatsbürger
    1x | Diplomaten-kennzeichen
    1x | Durchfluss
    1x | E - allgemein zu hohe Miete bzw. Betriebskosten; Angaben in Prozent
-   1x | E-Mail
    1x | E-Mailadresse
    1x | E/A
    1x | EAE-Zugänge
@@ -1146,56 +1089,9 @@ leistende
    1x | ERFASSUNGSGRUND
    1x | E_(Lon_Dezimalgrad)
    1x | E_(Rechtswert_Gauß-Krüger)
-   1x | E_A
-   1x | E_A00_01
-   1x | E_A01_02
-   1x | E_A02_03
-   1x | E_A03_05
-   1x | E_A05_06
-   1x | E_A06_07
-   1x | E_A07_08
-   1x | E_A08_10
-   1x | E_A10_12
-   1x | E_A12_14
-   1x | E_A14_15
-   1x | E_A15U18
-   1x | E_A15_18
-   1x | E_A18U25
-   1x | E_A18_21
-   1x | E_A1U6
-   1x | E_A21_25
-   1x | E_A25U55
-   1x | E_A25_27
-   1x | E_A27_30
-   1x | E_A30_35
-   1x | E_A35_40
-   1x | E_A40_45
-   1x | E_A45_50
-   1x | E_A50_55
-   1x | E_A55U65
-   1x | E_A55_60
-   1x | E_A60_63
-   1x | E_A63_65
-   1x | E_A65U80
-   1x | E_A65_67
-   1x | E_A67_70
-   1x | E_A6U15
-   1x | E_A70_75
-   1x | E_A75_80
-   1x | E_A80U110
-   1x | E_A80_85
-   1x | E_A85_90
-   1x | E_A90_95
-   1x | E_A95_110
-   1x | E_AM
-   1x | E_AU1
-   1x | E_AW
-   1x | Eco
    1x | Ehrenamtskarte
 [mehr Infos durch anklicken]
    1x | Eigentumsgarten/Hausgarten
-   1x | Einnahmen bis Januar 2024 (T EUR)
-   1x | Einnahmen bis Januar 2025 (T EUR)
    1x | Einrichtung_Größe
    1x | Einrichtung_Max. Personen
    1x | Einrichtung_Öffnungszeiten
@@ -1206,17 +1102,13 @@ leistende
    1x | Einwohner_insgesamt_weiblich
    1x | Email
    1x | Ende
-   1x | Energetischer Sanierungsfahrplan Bezirk Lichtenberg
    1x | Energetischer Sanierungsfahrplan Bezirk Tempelhof-Schöneberg
    1x | Energetischer Sanierungsfahrplan Bezirk Treptow-Köpenick
-   1x | Energieträger
    1x | Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2018
    1x | Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2020
    1x | Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2021
    1x | Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2022
    1x | Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2023
-   1x | Ente
-   1x | Entfernung
    1x | Erneuerbare Energieträger
    1x | Erreger
    1x | Evaluation Winterspiel- und Bewegungsangebote Berlin-Mitte Saison 2023/2024: Allgemeine Angaben
@@ -1228,43 +1120,28 @@ leistende
    1x | Faelle in denen Menschen schwer verletzt wurden
    1x | Faelle in denen ausschliesslich andere Hunde verletzt wurden
    1x | Familienzentrum
-   1x | Farb_ID
-   1x | Farbe
-   1x | Fläche in m²
    1x | Freihändige Vergabe
    1x | Fuktionsbezeichnung
    1x | Fächerstatistik
    1x | Fächerstatistik2
-   1x | Förderbereich
-   1x | Fördermaßnahme
-   1x | Förderprojekte
    1x | G - Wohnung ist zu klein; Angaben in Prozent
    1x | GT_AM|TATZ
    1x | Gaeste_Anzahl
    1x | Garten am Haus
    1x | Garten in Kleingartensparte
    1x | Gase
-   1x | Gebaute bzw. geplante Schulplätze
-   1x | Geber
    1x | Geburten
    1x | Geburtsjahr
-   1x | Geleistete Arbeitsstunden (gesamt in 1000h)
    1x | Gemeinschaftsgartenprojekt
    1x | Geo_X_Koor
    1x | Geo_Y_Koor
    1x | Gesamt
    1x | Gesamtanzahl
-   1x | Gesamtkosten in Euro
-   1x | Gesamtumsatz (in 1000 EUR)
    1x | Geschlecht1
-   1x | GruppeA
-   1x | GruppeB
    1x | Gruppen ****
    1x | Grünau
    1x | H
    1x | H - Wohnung ist zu groß; Angaben in Prozent
-   1x | HaltestelleLat
-   1x | HaltestelleLon
    1x | Hauptvariante
    1x | Hauptvariante - Einwohner 31.12.2022
    1x | Hauptvariante 2020
@@ -1274,15 +1151,14 @@ leistende
    1x | Hnr
    1x | Hunderassen
    1x | I - Wohnung/Gebäude ist in schlechtem Zustand bzw. mit Mängeln behaftet; Angaben in Prozent
-   1x | I/A
    1x | INBETRIEBNAHME
    1x | INDRING
    1x | IT_
    1x | IT_.1
    1x | IT_ANFANG_DATUM|TATZ
    1x | IT_ANFANG_STUND
-   1x | Inbetriebnahmedatum der Einheit
    1x | Innenstadtrand
+   1x | Institution
    1x | Internet
    1x | Inventarisierungsdatum
    1x | Ist 2012 T€
@@ -1295,12 +1171,9 @@ leistende
    1x | Jahr 2020
    1x | Jahr 2022
    1x | Jahr 2023
-   1x | Jahresquartal
-   1x | Jury
    1x | K - Wohnviertel ist zu laut bzw. zu dicht bebaut; Angaben in Prozent
    1x | KB
    1x | KOMMENTAR
-   1x | Kapazität nach Baumaßnahme
    1x | Kennzahlen
    1x | Kennzeichen, Juli 2012
    1x | Kinder - Entwicklung 2021 zu 2022 in Prozent
@@ -1317,47 +1190,35 @@ Jugendliche
    1x | Kohorte
    1x | Kommentare
    1x | Kontakt_Telefon
-   1x | Kontaktperson
    1x | Koordinaten
-   1x | Kosten
    1x | Kosten in Euro 
    1x | Kurzbezeichnung
-   1x | Kurzbericht über die Entwicklung des Kulturetats der Hauptverwaltung [in EUR]
    1x | L
    1x | L - zu wenig öffentliches Grün im Wohnviertel; Angaben in Prozent
    1x | LIKT|
    1x | LOR
    1x | Land
    1x | Landtagswahlkreis
-   1x | Lat
-   1x | Latitude
    1x | Leipzig
    1x | Leipzig. Frauen
    1x | Leipzig. Männer
    1x | Leipziger Bevölkerungsvorausschätzung 2019 Hauptvariante
    1x | Leipziger Bevölkerungsvorausschätzung 2019 Oberes Szenario
    1x | Leipziger Bevölkerungsvorausschätzung 2019 Unteres Szenario
-   1x | Letzte Aktualisierung
    1x | Lfd. Nr.
    1x | Lfd.-Nr.
    1x | Link
-   1x | Lon
-   1x | Longitude
    1x | LÄNGE (WGS84)
+   1x | Längengrad
    1x | M - gesundheitliche Gründe (Wohnung ist nicht alten- bzw. behindertengerecht); Angaben in Prozent
    1x | MQ_ID15
    1x | MQ_KURZNAME
-   1x | MaStR-Nr. der Einheit
    1x | Mail
    1x | Mediennummer
    1x | Medientypcode
    1x | Messwert
    1x | Methode
-   1x | Mig. Hinter-grund
-   1x | Mig. Hintergrund
-   1x | Mig.Hinter-grund
    1x | Mineralöle und Mineralölprodukte 
-   1x | Modelltyp
    1x | Monat
    1x | N - Entmietung Sanierung Abriss des Gebäudes; Angaben in Prozent
    1x | ND
@@ -1368,13 +1229,9 @@ Jugendliche
    1x | N_IN_KFZ|
    1x | Nachname
    1x | Name 
-   1x | Name des Anlagenbetreibers (nur Org.)
-   1x | Nettonennleistung der Einheit
-   1x | Nettospiel-
-fläche m² (netto)
    1x | Nichtoffenes Verfahren
-   1x | Nutzungsentgelt 
-   1x | Nutzungsübergabe
+   1x | Nr
+   1x | Nummer Fußnote
    1x | O - Kündigung durch den Vermieter; Angaben in Prozent
    1x | OBJECTID
    1x | OE_DI
@@ -1385,14 +1242,9 @@ fläche m² (netto)
    1x | OE_SA
    1x | Obere Variante - Einwohner 31.12.2022
    1x | Obere_Variante
-   1x | Objekt/Straße
-   1x | Objekt_Zusatz
    1x | Objektadresse
-   1x | Objektname
-   1x | Objektnummer
    1x | Oeffnungszeiten
    1x | Offenes Verfahren
-   1x | Ort/Termin
    1x | Ortschaften
    1x | Ortschaftsgebiet
    1x | Ortsteil- bzw. Stadtbezirksnummer
@@ -1402,9 +1254,6 @@ fläche m² (netto)
    1x | Ortsteilnummer
    1x | Ostdeutschland ohne Sachsen
    1x | P - vermehrte Arbeit im Homeoffice; Angaben in Prozent
-   1x | PDFLink
-   1x | PGR
-   1x | PLR
    1x | POSITION
    1x | POS_DETAIL
    1x | Pachtgarten nicht in einem Kleingartenverein
@@ -1412,17 +1261,11 @@ fläche m² (netto)
    1x | Partei_Name
    1x | Patenbesuch
    1x | Personal insgesamt
-   1x | Personen 20 m²/ Pers.
-   1x | Politikbereich
    1x | Preise 
 (von/bis)
    1x | Prio
    1x | Probennummer
    1x | Produkt - Vergleichsbericht
-   1x | Produkte/Sektoren
-   1x | Profil
-   1x | ProfilLink
-   1x | PrognoseLink
    1x | Pädagogisches Personal und Verwaltungspersonal
    1x | Pädagogisches Personal und Verwaltungspersonal - Alter - 25 bis unter 40 Jahre 
    1x | Pädagogisches Personal und Verwaltungspersonal - Alter - 40 bis unter 54 Jahre
@@ -1435,34 +1278,25 @@ fläche m² (netto)
    1x | Pädagogisches Personal und Verwaltungspersonal - berufliche Stellung - Personen im freiwilligen sozialen Jahr/ BFD
    1x | Pädagogisches Personal und Verwaltungspersonal - berufliche Stellung - Sonstige
    1x | Q - anderer Grund (bitte nennen); Angaben in Prozent
-   1x | Quartal
-   1x | RAUMID
    1x | RICHTUNG
    1x | RLANGT
-   1x | RSS_Name
    1x | RSUCH|D
    1x | Rang1
-   1x | Registrierungsdatum der Einheit
    1x | Rentner
    1x | SBB
    1x | SBB_Anzahl
    1x | SCHADENSHOEHE
    1x | SPUR
-   1x | STADTRAUM
    1x | STRASSE
-   1x | SUBahn
-   1x | SUEntfernung
    1x | S_GUT
    1x | Sachgruppe
    1x | Sachsen ohne Umlandkreise
    1x | Schlagworte
    1x | Schul-Nr.
    1x | Schulbausanierung Maßnahme
-   1x | Schulnr.
-   1x | Schulplätze
+   1x | Schulnummer
    1x | Schüler
    1x | Senatsverwaltung für Mobilität, Verkehr, Klimaschutz und Umwelt
-   1x | Sicht
    1x | Sigel ausführende Bibliothek
    1x | Sigel besitzende Bibliothek
    1x | Sitzung_stattgefunden
@@ -1471,7 +1305,6 @@ fläche m² (netto)
    1x | Sonderthemen
    1x | Sonstige Informationen
    1x | Sonstiges
-   1x | Sozialversicherungspflichtig Beschäftigte
    1x | Sprachen
    1x | StaLa Sachsen 2020 7. regionalisierte Prog. V1
    1x | StaLa Sachsen 2020 7. regionalisierte Prog. V2
@@ -1479,46 +1312,36 @@ fläche m² (netto)
    1x | Stadt
    1x | Stadt bzw. Landkreis
    1x | Stadtbezirk
-   1x | Stadtbezirk mit zugeordneten Ortschaften
    1x | Stadtbezirksbeirat
    1x | Stadtratswahkreis
-   1x | Stadtraum
    1x | Stadtteil
    1x | Stand
    1x | Start
    1x | Station
    1x | Statistischer Bezirk
-   1x | Status 
-(grün=offen, gelb: Öffnung steht bevor, rot: noch geschlossen)
    1x | Steinkohlen
-   1x | Steuereinnahmen Berlins im Monat Januar 2014
+   1x | Steuereinnahmen Berlins im Monat Dezember 2014
    1x | Strassenschluessel
    1x | Straße + Hausnummer
    1x | Strom und andere Energieträger
    1x | Stromverbrauch [kWh]
    1x | Studenten
    1x | Summe in TEUR
-   1x | Symbol
    1x | TATZEIT_ANFANG_DATUM
    1x | TATZEIT_ANFANG_STUNDE
    1x | TATZEIT_ENDE_DATUM
    1x | TATZEIT_ENDE_STUNDE
    1x | TN_VW
+   1x | Tabellenkopf
    1x | Tage
    1x | Target
-   1x | Tarifzone
-   1x | Tarifzone (Erläuterung: 1 = 1€, 2 = 2€, 3 = 3€)
    1x | Teilverkehrszelle
-   1x | Temp
-   1x | Termin
    1x | Termin bis
    1x | Termin von
    1x | Tielbezeichnung
-   1x | Tourismus
    1x | Traeger 
    1x | Träger 
    1x | Träger bzw. Verantwortlicher
-   1x | Trägerwohnraum in der psychiatrischen, ambulanten Pflichtversorgung Berlin-Mitte
    1x | UART
    1x | UGEMEINDE
    1x | UJAHR
@@ -1730,7 +1553,6 @@ fläche m² (netto)
    1x | Untergruppe
    1x | Unterkunftsart_nach
    1x | Unterkunftsart_vor
-   1x | Unterrichtsräume
    1x | Url zu Biografie
    1x | VERSUCH
    1x | Veranstaltungsort
@@ -1744,7 +1566,6 @@ fläche m² (netto)
    1x | Verkauft seit Beginn des Angebotes bis 31.12.06
    1x | Versorgungsgrad Kindergarten in %
    1x | Versorgungsgrad Kinderkrippe in %
-   1x | Vertrag
    1x | Veröffentlichungsjahr
    1x | Vorlagen_und_Antraege
    1x | Vorname1
@@ -1755,16 +1576,11 @@ fläche m² (netto)
    1x | Wanderungssaldo 2020
    1x | Wanderungssaldo 2021
    1x | Wanderungssaldo 2022
-   1x | Wasserqualitaet
-   1x | Wasserqualitaet_lageso
-   1x | Wasserqualitaet_predict
    1x | Wbz
    1x | Wegzug - alte Definition
    1x | Wegzug - revidiert
    1x | Weitere Öffnungszeiten
-   1x | Weitere_Hinweise
    1x | Westdeutschland
-   1x | Wickeltisch
    1x | Wochenendgrundstück
    1x | Wochentag
    1x | Wohndauer
@@ -1775,69 +1591,35 @@ fläche m² (netto)
    1x | Y-Koordinate
    1x | YGCSWGS84
    1x | Z?hler
-   1x | ZEIT
-   1x | Zahlungsart
    1x | Zentrum
    1x | Zentrum in Transformation
    1x | Zielgruppe
-   1x | Zukunftsort
    1x | Zuordnung
    1x | Zusammengefasste Geburtenziffer 
    1x | Zusatz
    1x | Zuzug - alte Definition
    1x | Zuzug - revidiert
-   1x | Zweck
-   1x | Zügigkeit nach Baumaßnahme
    1x | _DATUM|TATZ
    1x | _STUND
-   1x | abmasse
    1x | abs_nr
    1x | abs_nr17
    1x | absolut
-   1x | aenderungsmitteilung
-   1x | aktenplannummer
-   1x | aktentitel
-   1x | aktenzeichen
    1x | aktive technik verbaut 
    1x | aktueller status
-   1x | altersgruppe
    1x | amtliche Einwohnerzahl Basis: Zensus 2011
    1x | annotation
    1x | anschluss nutzbar
    1x | anschlussltg_kw
-   1x | ansprechpartner
-   1x | ansprechperson_anrede
-   1x | ansprechperson_email
-   1x | ansprechperson_name
    1x | art
-   1x | art_der_ermaessigung
    1x | art_des_gebiets
    1x | art_dtsch
-   1x | aufbewahrungsfrist
-   1x | aufbewahrungsfrist_jahre
-   1x | aus_der_reihe
-   1x | ballspielen
-   1x | band
-   1x | barrierearm
-   1x | barrierefrei
-   1x | barrierefreiheit
    1x | baulast
    1x | baumhoehe
-   1x | baumnr
    1x | baumnummer
    1x | begehung 
-   1x | behindertengerecht
-   1x | bemerkung
    1x | bemerkungen
-   1x | benennung
-   1x | benutzung
    1x | beschlussfähig
-   1x | beschreibungstext
-   1x | bestelladresse
-   1x | bestellbarkeit
    1x | betrag
-   1x | betreffseinheit
-   1x | betreffseinheitsnummer
    1x | betreiber
    1x | bewaesserungsmenge_in_liter
    1x | bezID
@@ -1861,48 +1643,33 @@ fläche m² (netto)
    1x | car_speed60
    1x | car_speed70
    1x | car_total
-   1x | cb
-   1x | classification
    1x | content
-   1x | create_date
    1x | date_local
-   1x | datenschutzrelevanz
    1x | datum_des_beginns
    1x | datum_des_beginns_des_vorhabens
    1x | datum_des_endes
    1x | datum_des_endes_des_vorhabens
-   1x | davon ohne Angabe
    1x | deutsch sprechen männlich
    1x | deutsch sprechen weiblich
    1x | deutsch verstehen männlich
    1x | deutsch verstehen weiblich
-   1x | dokument_url
-   1x | dt_name
    1x | dynamicdata
    1x | eMail
    1x | einmal
-   1x | einrichtung_projekte
-   1x | einwilligung
-   1x | einwilligung_zielgruppen_teaser
+   1x | email
    1x | email2
-   1x | empfaenger_recipient
-   1x | empfaenger_subject
    1x | empfaengerid
    1x | ergänzende Informationen
-   1x | erscheinungsjahr
    1x | erschlname
    1x | facilitylocationwgs84lat
    1x | facilitylocationwgs84lon
    1x | feldbezeichner
    1x | finanzierungsform
-   1x | flaeche
-   1x | freigabe
    1x | ga_lang_deutsch
    1x | ga_lang_wiss
    1x | gar nicht
    1x | gattung
    1x | gattung_deutsch
-   1x | geaendert
    1x | geber
    1x | gefahrdrohendes Anspringen von Menschen
    1x | gesamtbetrag_der_fšrderfŠhigen_ausgaben_des_vorhabens
@@ -1910,26 +1677,17 @@ fläche m² (netto)
    1x | gilt_bis
    1x | gilt_von
    1x | globalid
-   1x | gratis
-   1x | gruppe
-   1x | gruppennummer
    1x | gueltige_stimmen
-   1x | hauptgruppe
    1x | haushaltsid
    1x | haushaltstyp
    1x | heavy_lft
    1x | heavy_rgt
    1x | heavy_total
-   1x | herausgeber_autor
    1x | herkunftsregion
    1x | hnr_z
-   1x | homepage
    1x | im Ausland; Angaben in Prozent
    1x | im selben Stadtbezirk; Angaben in Prozent
    1x | im selben Wohnviertel wie bisher; Angaben in Prozent
-   1x | in %
-   1x | in %.1
-   1x | in %.2
    1x | in Sachsen außer Leipzig und näherer Umgebung; Angaben in Prozent
    1x | in der näheren Umgebung Leipzigs max. 30 Min. mit dem Pkw von Leipzig entfernt; Angaben in Prozent
    1x | in einem Gemeinschaftsgarten
@@ -1952,12 +1710,10 @@ fläche m² (netto)
    1x | kandidierende
    1x | kat_erschl
    1x | kat_sstrgs
-   1x | kategorien
    1x | kein Garten, habe aber Interesse daran
    1x | kein Garten, habe auch kein Interesse daran
    1x | kinderzahl
    1x | klass_netz
-   1x | klinik
    1x | knoten
    1x | knoten_01
    1x | kofinanzierung_aus_nationalen_öffentlichen_Mitteln
@@ -1965,46 +1721,29 @@ fläche m² (netto)
    1x | kontakt
    1x | kr_durchm
    1x | kum. Ist bis Monat:
-   1x | kurzbeschreibung_des_anbieters
-   1x | kurzbeschreibung_des_angebots
    1x | ladeart
    1x | ladeeinr_art
    1x | laenge_m
-   1x | landesarchiv
-   1x | laufende Nummer    
    1x | letzte_bewaesserung
    1x | long
    1x | mehrfach
    1x | möglicherweise; Angaben in Prozent
    1x | nachpflanzung_geplant
-   1x | name_anbieter
    1x | name_des_beguenstigten
    1x | name_des_begünstigten
    1x | nein; Angaben in Prozent
    1x | nicht zahlende Besucherinnen
 und Besucher
-   1x | nr_senatsverwaltung
-   1x | nr_senstadtum
-   1x | nummer
-   1x | obergruppe
    1x | objektkuerzel
-   1x | oeffnungszeiten
    1x | original names
-   1x | original_bild
-   1x | originalbild
    1x | ortsd_text
    1x | ortsdurchf
    1x | ortsteilname
    1x | ortsteilnummer
    1x | p1_kw
-   1x | p2_5
    1x | p2_kw
    1x | p3_kw
    1x | p4_kw
-   1x | p50
-   1x | p90
-   1x | p95
-   1x | p97_5
    1x | page
    1x | parkingfacility_hnr
    1x | parkingfacility_hnr_z
@@ -2030,7 +1769,6 @@ und Besucher
    1x | plrID
    1x | plrNAME
    1x | plz_ort
-   1x | plz_und_ort_des_angebots
    1x | politikbereich
    1x | projektnummer
    1x | properties.ANORDNUNG
@@ -2172,11 +1910,9 @@ und Besucher
    1x | publictransportlinetram
    1x | publictransporturl
    1x | quelle
-   1x | region
    1x | schulart
    1x | schule
    1x | schulnummer
-   1x | schutzzweck
    1x | segment_id
    1x | sekundäres_ESF-Thema
    1x | sitze
@@ -2217,13 +1953,10 @@ und Besucher
    1x | so_zu_id
    1x | so_zu_tx
    1x | sonstige Form des Gärtnerns
-   1x | spielplatzart
    1x | sstrgsname
    1x | st_durchm
    1x | st_umfang
    1x | stadtbez
-   1x | stadtteile
-   1x | stammumfang
    1x | standort beauftragt
    1x | standzeitraum
    1x | status_patenbaum
@@ -2233,21 +1966,15 @@ und Besucher
    1x | steckertyp_4
    1x | str
    1x | str_nr
-   1x | strasse_und_hausnummer_des_angebots
-   1x | teilaktenplan
    1x | territoriale_umsetzungsmechanismen
    1x | themenfeld
    1x | tiefbau 
    1x | timestamp
-   1x | tischtennis_anzahl
-   1x | titel
    1x | totalparkingcapacity
    1x | tstamp
    1x | typ
    1x | ungueltige_stimmzettel
    1x | unions-kofinanzierungssatz_pro_prioritŠtsachse
-   1x | untertitel
-   1x | update_date
    1x | uptime
    1x | v85
    1x | von_str
@@ -2282,9 +2009,7 @@ und Besucher
    1x | wahlobjekte-staedtisch-sonstige
    1x | wahlraeume
    1x | wahlraeume-barrierefrei
-   1x | website
    1x | wintkat
-   1x | wiss_name
    1x | x_wert
    1x | y_wert
    1x | zahlende 
@@ -2292,20 +2017,14 @@ Besucherinnen
 und  Besucher
    1x | zeitraum-ende
    1x | zeitraum-start
-   1x | zielgruppen
-   1x | zusatzname
    1x | zw
    1x | zweck
    1x | |LOR|SCHAD
    1x | |TATZ
    1x | |V
-   1x | Öffnung
-   1x | Öffnungszeiten
    1x | Öffnungszeiten Ende
    1x | Öffnungszeiten Start
    1x | Über uns
-   1x | Überplanmäßige Ausgaben
-   1x | Überplanmäßige VE
    1x | öffentliche Ausschreibung
    1x | ÿþB e f r a g t e 
    1x | ÿþG e s c h l e c h t 

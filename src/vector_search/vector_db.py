@@ -145,9 +145,6 @@ class VectorDB:
     ):
         """Index multiple datasets with batching for better performance using specified embedder"""
         collection_name = get_collection_name(embedder_model)
-        logger.info(
-            f"Indexing {len(datasets)} datasets with {embedder_model.value}..."
-        )
 
         # Ensure collection exists
         await self.setup_collection(embedder_model)
@@ -155,11 +152,12 @@ class VectorDB:
         # Prepare texts for embedding
         try:
             texts = [ds.to_searchable_text() for ds in datasets]
-            logger.info(f"texts are ready {len(texts)}")
         except Exception as e:
-            logger.error("exception!", exc_info=e)
+            logger.error(f"Error preparing texts for embedding: {e}", exc_info=e)
             return
+
         # Generate embeddings in batches using specified embedder
+        logger.debug(f"Generating embeddings for {len(texts)} texts...")
         embeddings = await embed_batch(texts, embedder_model=embedder_model)
 
         # Prepare points for Qdrant
@@ -171,7 +169,6 @@ class VectorDB:
             )
             for dataset, embedding in zip(datasets, embeddings)
         ]
-        logger.info(f"END points {len(points)}")
 
         # Upload to Qdrant in batches for better performance
         total_points = len(points)
@@ -182,14 +179,8 @@ class VectorDB:
                 points=batch,
                 wait=True,  # Ensure consistency
             )
-            if len(datasets) > batch_size:
-                logger.info(
-                    f"Uploaded batch {i // batch_size + 1}/{(total_points + batch_size - 1) // batch_size}"
-                )
 
-        logger.info(
-            f"Successfully indexed {len(datasets)} datasets to {collection_name}"
-        )
+        logger.debug(f"Indexed {len(datasets)} datasets to {collection_name}")
 
     async def search(
         self,
