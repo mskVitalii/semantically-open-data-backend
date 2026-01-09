@@ -88,6 +88,13 @@ class DatasetMetadata:
         # Extract year from metadata_created for filtering
         year = extract_year_from_date(self.metadata_created)
 
+        # Handle embedder_model - it can be either EmbedderModel enum or string
+        embedder_model_value = (
+            self.embedder_model.value
+            if isinstance(self.embedder_model, EmbedderModel)
+            else self.embedder_model
+        )
+
         return {
             "id": self.id,
             "title": self.title,
@@ -102,7 +109,7 @@ class DatasetMetadata:
             "groups": self.groups,
             "url": self.url,
             "author": self.author,
-            "embedder_model": self.embedder_model.value,
+            "embedder_model": embedder_model_value,
             "year": year,  # Add year for range filtering
         }
 

@@ -52,9 +52,18 @@ class DatasetService:
 
         metadatas: list[DatasetResponse] = []
         for dataset in datasets:
+            payload = dict(dataset.payload)
+            # Remove year field as it's only used for filtering, not part of the model
+            payload.pop("year", None)
+            payload.pop("fields", None)  # Remove fields as they're not needed in basic search
+
+            # Convert embedder_model from string to EmbedderModel enum if needed
+            if "embedder_model" in payload and isinstance(payload["embedder_model"], str):
+                payload["embedder_model"] = EmbedderModel(payload["embedder_model"])
+
             metadatas.append(
                 DatasetResponse(
-                    metadata=DatasetMetadataWithFields(**dataset.payload),
+                    metadata=DatasetMetadataWithFields(**payload),
                     score=dataset.score,
                 ),
             )
@@ -91,6 +100,12 @@ class DatasetService:
         for dataset in datasets:
             payload = dict(dataset.payload)
             raw_fields = payload.pop("fields", {})
+            # Remove year field as it's only used for filtering, not part of the model
+            payload.pop("year", None)
+
+            # Convert embedder_model from string to EmbedderModel enum if needed
+            if "embedder_model" in payload and isinstance(payload["embedder_model"], str):
+                payload["embedder_model"] = EmbedderModel(payload["embedder_model"])
 
             metadata = DatasetMetadataWithFields(
                 **payload,

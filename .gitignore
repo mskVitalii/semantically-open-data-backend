@@ -190,3 +190,5 @@ qdrant_data/*
 
 logs/*
 !logs/.gitkeep
+
+src/datasets_api/qa_cache/qa_cache/*
