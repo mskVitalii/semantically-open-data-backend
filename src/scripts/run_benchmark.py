@@ -6,6 +6,11 @@ This script provides an easy way to:
 2. Compare multiple experiments
 3. Export results to Excel
 
+Location filters (city, state, country) are stored in questions.
+Each configuration is automatically tested in 2 variants:
+- WITH location filters from questions
+- WITHOUT location filters
+
 Usage examples:
     # Test all questions with a single model
     python -m src.scripts.run_benchmark --model jinaai-jina-embeddings-v3 --limit 10
@@ -82,24 +87,6 @@ def parse_args():
         help="Enable multi-query RAG (generates multiple search queries)",
     )
 
-    parser.add_argument(
-        "--city",
-        type=str,
-        help="Filter results by city",
-    )
-
-    parser.add_argument(
-        "--country",
-        type=str,
-        help="Filter results by country",
-    )
-
-    parser.add_argument(
-        "--state",
-        type=str,
-        help="Filter results by state",
-    )
-
     # Export options
     parser.add_argument(
         "--export",
@@ -129,9 +116,6 @@ async def run_tests(
     models: List[EmbedderModel],
     limits: List[int],
     question_indices: List[int] = None,
-    city: str = None,
-    country: str = None,
-    state: str = None,
     multi_query: bool = False,
     verbose: bool = False,
 ) -> List[str]:
@@ -149,17 +133,14 @@ async def run_tests(
             config = TestConfig(
                 embedder_model=model,
                 limit=limit,
-                city=city,
-                country=country,
-                state=state,
                 use_multi_query=multi_query,
-                use_llm_interpretation=False,  # Not used in current flow
             )
             test_configs.append(config)
 
     logger.info(
         f"\n{'='*60}\n"
         f"Starting benchmark with {len(test_configs)} configuration(s)\n"
+        f"Each config will be tested in 2 variants (with/without location filters)\n"
         f"{'='*60}"
     )
 
@@ -262,9 +243,6 @@ async def main():
             models=models,
             limits=limits,
             question_indices=question_indices,
-            city=args.city,
-            country=args.country,
-            state=args.state,
             multi_query=args.multi_query,
             verbose=args.verbose,
         )

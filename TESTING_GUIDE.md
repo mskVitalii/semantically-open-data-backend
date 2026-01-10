@@ -37,11 +37,21 @@ Available models (from `src/infrastructure/config.py`):
 
 Available in `TestConfig`:
 
-- **limit** (1-20): number of results to return
-- **city/state/country**: metadata filters
+- **embedder_model**: embedding model to use (default: jinaai-jina-embeddings-v3)
+- **limit** (1-25): number of results to return
 - **use_multi_query** (bool): use multi-query RAG (generate multiple query variants)
 
-### 3. Qdrant Collection Settings (Advanced)
+### 3. Location Filters
+
+Location filters (city, state, country) are stored **in questions** themselves, not in TestConfig.
+
+Each test configuration is **automatically tested in 2 variants**:
+1. **WITH location filters** - uses filters from question (e.g., city="Berlin")
+2. **WITHOUT location filters** - searches globally without location constraints
+
+This allows direct comparison of filtered vs. unfiltered search results.
+
+### 4. Qdrant Collection Settings (Advanced)
 
 To modify collection parameters, use the Qdrant API:
 
@@ -77,10 +87,14 @@ To modify collection parameters, use the Qdrant API:
 
 ## Running Tests
 
+**Important:** Each configuration is automatically tested in **2 variants** (with/without location filters).
+So if you test 16 questions with 1 config = 32 tests total (16 × 1 × 2).
+
 ### Option 1: Via CLI (Recommended)
 
 ```bash
 # Test single model with one limit
+# This will create 2 variants per question: with filters + without filters
 python -m src.scripts.run_benchmark --model jinaai-jina-embeddings-v3 --limits 10
 
 # Test all models
@@ -89,7 +103,7 @@ python -m src.scripts.run_benchmark --all-models --limits 10
 # Test one model with different limits
 python -m src.scripts.run_benchmark --model baai-bge-m3 --limits 5,10,25
 
-# Test specific questions
+# Test specific questions only
 python -m src.scripts.run_benchmark --questions 0,1,2 --model jinaai-jina-embeddings-v3
 
 # With verbose output
@@ -198,7 +212,13 @@ curl "http://localhost:8000/testing/export/excel?report_ids=report1,report2,repo
 
 ### Excel File Structure:
 
+**Filename format:** `YYYY_MM_DD_HH_MM_<report_ids>_comparison.xlsx`
+
+Example: `2026_01_09_21_37_5a7e46_abc123_comparison.xlsx`
+
 The file contains **3 sheets** with color-coded cells (🔴 Red → 🟡 Yellow → 🟢 Green):
+
+**Note:** Colors are applied directly to cells for compatibility with Mac Numbers and other spreadsheet applications.
 
 #### 1. Weighted Scores
 
@@ -384,7 +404,7 @@ Full API documentation available at: `http://localhost:8000/docs`
 
 ### Main endpoints:
 
-- `POST /testing/questions` - Add test question
+- `POST /testing/questions` - Add test question (with optional location filters)
 - `GET /testing/questions` - Get all questions
 - `POST /testing/run` - Run bulk test
 - `POST /testing/run/quick` - Quick test with single configuration
@@ -392,3 +412,34 @@ Full API documentation available at: `http://localhost:8000/docs`
 - `GET /testing/reports/{report_id}` - Get specific report
 - `POST /testing/reports/{report_id}/relevance` - Update relevance rating
 - `GET /testing/export/excel` - Export to Excel
+
+### Adding Questions with Location Filters
+
+```bash
+# Add question with city filter
+curl -X POST "http://localhost:8000/v1/testing/questions" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "What are crime statistics in Berlin?",
+    "city": "Berlin",
+    "state": null,
+    "country": "Germany"
+  }'
+
+# Add question with full location
+curl -X POST "http://localhost:8000/v1/testing/questions" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "What building permits were issued in Dresden?",
+    "city": "Dresden",
+    "state": "Saxony",
+    "country": "Germany"
+  }'
+
+# Add question without filters
+curl -X POST "http://localhost:8000/v1/testing/questions" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "What are open data portals in Europe?"
+  }'
+```

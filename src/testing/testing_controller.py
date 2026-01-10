@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.responses import FileResponse
-from typing import Optional, List
+from typing import Optional
 
 from src.domain.services.dataset_service import DatasetService, get_dataset_service
 from src.domain.services.llm_service import LLMService, get_llm_service_dep
@@ -34,10 +34,18 @@ async def add_question(
 
     Parameters:
     - question: The question text
+    - city: Optional city filter
+    - state: Optional state/region filter
+    - country: Optional country filter
     """
     try:
         testing_service = get_testing_service(dataset_service, llm_service)
-        question = testing_service.add_question(question=request.question)
+        question = testing_service.add_question(
+            question=request.question,
+            city=request.city,
+            state=request.state,
+            country=request.country,
+        )
         return {"ok": True, "question": question}
     except Exception as e:
         logger.error(f"Failed to add question: {e}", exc_info=True)
@@ -79,6 +87,11 @@ async def run_bulk_test(
     This endpoint executes all or selected test questions with multiple configurations
     and returns a comprehensive report.
 
+    Location filters (city, state, country) are stored in questions themselves.
+    Each configuration is automatically tested in 2 variants:
+    1. WITH location filters from questions
+    2. WITHOUT location filters
+
     Parameters:
     - question_indices: Optional list of question indices to test (None = all questions)
     - test_configs: List of test configurations to apply
@@ -87,23 +100,29 @@ async def run_bulk_test(
     ```json
     [
         {
-            "city": null,
-            "state": null,
-            "country": null,
+            "embedder_model": "jinaai-jina-embeddings-v3",
             "use_multi_query": true,
-            "use_llm_interpretation": false,
-            "limit": 5
+            "limit": 25
         },
         {
-            "city": "Chemnitz",
-            "state": "Saxony",
-            "country": "Germany",
+            "embedder_model": "baai-bge-m3",
             "use_multi_query": false,
-            "use_llm_interpretation": true,
-            "limit": 10
+            "limit": 25
+        },
+        {
+            "embedder_model": "intfloat-multilingual-e5-base",
+            "use_multi_query": false,
+            "limit": 25
+        },
+        {
+            "embedder_model": "sentence-transformers-labse",
+            "use_multi_query": false,
+            "limit": 25
         }
     ]
     ```
+
+    Each config will produce 2 test results per question (with/without filters).
     """
     try:
         testing_service = get_testing_service(dataset_service, llm_service)
@@ -120,10 +139,6 @@ async def run_quick_test(
         None, description="Comma-separated question indices (e.g., '0,1,2')"
     ),
     use_multi_query: bool = Query(True, description="Enable multi-query RAG"),
-    use_llm_interpretation: bool = Query(True, description="Enable LLM interpretation"),
-    city: Optional[str] = Query(None, description="Filter by city"),
-    state: Optional[str] = Query(None, description="Filter by state"),
-    country: Optional[str] = Query(None, description="Filter by country"),
     limit: int = Query(5, ge=1, le=20, description="Results per query"),
     dataset_service: DatasetService = Depends(get_dataset_service),
     llm_service: LLMService = Depends(get_llm_service_dep),
@@ -132,6 +147,10 @@ async def run_quick_test(
     Quick test run with single configuration
 
     Convenience endpoint for running tests with a single configuration.
+    Each question will be automatically tested in 2 variants:
+    1. WITH location filters from questions
+    2. WITHOUT location filters
+
     Use the /run endpoint for testing multiple configurations.
     """
     try:
@@ -145,11 +164,7 @@ async def run_quick_test(
             question_indices=indices,
             test_configs=[
                 TestConfig(
-                    city=city,
-                    state=state,
-                    country=country,
                     use_multi_query=use_multi_query,
-                    use_llm_interpretation=use_llm_interpretation,
                     limit=limit,
                 )
             ],
@@ -305,10 +320,14 @@ async def export_to_excel(
         testing_service = get_testing_service(dataset_service, llm_service)
         excel_file = testing_service.export_to_excel(report_ids=report_id_list)
 
+        # Get the filename from the path
+        from pathlib import Path
+        filename = Path(excel_file).name
+
         return FileResponse(
             excel_file,
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            filename=f"experiment_comparison.xlsx",
+            filename=filename,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

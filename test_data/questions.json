@@ -1,82 +1,130 @@
 [
   {
     "id": "ddb53f28-4dc7-4078-9858-c3247716bf10",
-    "question": "What are the safest neighborhoods in the Berlin based on recent crime statistics?",
+    "question": "What are the safest neighborhoods in Berlin based on recent crime statistics?",
+    "city": "Berlin",
+    "state": null,
+    "country": "Germany",
     "created_at": "2025-12-25T21:02:37.482034"
   },
   {
-    "id": "ddb53f28-4dc7-4078-9858-c3247716bf10",
-    "question": "What are the safest neighborhoods in the Leipzig based on recent crime statistics?",
+    "id": "8a1c5e9d-2f4b-4a7e-b3d6-7c9f2a5e1b48",
+    "question": "What are the safest neighborhoods in Leipzig based on recent crime statistics?",
+    "city": "Leipzig",
+    "state": "Saxony",
+    "country": "Germany",
     "created_at": "2025-12-25T21:02:37.482034"
   },
   {
     "id": "a3e8b914-5c2a-4e91-b8d3-9f7c2a1b4e6d",
-    "question": "Where can I find real-time public transit schedules and arrival information?",
+    "question": "Where can I find real-time public transit schedules and arrival information in Berlin?",
+    "city": "Berlin",
+    "state": null,
+    "country": "Germany",
     "created_at": "2025-12-25T21:03:15.291047"
   },
   {
     "id": "7f5d2c89-3a1e-4b9c-a7e4-8d6f1c3b5a92",
-    "question": "How much does the city spend on road construction and maintenance projects?",
+    "question": "How much does Dresden spend on road construction and maintenance projects?",
+    "city": "Dresden",
+    "state": "Saxony",
+    "country": "Germany",
     "created_at": "2025-12-25T21:04:22.637891"
   },
   {
     "id": "c1b4e7a3-8d2f-4c5b-9e1a-6f3d8c2b7a45",
-    "question": "What building permits have been issued in my neighborhood this year?",
+    "question": "What building permits have been issued in Chemnitz this year?",
+    "city": "Chemnitz",
+    "state": "Saxony",
+    "country": "Germany",
     "created_at": "2025-12-25T21:05:08.754321"
   },
   {
     "id": "5a9c3e7d-2b1f-4d8e-a3c6-9f7b4e1d8c23",
-    "question": "Show me election results by district for the last mayoral election",
+    "question": "Show me election results by district for the last mayoral election in Berlin",
+    "city": "Berlin",
+    "state": null,
+    "country": "Germany",
     "created_at": "2025-12-25T21:06:33.892156"
   },
   {
     "id": "e8f2a5c9-7d3b-4e1a-b6c8-2f9d5a7c3e41",
-    "question": "Which restaurants failed recent health and food safety inspections?",
+    "question": "Which restaurants failed recent health and food safety inspections in Leipzig?",
+    "city": "Leipzig",
+    "state": "Saxony",
+    "country": "Germany",
     "created_at": "2025-12-25T21:07:45.123789"
   },
   {
     "id": "b7d3f1a8-4c2e-5b9d-a1e7-3f6c8d2b5a94",
-    "question": "What is the city's annual budget breakdown by department?",
+    "question": "What is Dresden's annual budget breakdown by department?",
+    "city": "Dresden",
+    "state": "Saxony",
+    "country": "Germany",
     "created_at": "2025-12-25T21:08:51.456234"
   },
   {
     "id": "3c5e8b2a-9f1d-4a7c-b3e6-7d4f2a8c1b59",
-    "question": "How do I report potholes or request street repairs in my area?",
+    "question": "How do I report potholes or request street repairs in Chemnitz?",
+    "city": "Chemnitz",
+    "state": "Saxony",
+    "country": "Germany",
     "created_at": "2025-12-25T21:09:27.678901"
   },
   {
     "id": "f9a2d7c4-5e3b-4d1f-a8c6-2b7e9f3d5a81",
-    "question": "What are the current zoning regulations for commercial development downtown?",
+    "question": "What are the current zoning regulations for commercial development in downtown Berlin?",
+    "city": "Berlin",
+    "state": null,
+    "country": "Germany",
     "created_at": "2025-12-25T21:10:12.234567"
   },
   {
     "id": "6d8c3f1a-2b5e-4a9c-b7d3-5f1a8c2e9b46",
-    "question": "Which companies have won government procurement contracts this fiscal year?",
+    "question": "Which companies have won government procurement contracts in Leipzig this fiscal year?",
+    "city": "Leipzig",
+    "state": "Saxony",
+    "country": "Germany",
     "created_at": "2025-12-25T21:11:38.891234"
   },
   {
     "id": "a1f7e3c8-5b2d-4f9a-c6e3-9d7b4f1a8c25",
-    "question": "Where are the public parks and recreation facilities located in the city?",
+    "question": "Where are the public parks and recreation facilities located in Dresden?",
+    "city": "Dresden",
+    "state": "Saxony",
+    "country": "Germany",
     "created_at": "2025-12-25T21:12:55.567890"
   },
   {
     "id": "e4b9f2a7-3c1d-5e8b-a2f6-7d3c9b5e1a84",
-    "question": "What environmental data is available for air quality monitoring stations?",
+    "question": "What environmental data is available for air quality monitoring stations in Berlin?",
+    "city": "Berlin",
+    "state": null,
+    "country": "Germany",
     "created_at": "2025-12-25T21:13:42.345678"
   },
   {
     "id": "c7f3a1d9-8e2b-4c5f-a9d7-3b6e1f4c8a52",
-    "question": "How many 311 service requests were filed and resolved last month?",
+    "question": "How many 311 service requests were filed and resolved in Chemnitz last month?",
+    "city": "Chemnitz",
+    "state": "Saxony",
+    "country": "Germany",
     "created_at": "2025-12-25T21:14:29.123456"
   },
   {
     "id": "2b5e8d3a-7f1c-4a9e-b3d6-5c8f2a7e1b94",
-    "question": "What is the unemployment rate and economic development data for different districts?",
+    "question": "What is the unemployment rate and economic development data for different districts in Leipzig?",
+    "city": "Leipzig",
+    "state": "Saxony",
+    "country": "Germany",
     "created_at": "2025-12-25T21:15:17.789012"
   },
   {
     "id": "9f4a7c2e-3d1b-5e8a-c2f7-6b9d3e5a1c48",
-    "question": "Where can I find geographic boundary data for council districts and voting precincts?",
+    "question": "Where can I find geographic boundary data for council districts and voting precincts in Dresden?",
+    "city": "Dresden",
+    "state": "Saxony",
+    "country": "Germany",
     "created_at": "2025-12-25T21:16:03.456789"
   }
 ]

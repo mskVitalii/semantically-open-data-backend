@@ -47,19 +47,30 @@ class TestingService:
 
     # region Questions Management
 
-    def add_question(self, question: str) -> TestQuestion:
+    def add_question(
+        self,
+        question: str,
+        city: Optional[str] = None,
+        state: Optional[str] = None,
+        country: Optional[str] = None,
+    ) -> TestQuestion:
         """Add a new test question"""
         questions = self.get_all_questions()
 
         new_question = TestQuestion(
             id=str(uuid.uuid4()),
             question=question,
+            city=city,
+            state=state,
+            country=country,
         )
 
         questions.append(new_question)
         self._save_questions(questions)
 
-        logger.info(f"Added new test question: {question}")
+        logger.info(
+            f"Added new test question: {question} (city={city}, state={state}, country={country})"
+        )
         return new_question
 
     def get_all_questions(self) -> List[TestQuestion]:
@@ -86,7 +97,14 @@ class TestingService:
 
     # region Test Execution
 
-    async def run_single_test(self, question: str, config: TestConfig) -> TestResult:
+    async def run_single_test(
+        self,
+        question: str,
+        config: TestConfig,
+        city_filter: Optional[str] = None,
+        state_filter: Optional[str] = None,
+        country_filter: Optional[str] = None,
+    ) -> TestResult:
         """Execute a single test with given configuration"""
         start_time = time.perf_counter()
         research_questions = None
@@ -118,9 +136,9 @@ class TestingService:
                 datasets = await self.dataset_service.search_datasets_with_embeddings(
                     emb["embedding"],
                     embedder_model=config.embedder_model,
-                    city_filter=config.city,
-                    state_filter=config.state,
-                    country_filter=config.country,
+                    city_filter=city_filter,
+                    state_filter=state_filter,
+                    country_filter=country_filter,
                 )
                 all_datasets.extend(datasets[: config.limit])
 
@@ -153,6 +171,9 @@ class TestingService:
                 execution_time_seconds=execution_time,
                 research_questions=research_questions,
                 error=None,
+                applied_city_filter=city_filter,
+                applied_state_filter=state_filter,
+                applied_country_filter=country_filter,
             )
 
         except Exception as e:
@@ -166,6 +187,9 @@ class TestingService:
                 execution_time_seconds=execution_time,
                 research_questions=research_questions,
                 error=str(e),
+                applied_city_filter=city_filter,
+                applied_state_filter=state_filter,
+                applied_country_filter=country_filter,
             )
 
     async def run_bulk_test(self, request: BulkTestRequest) -> TestReport:
@@ -184,22 +208,49 @@ class TestingService:
         else:
             questions_to_test = all_questions
 
+        # Each config will be tested in 2 variants: with location filters and without
+        total_tests = len(questions_to_test) * len(request.test_configs) * 2
+
         logger.info(
-            f"Testing {len(questions_to_test)} questions with {len(request.test_configs)} configurations"
+            f"Testing {len(questions_to_test)} questions with {len(request.test_configs)} configurations "
+            f"in 2 variants each (with/without location filters) = {total_tests} total tests"
         )
 
         # Run all tests
         results = []
-        total_tests = len(questions_to_test) * len(request.test_configs)
         current_test = 0
 
         for question in questions_to_test:
             for config in request.test_configs:
+                # Variant 1: WITH location filters
                 current_test += 1
-                logger.info(f"Running test {current_test}/{total_tests}")
+                logger.info(
+                    f"Running test {current_test}/{total_tests} (WITH location filters)"
+                )
 
-                result = await self.run_single_test(question.question, config)
-                results.append(result)
+                result_with_filters = await self.run_single_test(
+                    question.question,
+                    config,
+                    city_filter=question.city,
+                    state_filter=question.state,
+                    country_filter=question.country,
+                )
+                results.append(result_with_filters)
+
+                # Variant 2: WITHOUT location filters
+                current_test += 1
+                logger.info(
+                    f"Running test {current_test}/{total_tests} (WITHOUT location filters)"
+                )
+
+                result_without_filters = await self.run_single_test(
+                    question.question,
+                    config,
+                    city_filter=None,
+                    state_filter=None,
+                    country_filter=None,
+                )
+                results.append(result_without_filters)
 
         # Calculate statistics
         execution_time = time.perf_counter() - start_time
@@ -324,9 +375,7 @@ class TestingService:
 
     # region Excel Export
 
-    def export_to_excel(
-        self, report_ids: list[str], output_file: str = None
-    ) -> str:
+    def export_to_excel(self, report_ids: list[str], output_file: str = None) -> str:
         """
         Export multiple reports to Excel for comparison.
 
@@ -379,33 +428,38 @@ class TestingService:
             configs_seen = {}
             for result in report.results:
                 config = result.config
+                # Use applied filters to distinguish with/without filter variants
                 config_key = (
                     config.embedder_model.value,
                     config.limit,
                     config.use_multi_query,
-                    config.city,
-                    config.state,
-                    config.country,
+                    result.applied_city_filter,
+                    result.applied_state_filter,
+                    result.applied_country_filter,
                 )
 
                 if config_key not in configs_seen:
-                    configs_seen[config_key] = config
+                    configs_seen[config_key] = (config, result)
 
                     # Create experiment name
                     exp_name = f"{config.embedder_model.value}_limit{config.limit}"
                     if config.use_multi_query:
                         exp_name += "_multiquery"
-                    if config.city:
-                        exp_name += f"_{config.city}"
+
+                    # Add filter indicator
+                    if result.applied_city_filter:
+                        exp_name += f"_{result.applied_city_filter}"
+                    else:
+                        exp_name += "_no_filters"
 
                     # Store as dict for easy comparison
                     config_dict = {
                         "embedder_model": config.embedder_model.value,
                         "limit": config.limit,
                         "use_multi_query": config.use_multi_query,
-                        "city": config.city,
-                        "state": config.state,
-                        "country": config.country,
+                        "applied_city_filter": result.applied_city_filter,
+                        "applied_state_filter": result.applied_state_filter,
+                        "applied_country_filter": result.applied_country_filter,
                     }
 
                     experiments.append((exp_name, report, config_dict))
@@ -420,7 +474,7 @@ class TestingService:
                 question_result = None
                 for result in report.results:
                     if result.question == question:
-                        # Check if config matches
+                        # Check if config matches (including applied filters)
                         result_config = result.config
                         if (
                             result_config.embedder_model.value
@@ -428,9 +482,12 @@ class TestingService:
                             and result_config.limit == config_dict["limit"]
                             and result_config.use_multi_query
                             == config_dict["use_multi_query"]
-                            and result_config.city == config_dict["city"]
-                            and result_config.state == config_dict["state"]
-                            and result_config.country == config_dict["country"]
+                            and result.applied_city_filter
+                            == config_dict["applied_city_filter"]
+                            and result.applied_state_filter
+                            == config_dict["applied_state_filter"]
+                            and result.applied_country_filter
+                            == config_dict["applied_country_filter"]
                         ):
                             question_result = result
                             break
@@ -441,7 +498,11 @@ class TestingService:
                     count = 0
                     for dataset in question_result.datasets:
                         # Use 1.0 as default if relevance_rating is None
-                        rating = dataset.relevance_rating if dataset.relevance_rating is not None else 1.0
+                        rating = (
+                            dataset.relevance_rating
+                            if dataset.relevance_rating is not None
+                            else 1.0
+                        )
                         weighted_sum += dataset.score * rating
                         count += 1
 
@@ -462,7 +523,7 @@ class TestingService:
                 question_result = None
                 for result in report.results:
                     if result.question == question:
-                        # Check if config matches
+                        # Check if config matches (including applied filters)
                         result_config = result.config
                         if (
                             result_config.embedder_model.value
@@ -470,9 +531,12 @@ class TestingService:
                             and result_config.limit == config_dict["limit"]
                             and result_config.use_multi_query
                             == config_dict["use_multi_query"]
-                            and result_config.city == config_dict["city"]
-                            and result_config.state == config_dict["state"]
-                            and result_config.country == config_dict["country"]
+                            and result.applied_city_filter
+                            == config_dict["applied_city_filter"]
+                            and result.applied_state_filter
+                            == config_dict["applied_state_filter"]
+                            and result.applied_country_filter
+                            == config_dict["applied_country_filter"]
                         ):
                             question_result = result
                             break
@@ -484,7 +548,12 @@ class TestingService:
                         1
                         for d in question_result.datasets
                         # Use 1.0 as default if relevance_rating is None (which is >= 0.5)
-                        if (d.relevance_rating if d.relevance_rating is not None else 1.0) >= 0.5
+                        if (
+                            d.relevance_rating
+                            if d.relevance_rating is not None
+                            else 1.0
+                        )
+                        >= 0.5
                     )
                     relevance_pct = (relevant_count / total * 100) if total > 0 else 0
                     row[exp_name] = round(relevance_pct, 1)
@@ -501,7 +570,7 @@ class TestingService:
                 question_result = None
                 for result in report.results:
                     if result.question == question:
-                        # Check if config matches
+                        # Check if config matches (including applied filters)
                         result_config = result.config
                         if (
                             result_config.embedder_model.value
@@ -509,9 +578,12 @@ class TestingService:
                             and result_config.limit == config_dict["limit"]
                             and result_config.use_multi_query
                             == config_dict["use_multi_query"]
-                            and result_config.city == config_dict["city"]
-                            and result_config.state == config_dict["state"]
-                            and result_config.country == config_dict["country"]
+                            and result.applied_city_filter
+                            == config_dict["applied_city_filter"]
+                            and result.applied_state_filter
+                            == config_dict["applied_state_filter"]
+                            and result.applied_country_filter
+                            == config_dict["applied_country_filter"]
                         ):
                             question_result = result
                             break
@@ -538,16 +610,16 @@ class TestingService:
 
         # Generate output filename if not provided
         if output_file is None:
-            # Use report IDs in filename
+            from datetime import datetime
+
+            # Use date_id format: YYYY_MM_DD_HH_MM_comparison.xlsx
+            timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M")
+            # Add shortened report IDs for reference
             if len(report_ids) == 1:
-                # Single report - use its ID
-                output_file = REPORTS_DIR / f"report_{report_ids[0][:8]}.xlsx"
+                output_file = REPORTS_DIR / f"{timestamp}_{report_ids[0][:8]}.xlsx"
             else:
-                # Multiple reports - use shortened IDs
-                ids_part = "_".join(rid[:8] for rid in report_ids[:3])
-                if len(report_ids) > 3:
-                    ids_part += f"_and_{len(report_ids) - 3}_more"
-                output_file = REPORTS_DIR / f"comparison_{ids_part}.xlsx"
+                ids_part = "_".join(rid[:6] for rid in report_ids[:2])
+                output_file = REPORTS_DIR / f"{timestamp}_{ids_part}_comparison.xlsx"
         else:
             output_file = Path(output_file)
 
@@ -571,7 +643,7 @@ class TestingService:
                 workbook["Weighted Scores"],
                 df_weighted_scores,
                 min_value=0,
-                max_value=1
+                max_value=1,
             )
 
             # Format Relevance Metrics sheet (0% to 100% scale)
@@ -579,21 +651,18 @@ class TestingService:
                 workbook["Relevance Metrics"],
                 df_relevance_metrics,
                 min_value=0,
-                max_value=100
+                max_value=100,
             )
 
             # Format Score column in Detailed Ratings (0 to 1 scale)
-            self._apply_score_colors(
-                workbook["Detailed Ratings"],
-                df_detailed_ratings
-            )
+            self._apply_score_colors(workbook["Detailed Ratings"], df_detailed_ratings)
 
         logger.info(f"Excel report exported to: {output_file}")
         return str(output_file)
 
     def _apply_color_scale(self, worksheet, dataframe, min_value=0, max_value=1):
-        """Apply red-to-green color scale to numeric columns"""
-        from openpyxl.formatting.rule import ColorScaleRule
+        """Apply red-to-green color scale to numeric columns (direct cell coloring for Mac Numbers compatibility)"""
+        from openpyxl.styles import PatternFill
 
         # Get the range of data columns (skip Question column)
         first_data_col = 2  # Column B (after Question)
@@ -604,28 +673,50 @@ class TestingService:
         if last_data_row < first_data_row:
             return
 
-        # Create color scale rule: Red (min) -> Yellow (mid) -> Green (max)
-        color_scale = ColorScaleRule(
-            start_type="num",
-            start_value=min_value,
-            start_color="F8696B",  # Red
-            mid_type="num",
-            mid_value=(min_value + max_value) / 2,
-            mid_color="FFEB84",  # Yellow
-            end_type="num",
-            end_value=max_value,
-            end_color="63BE7B",  # Green
-        )
+        # Apply color directly to each cell based on its value
+        for row_idx in range(first_data_row, last_data_row + 1):
+            for col_idx in range(first_data_col, last_data_col + 1):
+                cell = worksheet.cell(row=row_idx, column=col_idx)
+                value = cell.value
 
-        # Apply to all data columns
-        for col_idx in range(first_data_col, last_data_col + 1):
-            col_letter = worksheet.cell(row=1, column=col_idx).column_letter
-            range_string = f"{col_letter}{first_data_row}:{col_letter}{last_data_row}"
-            worksheet.conditional_formatting.add(range_string, color_scale)
+                # Skip non-numeric values
+                if value is None or not isinstance(value, (int, float)):
+                    continue
+
+                # Calculate color based on value
+                color = self._get_color_for_value(value, min_value, max_value)
+                cell.fill = PatternFill(
+                    start_color=color, end_color=color, fill_type="solid"
+                )
+
+    def _get_color_for_value(self, value, min_value, max_value):
+        """Get RGB color for a value in range [min_value, max_value]"""
+        # Normalize value to 0-1 range
+        if max_value == min_value:
+            normalized = 0.5
+        else:
+            normalized = (value - min_value) / (max_value - min_value)
+            normalized = max(0, min(1, normalized))  # Clamp to 0-1
+
+        # Colors: Red (F8696B) -> Yellow (FFEB84) -> Green (63BE7B)
+        if normalized <= 0.5:
+            # Red to Yellow
+            ratio = normalized * 2  # 0 to 1
+            r = int(0xF8 + (0xFF - 0xF8) * ratio)
+            g = int(0x69 + (0xEB - 0x69) * ratio)
+            b = int(0x6B + (0x84 - 0x6B) * ratio)
+        else:
+            # Yellow to Green
+            ratio = (normalized - 0.5) * 2  # 0 to 1
+            r = int(0xFF + (0x63 - 0xFF) * ratio)
+            g = int(0xEB + (0xBE - 0xEB) * ratio)
+            b = int(0x84 + (0x7B - 0x84) * ratio)
+
+        return f"{r:02X}{g:02X}{b:02X}"
 
     def _apply_score_colors(self, worksheet, dataframe):
-        """Apply color scale to Score column in Detailed Ratings"""
-        from openpyxl.formatting.rule import ColorScaleRule
+        """Apply color scale to Score column in Detailed Ratings (direct cell coloring for Mac Numbers compatibility)"""
+        from openpyxl.styles import PatternFill
 
         # Find Score column index
         try:
@@ -633,28 +724,26 @@ class TestingService:
         except ValueError:
             return
 
-        score_col_letter = worksheet.cell(row=1, column=score_col_idx).column_letter
         first_row = 2
         last_row = len(dataframe) + 1
 
         if last_row < first_row:
             return
 
-        # Create color scale for scores (0 to 1)
-        color_scale = ColorScaleRule(
-            start_type="num",
-            start_value=0,
-            start_color="F8696B",  # Red
-            mid_type="num",
-            mid_value=0.5,
-            mid_color="FFEB84",  # Yellow
-            end_type="num",
-            end_value=1,
-            end_color="63BE7B",  # Green
-        )
+        # Apply color directly to each cell in Score column
+        for row_idx in range(first_row, last_row + 1):
+            cell = worksheet.cell(row=row_idx, column=score_col_idx)
+            value = cell.value
 
-        range_string = f"{score_col_letter}{first_row}:{score_col_letter}{last_row}"
-        worksheet.conditional_formatting.add(range_string, color_scale)
+            # Skip non-numeric values
+            if value is None or not isinstance(value, (int, float)):
+                continue
+
+            # Calculate color based on value (0 to 1 scale)
+            color = self._get_color_for_value(value, 0, 1)
+            cell.fill = PatternFill(
+                start_color=color, end_color=color, fill_type="solid"
+            )
 
     # endregion
 

@@ -22,6 +22,9 @@ class TestQuestion(BaseModel):
 
     id: str = Field(..., description="Unique question ID")
     question: str = Field(..., description="Question text")
+    city: Optional[str] = Field(None, description="Filter by city")
+    state: Optional[str] = Field(None, description="Filter by state/region")
+    country: Optional[str] = Field(None, description="Filter by country")
     created_at: datetime = Field(default_factory=datetime.now)
 
 
@@ -31,13 +34,7 @@ class TestConfig(BaseModel):
     embedder_model: EmbedderModel = Field(
         DEFAULT_EMBEDDER_MODEL, description="Embedder model to use"
     )
-    city: Optional[str] = Field(None, description="Filter by city")
-    state: Optional[str] = Field(None, description="Filter by state/region")
-    country: Optional[str] = Field(None, description="Filter by country")
     use_multi_query: Optional[bool] = Field(False, description="Enable multi-query RAG")
-    use_llm_interpretation: Optional[bool] = Field(
-        False, description="Enable LLM interpretation"
-    )
     limit: Optional[int] = Field(
         25, ge=1, le=25, description="Number of results per query"
     )
@@ -55,6 +52,16 @@ class TestResult(BaseModel):
     execution_time_seconds: float
     research_questions: Optional[List[str]] = None
     error: Optional[str] = None
+    # Applied filters (to distinguish with/without filter variants)
+    applied_city_filter: Optional[str] = Field(
+        None, description="City filter that was applied"
+    )
+    applied_state_filter: Optional[str] = Field(
+        None, description="State filter that was applied"
+    )
+    applied_country_filter: Optional[str] = Field(
+        None, description="Country filter that was applied"
+    )
 
 
 class BulkTestRequest(BaseModel):
@@ -84,6 +91,9 @@ class AddQuestionRequest(BaseModel):
     """Request to add a new test question"""
 
     question: str
+    city: Optional[str] = Field(None, description="Filter by city")
+    state: Optional[str] = Field(None, description="Filter by state/region")
+    country: Optional[str] = Field(None, description="Filter by country")
 
 
 class QuestionListResponse(BaseModel):
