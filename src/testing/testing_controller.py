@@ -45,6 +45,7 @@ async def add_question(
             city=request.city,
             state=request.state,
             country=request.country,
+            expected_datasets=request.expected_datasets,
         )
         return {"ok": True, "question": question}
     except Exception as e:
@@ -88,9 +89,11 @@ async def run_bulk_test(
     and returns a comprehensive report.
 
     Location filters (city, state, country) are stored in questions themselves.
-    Each configuration is automatically tested in 2 variants:
-    1. WITH location filters from questions
-    2. WITHOUT location filters
+    Each configuration is automatically tested in 4 variants:
+    1. WITH location filters + WITH multi-query
+    2. WITH location filters + WITHOUT multi-query
+    3. WITHOUT location filters + WITH multi-query
+    4. WITHOUT location filters + WITHOUT multi-query
 
     Parameters:
     - question_indices: Optional list of question indices to test (None = all questions)
@@ -101,28 +104,25 @@ async def run_bulk_test(
     [
         {
             "embedder_model": "jinaai-jina-embeddings-v3",
-            "use_multi_query": true,
             "limit": 25
         },
         {
             "embedder_model": "baai-bge-m3",
-            "use_multi_query": false,
             "limit": 25
         },
         {
             "embedder_model": "intfloat-multilingual-e5-base",
-            "use_multi_query": false,
             "limit": 25
         },
         {
             "embedder_model": "sentence-transformers-labse",
-            "use_multi_query": false,
             "limit": 25
         }
     ]
     ```
 
-    Each config will produce 2 test results per question (with/without filters).
+    Each config will produce 4 test results per question (2 filter variants × 2 multi-query variants).
+    All tests use maximum accuracy settings (HNSW ef=256, m=64, ef_construct=256).
     """
     try:
         testing_service = get_testing_service(dataset_service, llm_service)
@@ -138,7 +138,6 @@ async def run_quick_test(
     question_indices: Optional[str] = Query(
         None, description="Comma-separated question indices (e.g., '0,1,2')"
     ),
-    use_multi_query: bool = Query(True, description="Enable multi-query RAG"),
     limit: int = Query(5, ge=1, le=20, description="Results per query"),
     dataset_service: DatasetService = Depends(get_dataset_service),
     llm_service: LLMService = Depends(get_llm_service_dep),
@@ -147,9 +146,11 @@ async def run_quick_test(
     Quick test run with single configuration
 
     Convenience endpoint for running tests with a single configuration.
-    Each question will be automatically tested in 2 variants:
-    1. WITH location filters from questions
-    2. WITHOUT location filters
+    Each question will be automatically tested in 4 variants:
+    1. WITH location filters + WITH multi-query
+    2. WITH location filters + WITHOUT multi-query
+    3. WITHOUT location filters + WITH multi-query
+    4. WITHOUT location filters + WITHOUT multi-query
 
     Use the /run endpoint for testing multiple configurations.
     """
@@ -164,7 +165,6 @@ async def run_quick_test(
             question_indices=indices,
             test_configs=[
                 TestConfig(
-                    use_multi_query=use_multi_query,
                     limit=limit,
                 )
             ],

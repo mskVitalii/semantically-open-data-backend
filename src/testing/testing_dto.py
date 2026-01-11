@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict
 from pydantic import BaseModel, Field
 
 from src.infrastructure.config import EmbedderModel, DEFAULT_EMBEDDER_MODEL
@@ -26,15 +26,25 @@ class TestQuestion(BaseModel):
     state: Optional[str] = Field(None, description="Filter by state/region")
     country: Optional[str] = Field(None, description="Filter by country")
     created_at: datetime = Field(default_factory=datetime.now)
+    expected_datasets: Optional[Dict[str, float]] = Field(
+        None,
+        description="Expected dataset IDs with relevance ratings (0-1). Used to automatically set relevance_rating in test results.",
+    )
 
 
 class TestConfig(BaseModel):
-    """Configuration for a single test run"""
+    """Configuration for a single test run
+
+    Each configuration will be automatically tested in 4 variants:
+    1. WITH location filters + WITH multi-query
+    2. WITH location filters + WITHOUT multi-query
+    3. WITHOUT location filters + WITH multi-query
+    4. WITHOUT location filters + WITHOUT multi-query
+    """
 
     embedder_model: EmbedderModel = Field(
         DEFAULT_EMBEDDER_MODEL, description="Embedder model to use"
     )
-    use_multi_query: Optional[bool] = Field(False, description="Enable multi-query RAG")
     limit: Optional[int] = Field(
         25, ge=1, le=25, description="Number of results per query"
     )
@@ -61,6 +71,10 @@ class TestResult(BaseModel):
     )
     applied_country_filter: Optional[str] = Field(
         None, description="Country filter that was applied"
+    )
+    # Applied multi-query flag (to distinguish multi-query vs single-query variants)
+    used_multi_query: bool = Field(
+        False, description="Whether multi-query RAG was used for this test"
     )
 
 
@@ -94,6 +108,10 @@ class AddQuestionRequest(BaseModel):
     city: Optional[str] = Field(None, description="Filter by city")
     state: Optional[str] = Field(None, description="Filter by state/region")
     country: Optional[str] = Field(None, description="Filter by country")
+    expected_datasets: Optional[Dict[str, float]] = Field(
+        None,
+        description="Expected dataset IDs with relevance ratings (0-1)",
+    )
 
 
 class QuestionListResponse(BaseModel):

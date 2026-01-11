@@ -53,6 +53,7 @@ class TestingService:
         city: Optional[str] = None,
         state: Optional[str] = None,
         country: Optional[str] = None,
+        expected_datasets: Optional[dict[str, float]] = None,
     ) -> TestQuestion:
         """Add a new test question"""
         questions = self.get_all_questions()
@@ -63,13 +64,14 @@ class TestingService:
             city=city,
             state=state,
             country=country,
+            expected_datasets=expected_datasets,
         )
 
         questions.append(new_question)
         self._save_questions(questions)
 
         logger.info(
-            f"Added new test question: {question} (city={city}, state={state}, country={country})"
+            f"Added new test question: {question} (city={city}, state={state}, country={country}, expected_datasets={expected_datasets})"
         )
         return new_question
 
@@ -101,9 +103,11 @@ class TestingService:
         self,
         question: str,
         config: TestConfig,
+        use_multi_query: bool,
         city_filter: Optional[str] = None,
         state_filter: Optional[str] = None,
         country_filter: Optional[str] = None,
+        expected_datasets: Optional[dict[str, float]] = None,
     ) -> TestResult:
         """Execute a single test with given configuration"""
         start_time = time.perf_counter()
@@ -111,7 +115,7 @@ class TestingService:
 
         try:
             # Step 1: Generate research questions if multi-query enabled
-            if config.use_multi_query:
+            if use_multi_query:
                 research_questions_objs = await self.llm_service.get_research_questions(
                     question
                 )
@@ -131,6 +135,7 @@ class TestingService:
             )
 
             # Step 3: Search for each research question using specified embedder
+            # Note: search uses maximum accuracy settings (ef=256) automatically
             all_datasets = []
             for emb in embeddings:
                 datasets = await self.dataset_service.search_datasets_with_embeddings(
@@ -165,6 +170,11 @@ class TestingService:
                         title=ds.metadata.title,
                         score=ds.score,
                         dataset_id=ds.metadata.id,
+                        relevance_rating=(
+                            expected_datasets.get(ds.metadata.id)
+                            if expected_datasets
+                            else None
+                        ),
                     )
                     for ds in datasets_found
                 ],
@@ -174,6 +184,7 @@ class TestingService:
                 applied_city_filter=city_filter,
                 applied_state_filter=state_filter,
                 applied_country_filter=country_filter,
+                used_multi_query=use_multi_query,
             )
 
         except Exception as e:
@@ -190,6 +201,7 @@ class TestingService:
                 applied_city_filter=city_filter,
                 applied_state_filter=state_filter,
                 applied_country_filter=country_filter,
+                used_multi_query=use_multi_query,
             )
 
     async def run_bulk_test(self, request: BulkTestRequest) -> TestReport:
@@ -208,12 +220,13 @@ class TestingService:
         else:
             questions_to_test = all_questions
 
-        # Each config will be tested in 2 variants: with location filters and without
-        total_tests = len(questions_to_test) * len(request.test_configs) * 2
+        # Each config will be tested in 4 variants:
+        # (with/without location filters) × (with/without multi-query)
+        total_tests = len(questions_to_test) * len(request.test_configs) * 4
 
         logger.info(
             f"Testing {len(questions_to_test)} questions with {len(request.test_configs)} configurations "
-            f"in 2 variants each (with/without location filters) = {total_tests} total tests"
+            f"in 4 variants each (with/without filters × with/without multi-query) = {total_tests} total tests"
         )
 
         # Run all tests
@@ -222,35 +235,69 @@ class TestingService:
 
         for question in questions_to_test:
             for config in request.test_configs:
-                # Variant 1: WITH location filters
+                # Variant 1: WITH location filters + WITH multi-query
                 current_test += 1
                 logger.info(
-                    f"Running test {current_test}/{total_tests} (WITH location filters)"
+                    f"Running test {current_test}/{total_tests} (WITH filters + WITH multi-query)"
                 )
-
-                result_with_filters = await self.run_single_test(
+                result = await self.run_single_test(
                     question.question,
                     config,
+                    use_multi_query=True,
                     city_filter=question.city,
                     state_filter=question.state,
                     country_filter=question.country,
+                    expected_datasets=question.expected_datasets,
                 )
-                results.append(result_with_filters)
+                results.append(result)
 
-                # Variant 2: WITHOUT location filters
+                # Variant 2: WITH location filters + WITHOUT multi-query
                 current_test += 1
                 logger.info(
-                    f"Running test {current_test}/{total_tests} (WITHOUT location filters)"
+                    f"Running test {current_test}/{total_tests} (WITH filters + WITHOUT multi-query)"
                 )
-
-                result_without_filters = await self.run_single_test(
+                result = await self.run_single_test(
                     question.question,
                     config,
+                    use_multi_query=False,
+                    city_filter=question.city,
+                    state_filter=question.state,
+                    country_filter=question.country,
+                    expected_datasets=question.expected_datasets,
+                )
+                results.append(result)
+
+                # Variant 3: WITHOUT location filters + WITH multi-query
+                current_test += 1
+                logger.info(
+                    f"Running test {current_test}/{total_tests} (WITHOUT filters + WITH multi-query)"
+                )
+                result = await self.run_single_test(
+                    question.question,
+                    config,
+                    use_multi_query=True,
                     city_filter=None,
                     state_filter=None,
                     country_filter=None,
+                    expected_datasets=question.expected_datasets,
                 )
-                results.append(result_without_filters)
+                results.append(result)
+
+                # Variant 4: WITHOUT location filters + WITHOUT multi-query
+                current_test += 1
+                logger.info(
+                    f"Running test {current_test}/{total_tests} (WITHOUT filters + WITHOUT multi-query)"
+                )
+                result = await self.run_single_test(
+                    question.question,
+                    config,
+                    use_multi_query=False,
+                    city_filter=None,
+                    state_filter=None,
+                    country_filter=None,
+                    expected_datasets=question.expected_datasets,
+                )
+                results.append(result)
 
         # Calculate statistics
         execution_time = time.perf_counter() - start_time
@@ -429,13 +476,17 @@ class TestingService:
             for result in report.results:
                 config = result.config
                 # Use applied filters to distinguish with/without filter variants
+                # We use a flag instead of specific filter values to group all "with filters" results together
+                has_location_filters = bool(
+                    result.applied_city_filter
+                    or result.applied_state_filter
+                    or result.applied_country_filter
+                )
                 config_key = (
                     config.embedder_model.value,
                     config.limit,
-                    config.use_multi_query,
-                    result.applied_city_filter,
-                    result.applied_state_filter,
-                    result.applied_country_filter,
+                    result.used_multi_query,  # Use actual multi-query flag from result
+                    has_location_filters,  # Flag instead of specific values
                 )
 
                 if config_key not in configs_seen:
@@ -443,12 +494,16 @@ class TestingService:
 
                     # Create experiment name
                     exp_name = f"{config.embedder_model.value}_limit{config.limit}"
-                    if config.use_multi_query:
+
+                    # Add multi-query indicator
+                    if result.used_multi_query:
                         exp_name += "_multiquery"
+                    else:
+                        exp_name += "_singlequery"
 
                     # Add filter indicator
-                    if result.applied_city_filter:
-                        exp_name += f"_{result.applied_city_filter}"
+                    if has_location_filters:
+                        exp_name += "_with_filters"
                     else:
                         exp_name += "_no_filters"
 
@@ -456,10 +511,8 @@ class TestingService:
                     config_dict = {
                         "embedder_model": config.embedder_model.value,
                         "limit": config.limit,
-                        "use_multi_query": config.use_multi_query,
-                        "applied_city_filter": result.applied_city_filter,
-                        "applied_state_filter": result.applied_state_filter,
-                        "applied_country_filter": result.applied_country_filter,
+                        "used_multi_query": result.used_multi_query,
+                        "has_location_filters": has_location_filters,
                     }
 
                     experiments.append((exp_name, report, config_dict))
@@ -474,20 +527,19 @@ class TestingService:
                 question_result = None
                 for result in report.results:
                     if result.question == question:
-                        # Check if config matches (including applied filters)
+                        # Check if config matches (including applied filters and multi-query)
                         result_config = result.config
+                        result_has_filters = bool(
+                            result.applied_city_filter
+                            or result.applied_state_filter
+                            or result.applied_country_filter
+                        )
                         if (
                             result_config.embedder_model.value
                             == config_dict["embedder_model"]
                             and result_config.limit == config_dict["limit"]
-                            and result_config.use_multi_query
-                            == config_dict["use_multi_query"]
-                            and result.applied_city_filter
-                            == config_dict["applied_city_filter"]
-                            and result.applied_state_filter
-                            == config_dict["applied_state_filter"]
-                            and result.applied_country_filter
-                            == config_dict["applied_country_filter"]
+                            and result.used_multi_query == config_dict["used_multi_query"]
+                            and result_has_filters == config_dict["has_location_filters"]
                         ):
                             question_result = result
                             break
@@ -523,20 +575,19 @@ class TestingService:
                 question_result = None
                 for result in report.results:
                     if result.question == question:
-                        # Check if config matches (including applied filters)
+                        # Check if config matches (including applied filters and multi-query)
                         result_config = result.config
+                        result_has_filters = bool(
+                            result.applied_city_filter
+                            or result.applied_state_filter
+                            or result.applied_country_filter
+                        )
                         if (
                             result_config.embedder_model.value
                             == config_dict["embedder_model"]
                             and result_config.limit == config_dict["limit"]
-                            and result_config.use_multi_query
-                            == config_dict["use_multi_query"]
-                            and result.applied_city_filter
-                            == config_dict["applied_city_filter"]
-                            and result.applied_state_filter
-                            == config_dict["applied_state_filter"]
-                            and result.applied_country_filter
-                            == config_dict["applied_country_filter"]
+                            and result.used_multi_query == config_dict["used_multi_query"]
+                            and result_has_filters == config_dict["has_location_filters"]
                         ):
                             question_result = result
                             break
@@ -570,20 +621,19 @@ class TestingService:
                 question_result = None
                 for result in report.results:
                     if result.question == question:
-                        # Check if config matches (including applied filters)
+                        # Check if config matches (including applied filters and multi-query)
                         result_config = result.config
+                        result_has_filters = bool(
+                            result.applied_city_filter
+                            or result.applied_state_filter
+                            or result.applied_country_filter
+                        )
                         if (
                             result_config.embedder_model.value
                             == config_dict["embedder_model"]
                             and result_config.limit == config_dict["limit"]
-                            and result_config.use_multi_query
-                            == config_dict["use_multi_query"]
-                            and result.applied_city_filter
-                            == config_dict["applied_city_filter"]
-                            and result.applied_state_filter
-                            == config_dict["applied_state_filter"]
-                            and result.applied_country_filter
-                            == config_dict["applied_country_filter"]
+                            and result.used_multi_query == config_dict["used_multi_query"]
+                            and result_has_filters == config_dict["has_location_filters"]
                         ):
                             question_result = result
                             break

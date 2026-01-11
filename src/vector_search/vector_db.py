@@ -116,10 +116,17 @@ class VectorDB:
             logger.info(
                 f"Creating collection {collection_name} with dimension {embedding_dim}"
             )
+            from qdrant_client.models import HnswConfigDiff
+
             await self.qdrant.create_collection(
                 collection_name=collection_name,
                 vectors_config=VectorParams(
                     size=embedding_dim, distance=Distance.COSINE
+                ),
+                # HNSW configuration optimized for maximum accuracy
+                hnsw_config=HnswConfigDiff(
+                    m=64,  # Number of edges per node (default 16, higher = better recall)
+                    ef_construct=256,  # Construction time ef (default 100, higher = better quality graph)
                 ),
             )
 
@@ -195,7 +202,10 @@ class VectorDB:
         year_to: Optional[int] = None,
         limit: int = 25,
     ) -> list[ScoredPoint]:
-        """Search for datasets using query_points method in specific embedder collection"""
+        """Search for datasets using query_points method in specific embedder collection
+
+        Uses maximum accuracy settings: ef=256 for HNSW search
+        """
         collection_name = get_collection_name(embedder_model)
 
         # Build filter conditions
@@ -231,12 +241,16 @@ class VectorDB:
             search_filter = Filter(must=filter_conditions)
 
         # Use query_points (works with both gRPC and HTTP)
+        # Use maximum accuracy: ef=256 for HNSW search
+        from qdrant_client.http.models import SearchParams
+
         query_result = await self.qdrant.query_points(
             collection_name=collection_name,
             query=query_embedding.tolist(),
             query_filter=search_filter,
             limit=limit,
             with_payload=True,
+            search_params=SearchParams(hnsw_ef=256),
         )
 
         # Extract points from the result
