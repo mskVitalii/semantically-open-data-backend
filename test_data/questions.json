@@ -5,6 +5,8 @@
     "city": "Berlin",
     "state": null,
     "country": "Germany",
+    "year_from": 2020,
+    "year_to": null,
     "created_at": "2025-12-25T21:02:37.482034",
     "expected_datasets": {
       "658c7ebb-38b1-4cfc-a17f-21f0ff1fff17": 1.0,
@@ -22,8 +24,14 @@
     "city": "Leipzig",
     "state": "Saxony",
     "country": "Germany",
+    "year_from": 2020,
+    "year_to": null,
     "created_at": "2025-12-25T21:02:37.482034",
-    "expected_datasets": {}
+    "expected_datasets": {
+      "658c7ebb-38b1-4cfc-a17f-21f0ff1fff17": 0.4,
+      "96a8a41e-b5ff-4cda-8bce-5fc1bcf43db9": 0.25,
+      "f0f22640-5455-444d-a1fb-3f1c3d99768c": 0.25
+    }
   },
   {
     "id": "a3e8b914-5c2a-4e91-b8d3-9f7c2a1b4e6d",
@@ -31,8 +39,14 @@
     "city": "Berlin",
     "state": null,
     "country": "Germany",
+    "year_from": null,
+    "year_to": null,
     "created_at": "2025-12-25T21:03:15.291047",
-    "expected_datasets": null
+    "expected_datasets": {
+      "ed3dcc0d-e3b4-4c70-9423-e8561e577dd3": 0.8,
+      "3ba6ed3c-644a-4c4d-9838-cde959b00737": 0.6,
+      "8974af43-7302-4c85-831b-5359f9b9fbf5": 0.5
+    }
   },
   {
     "id": "7f5d2c89-3a1e-4b9c-a7e4-8d6f1c3b5a92",
@@ -41,7 +55,13 @@
     "state": "Saxony",
     "country": "Germany",
     "created_at": "2025-12-25T21:04:22.637891",
-    "expected_datasets": null
+    "expected_datasets": {
+      "3d10a166-d490-4ab9-9815-e604d41c46a3": 0.4,
+      "8974af43-7302-4c85-831b-5359f9b9fbf5": 0.3,
+      "ae5d47d8-a323-4d6d-8282-48f2f4e75b51": 0.35
+    },
+    "year_from": null,
+    "year_to": null
   },
   {
     "id": "c1b4e7a3-8d2f-4c5b-9e1a-6f3d8c2b7a45",
@@ -49,8 +69,13 @@
     "city": "Chemnitz",
     "state": "Saxony",
     "country": "Germany",
+    "year_from": 2025,
+    "year_to": 2025,
     "created_at": "2025-12-25T21:05:08.754321",
-    "expected_datasets": null
+    "expected_datasets": {
+      "907ff90a-5a5c-4c65-b7eb-8816b698e4e1": 0.35,
+      "3d10a166-d490-4ab9-9815-e604d41c46a3": 0.3
+    }
   },
   {
     "id": "5a9c3e7d-2b1f-4d8e-a3c6-9f7b4e1d8c23",
@@ -59,7 +84,14 @@
     "state": null,
     "country": "Germany",
     "created_at": "2025-12-25T21:06:33.892156",
-    "expected_datasets": null
+    "expected_datasets": {
+      "a6cd0b96-cd8c-4f70-acc9-6979deaf41a5": 0.6,
+      "eb2ab813-a9d6-40d3-96da-e540c80c41f3": 0.6,
+      "02d759e8-81d0-4d1f-af6f-3334efb1fde4": 0.6,
+      "0aeee549-95ad-41dd-8651-665e2b2f7140": 0.6
+    },
+    "year_from": null,
+    "year_to": null
   },
   {
     "id": "e8f2a5c9-7d3b-4e1a-b6c8-2f9d5a7c3e41",
@@ -68,7 +100,11 @@
     "state": "Saxony",
     "country": "Germany",
     "created_at": "2025-12-25T21:07:45.123789",
-    "expected_datasets": null
+    "expected_datasets": {
+      "8f3cf7b2-6334-45ca-83be-88e0ee54f6c1": 0.3
+    },
+    "year_from": null,
+    "year_to": null
   },
   {
     "id": "b7d3f1a8-4c2e-5b9d-a1e7-3f6c8d2b5a94",
@@ -77,7 +113,12 @@
     "state": "Saxony",
     "country": "Germany",
     "created_at": "2025-12-25T21:08:51.456234",
-    "expected_datasets": null
+    "expected_datasets": {
+      "054014ca-d59d-4a97-83e9-7adc12737227": 0.4,
+      "945f2173-5c97-45b6-a10e-c8bfdaa803f2": 0.4
+    },
+    "year_from": null,
+    "year_to": null
   },
   {
     "id": "3c5e8b2a-9f1d-4a7c-b3e6-7d4f2a8c1b59",
@@ -86,7 +127,11 @@
     "state": "Saxony",
     "country": "Germany",
     "created_at": "2025-12-25T21:09:27.678901",
-    "expected_datasets": null
+    "expected_datasets": {
+      "8f3cf7b2-6334-45ca-83be-88e0ee54f6c1": 0.3
+    },
+    "year_from": null,
+    "year_to": null
   },
   {
     "id": "f9a2d7c4-5e3b-4d1f-a8c6-2b7e9f3d5a81",
@@ -95,7 +140,12 @@
     "state": null,
     "country": "Germany",
     "created_at": "2025-12-25T21:10:12.234567",
-    "expected_datasets": null
+    "expected_datasets": {
+      "81a3f6fc-da9b-4be7-9179-012e9f5672cc": 0.3,
+      "cb01bc30-1c70-4813-b8a4-896175d9067a": 0.35
+    },
+    "year_from": null,
+    "year_to": null
   },
   {
     "id": "6d8c3f1a-2b5e-4a9c-b7d3-5f1a8c2e9b46",
@@ -104,7 +154,18 @@
     "state": "Saxony",
     "country": "Germany",
     "created_at": "2025-12-25T21:11:38.891234",
-    "expected_datasets": null
+    "expected_datasets": {
+      "3d10a166-d490-4ab9-9815-e604d41c46a3": 0.5,
+      "f2d66411-3c41-4b4c-83b5-6b9b20f94fcc": 0.4,
+      "377f1f3e-d992-4256-94bc-f3968fe74f27": 0.4,
+      "2861dc04-46da-44ac-94b4-a20ded889041": 0.4,
+      "7815b6a2-d911-44b7-a3c7-35030d8bab29": 0.4,
+      "3e170044-4679-4ce7-8e7c-b2da80225188": 0.4,
+      "8043ac8d-bfa6-42b6-9084-840759f21a81": 0.4,
+      "39a8a600-e266-4d85-900f-1c882db7e842": 0.4
+    },
+    "year_from": null,
+    "year_to": null
   },
   {
     "id": "a1f7e3c8-5b2d-4f9a-c6e3-9d7b4f1a8c25",
@@ -113,7 +174,16 @@
     "state": "Saxony",
     "country": "Germany",
     "created_at": "2025-12-25T21:12:55.567890",
-    "expected_datasets": null
+    "expected_datasets": {
+      "a08cdf3d-97aa-4229-8e23-0993bf02191e": 0.7,
+      "1db72092-d7f2-4770-9c15-2e6c36a9ea87": 0.6,
+      "6717896c-47e9-4bae-9a1e-517da7010d1f": 0.55,
+      "a4b588bb-0a83-49c2-836c-ec05cb2c38f2": 0.5,
+      "e36a2425-8dae-4c96-8b23-7f06471ddf93": 0.45,
+      "2445c2cb-a70a-4cfb-b99f-1c5a5071bc42": 0.4
+    },
+    "year_from": null,
+    "year_to": null
   },
   {
     "id": "e4b9f2a7-3c1d-5e8b-a2f6-7d3c9b5e1a84",
@@ -122,7 +192,11 @@
     "state": null,
     "country": "Germany",
     "created_at": "2025-12-25T21:13:42.345678",
-    "expected_datasets": null
+    "expected_datasets": {
+      "e883fc65-2567-4127-b0c7-188a4720071c": 1.0
+    },
+    "year_from": null,
+    "year_to": null
   },
   {
     "id": "c7f3a1d9-8e2b-4c5f-a9d7-3b6e1f4c8a52",
@@ -131,7 +205,11 @@
     "state": "Saxony",
     "country": "Germany",
     "created_at": "2025-12-25T21:14:29.123456",
-    "expected_datasets": null
+    "expected_datasets": {
+      "8f3cf7b2-6334-45ca-83be-88e0ee54f6c1": 0.3
+    },
+    "year_from": null,
+    "year_to": null
   },
   {
     "id": "2b5e8d3a-7f1c-4a9e-b3d6-5c8f2a7e1b94",
@@ -140,7 +218,13 @@
     "state": "Saxony",
     "country": "Germany",
     "created_at": "2025-12-25T21:15:17.789012",
-    "expected_datasets": null
+    "expected_datasets": {
+      "25ecbbde-db74-4ef0-893c-9056c4bbb81a": 0.4,
+      "684083ab-db85-4337-bf83-44d383ac2a59": 0.4,
+      "a8c3eb74-bb32-40c1-9b49-fa860ab010ac": 0.35
+    },
+    "year_from": null,
+    "year_to": null
   },
   {
     "id": "9f4a7c2e-3d1b-5e8a-c2f7-6b9d3e5a1c48",
@@ -149,6 +233,12 @@
     "state": "Saxony",
     "country": "Germany",
     "created_at": "2025-12-25T21:16:03.456789",
-    "expected_datasets": null
+    "expected_datasets": {
+      "a8c3eb74-bb32-40c1-9b49-fa860ab010ac": 0.35,
+      "25ecbbde-db74-4ef0-893c-9056c4bbb81a": 0.35,
+      "684083ab-db85-4337-bf83-44d383ac2a59": 0.3
+    },
+    "year_from": null,
+    "year_to": null
   }
 ]

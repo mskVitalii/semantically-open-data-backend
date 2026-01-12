@@ -53,6 +53,8 @@ class TestingService:
         city: Optional[str] = None,
         state: Optional[str] = None,
         country: Optional[str] = None,
+        year_from: Optional[int] = None,
+        year_to: Optional[int] = None,
         expected_datasets: Optional[dict[str, float]] = None,
     ) -> TestQuestion:
         """Add a new test question"""
@@ -64,6 +66,8 @@ class TestingService:
             city=city,
             state=state,
             country=country,
+            year_from=year_from,
+            year_to=year_to,
             expected_datasets=expected_datasets,
         )
 
@@ -71,7 +75,8 @@ class TestingService:
         self._save_questions(questions)
 
         logger.info(
-            f"Added new test question: {question} (city={city}, state={state}, country={country}, expected_datasets={expected_datasets})"
+            f"Added new test question: {question} (city={city}, state={state}, country={country}, "
+            f"year_from={year_from}, year_to={year_to}, expected_datasets={expected_datasets})"
         )
         return new_question
 
@@ -107,6 +112,8 @@ class TestingService:
         city_filter: Optional[str] = None,
         state_filter: Optional[str] = None,
         country_filter: Optional[str] = None,
+        year_from: Optional[int] = None,
+        year_to: Optional[int] = None,
         expected_datasets: Optional[dict[str, float]] = None,
     ) -> TestResult:
         """Execute a single test with given configuration"""
@@ -144,6 +151,8 @@ class TestingService:
                     city_filter=city_filter,
                     state_filter=state_filter,
                     country_filter=country_filter,
+                    year_from=year_from,
+                    year_to=year_to,
                 )
                 all_datasets.extend(datasets[: config.limit])
 
@@ -184,6 +193,8 @@ class TestingService:
                 applied_city_filter=city_filter,
                 applied_state_filter=state_filter,
                 applied_country_filter=country_filter,
+                applied_year_from=year_from,
+                applied_year_to=year_to,
                 used_multi_query=use_multi_query,
             )
 
@@ -201,6 +212,8 @@ class TestingService:
                 applied_city_filter=city_filter,
                 applied_state_filter=state_filter,
                 applied_country_filter=country_filter,
+                applied_year_from=year_from,
+                applied_year_to=year_to,
                 used_multi_query=use_multi_query,
             )
 
@@ -220,13 +233,35 @@ class TestingService:
         else:
             questions_to_test = all_questions
 
-        # Each config will be tested in 4 variants:
-        # (with/without location filters) × (with/without multi-query)
-        total_tests = len(questions_to_test) * len(request.test_configs) * 4
+        # Determine which variants to run based on filters and multiquery parameters
+        variants_to_run = []
+
+        # Variant 1: WITH filters + WITH multiquery
+        if (request.filters is None or request.filters is True) and \
+           (request.multiquery is None or request.multiquery is True):
+            variants_to_run.append((True, True))
+
+        # Variant 2: WITH filters + WITHOUT multiquery
+        if (request.filters is None or request.filters is True) and \
+           (request.multiquery is None or request.multiquery is False):
+            variants_to_run.append((True, False))
+
+        # Variant 3: WITHOUT filters + WITH multiquery
+        if (request.filters is None or request.filters is False) and \
+           (request.multiquery is None or request.multiquery is True):
+            variants_to_run.append((False, True))
+
+        # Variant 4: WITHOUT filters + WITHOUT multiquery
+        if (request.filters is None or request.filters is False) and \
+           (request.multiquery is None or request.multiquery is False):
+            variants_to_run.append((False, False))
+
+        enabled_variants = len(variants_to_run)
+        total_tests = len(questions_to_test) * len(request.test_configs) * enabled_variants
 
         logger.info(
             f"Testing {len(questions_to_test)} questions with {len(request.test_configs)} configurations "
-            f"in 4 variants each (with/without filters × with/without multi-query) = {total_tests} total tests"
+            f"in {enabled_variants} variants each = {total_tests} total tests"
         )
 
         # Run all tests
@@ -235,69 +270,29 @@ class TestingService:
 
         for question in questions_to_test:
             for config in request.test_configs:
-                # Variant 1: WITH location filters + WITH multi-query
-                current_test += 1
-                logger.info(
-                    f"Running test {current_test}/{total_tests} (WITH filters + WITH multi-query)"
-                )
-                result = await self.run_single_test(
-                    question.question,
-                    config,
-                    use_multi_query=True,
-                    city_filter=question.city,
-                    state_filter=question.state,
-                    country_filter=question.country,
-                    expected_datasets=question.expected_datasets,
-                )
-                results.append(result)
+                for use_filters, use_multiquery in variants_to_run:
+                    current_test += 1
 
-                # Variant 2: WITH location filters + WITHOUT multi-query
-                current_test += 1
-                logger.info(
-                    f"Running test {current_test}/{total_tests} (WITH filters + WITHOUT multi-query)"
-                )
-                result = await self.run_single_test(
-                    question.question,
-                    config,
-                    use_multi_query=False,
-                    city_filter=question.city,
-                    state_filter=question.state,
-                    country_filter=question.country,
-                    expected_datasets=question.expected_datasets,
-                )
-                results.append(result)
+                    # Prepare variant description
+                    filters_desc = "WITH filters" if use_filters else "WITHOUT filters"
+                    multiquery_desc = "WITH multi-query" if use_multiquery else "WITHOUT multi-query"
 
-                # Variant 3: WITHOUT location filters + WITH multi-query
-                current_test += 1
-                logger.info(
-                    f"Running test {current_test}/{total_tests} (WITHOUT filters + WITH multi-query)"
-                )
-                result = await self.run_single_test(
-                    question.question,
-                    config,
-                    use_multi_query=True,
-                    city_filter=None,
-                    state_filter=None,
-                    country_filter=None,
-                    expected_datasets=question.expected_datasets,
-                )
-                results.append(result)
+                    logger.info(
+                        f"Running test {current_test}/{total_tests} ({filters_desc} + {multiquery_desc})"
+                    )
 
-                # Variant 4: WITHOUT location filters + WITHOUT multi-query
-                current_test += 1
-                logger.info(
-                    f"Running test {current_test}/{total_tests} (WITHOUT filters + WITHOUT multi-query)"
-                )
-                result = await self.run_single_test(
-                    question.question,
-                    config,
-                    use_multi_query=False,
-                    city_filter=None,
-                    state_filter=None,
-                    country_filter=None,
-                    expected_datasets=question.expected_datasets,
-                )
-                results.append(result)
+                    result = await self.run_single_test(
+                        question.question,
+                        config,
+                        use_multi_query=use_multiquery,
+                        city_filter=question.city if use_filters else None,
+                        state_filter=question.state if use_filters else None,
+                        country_filter=question.country if use_filters else None,
+                        year_from=question.year_from if use_filters else None,
+                        year_to=question.year_to if use_filters else None,
+                        expected_datasets=question.expected_datasets,
+                    )
+                    results.append(result)
 
         # Calculate statistics
         execution_time = time.perf_counter() - start_time
@@ -426,10 +421,18 @@ class TestingService:
         """
         Export multiple reports to Excel for comparison.
 
-        Creates three sheets:
+        Creates five sheets:
         1. Weighted Scores: avg(score * relevance_rating) per question per experiment
         2. Relevance Metrics: % of relevant datasets per question per experiment
-        3. Detailed Ratings: all datasets with their scores and relevance ratings
+        3. Normalized Weighted: avg(normalized_score * relevance_rating) per question per experiment
+           - Scores normalized to 0-100 using global min/max across ALL questions in the experiment
+           - Then multiplied by relevance_rating
+           - Use this to compare performance across questions within same experiment
+        4. Normalized Per Question: avg(normalized_score * relevance_rating) per question per experiment
+           - Scores normalized to 0-100 using min/max within EACH question separately
+           - Then multiplied by relevance_rating
+           - Use this to compare experiments within same question
+        5. Detailed Ratings: all datasets with their scores and relevance ratings
 
         Args:
             report_ids: List of report IDs to compare
@@ -593,25 +596,171 @@ class TestingService:
                             break
 
                 if question_result and question_result.datasets:
-                    # Calculate % of relevant datasets
+                    # Calculate average relevance rating as percentage
                     total = len(question_result.datasets)
-                    relevant_count = sum(
-                        1
+                    relevance_sum = sum(
+                        d.relevance_rating if d.relevance_rating is not None else 1.0
                         for d in question_result.datasets
-                        # Use 1.0 as default if relevance_rating is None (which is >= 0.5)
-                        if (
-                            d.relevance_rating
-                            if d.relevance_rating is not None
-                            else 1.0
-                        )
-                        >= 0.5
                     )
-                    relevance_pct = (relevant_count / total * 100) if total > 0 else 0
-                    row[exp_name] = round(relevance_pct, 1)
+                    avg_relevance_pct = (relevance_sum / total * 100) if total > 0 else 0
+                    row[exp_name] = round(avg_relevance_pct, 1)
                 else:
                     row[exp_name] = None
 
             relevance_metrics_data.append(row)
+
+        # First, find global min/max scores for each experiment across ALL questions
+        experiment_min_max = {}  # exp_name -> (min_score, max_score)
+
+        for exp_name, report, config_dict in experiments:
+            all_scores_for_exp = []
+
+            # Collect all scores for this experiment from all questions
+            for question in all_questions:
+                for result in report.results:
+                    if result.question == question:
+                        # Check if config matches
+                        result_config = result.config
+                        result_has_filters = bool(
+                            result.applied_city_filter
+                            or result.applied_state_filter
+                            or result.applied_country_filter
+                        )
+                        if (
+                            result_config.embedder_model.value == config_dict["embedder_model"]
+                            and result_config.limit == config_dict["limit"]
+                            and result.used_multi_query == config_dict["used_multi_query"]
+                            and result_has_filters == config_dict["has_location_filters"]
+                        ):
+                            # Collect all scores from this result
+                            all_scores_for_exp.extend([d.score for d in result.datasets])
+                            break
+
+            # Calculate global min/max for this experiment
+            if all_scores_for_exp:
+                experiment_min_max[exp_name] = (min(all_scores_for_exp), max(all_scores_for_exp))
+            else:
+                experiment_min_max[exp_name] = (0, 1)  # Default fallback
+
+        # Prepare data for normalized weighted scores sheet
+        normalized_weighted_data = []
+        for question in all_questions:
+            row = {"Question": question}
+
+            for exp_name, report, config_dict in experiments:
+                # Find result for this question with matching config
+                question_result = None
+                for result in report.results:
+                    if result.question == question:
+                        # Check if config matches (including applied filters and multi-query)
+                        result_config = result.config
+                        result_has_filters = bool(
+                            result.applied_city_filter
+                            or result.applied_state_filter
+                            or result.applied_country_filter
+                        )
+                        if (
+                            result_config.embedder_model.value
+                            == config_dict["embedder_model"]
+                            and result_config.limit == config_dict["limit"]
+                            and result.used_multi_query == config_dict["used_multi_query"]
+                            and result_has_filters == config_dict["has_location_filters"]
+                        ):
+                            question_result = result
+                            break
+
+                if question_result and question_result.datasets:
+                    # Get global min/max for this experiment
+                    min_score, max_score = experiment_min_max[exp_name]
+
+                    # Calculate normalized weighted score using global min/max
+                    normalized_weighted_sum = 0
+                    count = 0
+                    for dataset in question_result.datasets:
+                        # Normalize score to 0-100 range using global min/max
+                        if max_score > min_score:
+                            normalized_score = ((dataset.score - min_score) / (max_score - min_score)) * 100
+                        else:
+                            normalized_score = 100  # All scores are the same
+
+                        # Use 1.0 as default if relevance_rating is None
+                        rating = (
+                            dataset.relevance_rating
+                            if dataset.relevance_rating is not None
+                            else 1.0
+                        )
+
+                        # Multiply normalized score by relevance rating
+                        normalized_weighted_sum += normalized_score * rating
+                        count += 1
+
+                    avg_normalized_weighted = normalized_weighted_sum / count if count > 0 else 0
+                    row[exp_name] = round(avg_normalized_weighted, 2)
+                else:
+                    row[exp_name] = None
+
+            normalized_weighted_data.append(row)
+
+        # Prepare data for normalized per question scores sheet
+        normalized_per_question_data = []
+        for question in all_questions:
+            row = {"Question": question}
+
+            for exp_name, report, config_dict in experiments:
+                # Find result for this question with matching config
+                question_result = None
+                for result in report.results:
+                    if result.question == question:
+                        # Check if config matches (including applied filters and multi-query)
+                        result_config = result.config
+                        result_has_filters = bool(
+                            result.applied_city_filter
+                            or result.applied_state_filter
+                            or result.applied_country_filter
+                        )
+                        if (
+                            result_config.embedder_model.value
+                            == config_dict["embedder_model"]
+                            and result_config.limit == config_dict["limit"]
+                            and result.used_multi_query == config_dict["used_multi_query"]
+                            and result_has_filters == config_dict["has_location_filters"]
+                        ):
+                            question_result = result
+                            break
+
+                if question_result and question_result.datasets:
+                    # Find min and max scores for THIS QUESTION only
+                    scores = [d.score for d in question_result.datasets]
+                    min_score = min(scores)
+                    max_score = max(scores)
+
+                    # Calculate normalized weighted score using per-question min/max
+                    normalized_weighted_sum = 0
+                    count = 0
+                    for dataset in question_result.datasets:
+                        # Normalize score to 0-100 range using per-question min/max
+                        if max_score > min_score:
+                            normalized_score = ((dataset.score - min_score) / (max_score - min_score)) * 100
+                        else:
+                            normalized_score = 100  # All scores are the same
+
+                        # Use 1.0 as default if relevance_rating is None
+                        rating = (
+                            dataset.relevance_rating
+                            if dataset.relevance_rating is not None
+                            else 1.0
+                        )
+
+                        # Multiply normalized score by relevance rating
+                        normalized_weighted_sum += normalized_score * rating
+                        count += 1
+
+                    avg_normalized_weighted = normalized_weighted_sum / count if count > 0 else 0
+                    row[exp_name] = round(avg_normalized_weighted, 2)
+                else:
+                    row[exp_name] = None
+
+            normalized_per_question_data.append(row)
 
         # Prepare data for detailed relevance ratings sheet
         detailed_ratings_data = []
@@ -656,6 +805,8 @@ class TestingService:
         # Create DataFrames
         df_weighted_scores = pd.DataFrame(weighted_scores_data)
         df_relevance_metrics = pd.DataFrame(relevance_metrics_data)
+        df_normalized_weighted = pd.DataFrame(normalized_weighted_data)
+        df_normalized_per_question = pd.DataFrame(normalized_per_question_data)
         df_detailed_ratings = pd.DataFrame(detailed_ratings_data)
 
         # Generate output filename if not provided
@@ -681,6 +832,12 @@ class TestingService:
             df_relevance_metrics.to_excel(
                 writer, sheet_name="Relevance Metrics", index=False
             )
+            df_normalized_weighted.to_excel(
+                writer, sheet_name="Normalized Weighted", index=False
+            )
+            df_normalized_per_question.to_excel(
+                writer, sheet_name="Normalized Per Question", index=False
+            )
             df_detailed_ratings.to_excel(
                 writer, sheet_name="Detailed Ratings", index=False
             )
@@ -700,6 +857,22 @@ class TestingService:
             self._apply_color_scale(
                 workbook["Relevance Metrics"],
                 df_relevance_metrics,
+                min_value=0,
+                max_value=100,
+            )
+
+            # Format Normalized Weighted sheet (0 to 100 scale)
+            self._apply_color_scale(
+                workbook["Normalized Weighted"],
+                df_normalized_weighted,
+                min_value=0,
+                max_value=100,
+            )
+
+            # Format Normalized Per Question sheet (0 to 100 scale)
+            self._apply_color_scale(
+                workbook["Normalized Per Question"],
+                df_normalized_per_question,
                 min_value=0,
                 max_value=100,
             )

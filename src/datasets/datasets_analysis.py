@@ -1,4 +1,5 @@
 import json
+import csv
 from pathlib import Path
 from collections import Counter
 import matplotlib
@@ -88,7 +89,7 @@ def analyze_metadata_fields():
         print(line)
 
     # Save to file
-    output_file = Path(__file__).parent / "field_analysis_report.txt"
+    output_file = Path(__file__).parent / "datasets_fields_analysis_report.txt"
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(f"Found {len(metadata_files)} metadata.json files\n\n")
         f.write("\n".join(output_lines))
@@ -163,7 +164,7 @@ def plot_field_frequency(stats, top_n=30):
     plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.96))
 
     # Save chart
-    output_path = Path(__file__).parent / "field_frequency_analysis.png"
+    output_path = Path(__file__).parent / "datasets_fields_frequency_analysis.png"
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     print(f"\n{'=' * 80}")
     print(f"Chart saved to: {output_path}")
@@ -172,6 +173,42 @@ def plot_field_frequency(stats, top_n=30):
     plt.close()
 
 
+def export_fields_to_csv(stats):
+    """
+    Exports field analysis to CSV file.
+
+    Args:
+        stats: analysis results from analyze_metadata_fields()
+    """
+    output_file = Path(__file__).parent / "datasets_fields_analysis.csv"
+
+    with open(output_file, "w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f)
+
+        # Write header
+        writer.writerow(["Field Name", "Occurrence Count", "Type"])
+
+        # Write duplicate fields (sorted by frequency)
+        for field_name, count in stats["sorted_duplicates"]:
+            writer.writerow([field_name, count, "Duplicate"])
+
+        # Write non-duplicate fields (sorted alphabetically)
+        non_duplicates = sorted(
+            [
+                field
+                for field, count in stats["field_counter"].items()
+                if count == 1
+            ]
+        )
+        for field_name in non_duplicates:
+            writer.writerow([field_name, 1, "Unique"])
+
+    print(f"\n{'=' * 80}")
+    print(f"CSV exported to: {output_file}")
+    print(f"{'=' * 80}")
+
+
 if __name__ == "__main__":
     stats = analyze_metadata_fields()
     plot_field_frequency(stats, top_n=50)
+    export_fields_to_csv(stats)

@@ -20,6 +20,7 @@ dependencies = [
     "python-dotenv>=1.1.1",
     "qdrant-client>=1.14.1",
     "requests>=2.32.4",
+    "scikit-learn>=1.7.1",
     "scipy-stubs~=1.16.1",
     "sentence-transformers>=5.0.0",
     "torch>=2.7.1",

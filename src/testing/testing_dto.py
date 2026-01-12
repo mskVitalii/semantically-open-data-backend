@@ -25,6 +25,8 @@ class TestQuestion(BaseModel):
     city: Optional[str] = Field(None, description="Filter by city")
     state: Optional[str] = Field(None, description="Filter by state/region")
     country: Optional[str] = Field(None, description="Filter by country")
+    year_from: Optional[int] = Field(None, description="Filter datasets from this year (inclusive)")
+    year_to: Optional[int] = Field(None, description="Filter datasets up to this year (inclusive)")
     created_at: datetime = Field(default_factory=datetime.now)
     expected_datasets: Optional[Dict[str, float]] = Field(
         None,
@@ -72,6 +74,12 @@ class TestResult(BaseModel):
     applied_country_filter: Optional[str] = Field(
         None, description="Country filter that was applied"
     )
+    applied_year_from: Optional[int] = Field(
+        None, description="Year from filter that was applied"
+    )
+    applied_year_to: Optional[int] = Field(
+        None, description="Year to filter that was applied"
+    )
     # Applied multi-query flag (to distinguish multi-query vs single-query variants)
     used_multi_query: bool = Field(
         False, description="Whether multi-query RAG was used for this test"
@@ -86,6 +94,15 @@ class BulkTestRequest(BaseModel):
     )
     test_configs: List[TestConfig] = Field(
         ..., description="List of configurations to test"
+    )
+    # Control which test variants to run
+    filters: Optional[bool] = Field(
+        None,
+        description="None = both variants (with/without filters), True = only WITH filters, False = only WITHOUT filters"
+    )
+    multiquery: Optional[bool] = Field(
+        None,
+        description="None = both variants (with/without multiquery), True = only WITH multiquery, False = only WITHOUT multiquery"
     )
 
 
@@ -108,6 +125,8 @@ class AddQuestionRequest(BaseModel):
     city: Optional[str] = Field(None, description="Filter by city")
     state: Optional[str] = Field(None, description="Filter by state/region")
     country: Optional[str] = Field(None, description="Filter by country")
+    year_from: Optional[int] = Field(None, description="Filter datasets from this year (inclusive)")
+    year_to: Optional[int] = Field(None, description="Filter datasets up to this year (inclusive)")
     expected_datasets: Optional[Dict[str, float]] = Field(
         None,
         description="Expected dataset IDs with relevance ratings (0-1)",

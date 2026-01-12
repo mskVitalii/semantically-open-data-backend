@@ -37,6 +37,9 @@ async def add_question(
     - city: Optional city filter
     - state: Optional state/region filter
     - country: Optional country filter
+    - year_from: Optional year from filter (inclusive)
+    - year_to: Optional year to filter (inclusive)
+    - expected_datasets: Optional dict of dataset IDs with relevance ratings (0-1)
     """
     try:
         testing_service = get_testing_service(dataset_service, llm_service)
@@ -45,6 +48,8 @@ async def add_question(
             city=request.city,
             state=request.state,
             country=request.country,
+            year_from=request.year_from,
+            year_to=request.year_to,
             expected_datasets=request.expected_datasets,
         )
         return {"ok": True, "question": question}
@@ -89,15 +94,27 @@ async def run_bulk_test(
     and returns a comprehensive report.
 
     Location filters (city, state, country) are stored in questions themselves.
-    Each configuration is automatically tested in 4 variants:
+    By default, each configuration is tested in 4 variants:
     1. WITH location filters + WITH multi-query
     2. WITH location filters + WITHOUT multi-query
     3. WITHOUT location filters + WITH multi-query
     4. WITHOUT location filters + WITHOUT multi-query
 
+    You can control which variants to run using:
+    - filters: None (both), True (only with filters), False (only without filters)
+    - multiquery: None (both), True (only with multiquery), False (only without multiquery)
+
     Parameters:
     - question_indices: Optional list of question indices to test (None = all questions)
     - test_configs: List of test configurations to apply
+    - filters: Control filter variants (default: None = both)
+    - multiquery: Control multi-query variants (default: None = both)
+
+    Examples:
+    - filters=None, multiquery=None → all 4 variants (default)
+    - filters=True, multiquery=None → only WITH filters (2 variants)
+    - filters=None, multiquery=False → only WITHOUT multiquery (2 variants)
+    - filters=False, multiquery=False → only one variant (WITHOUT filters + WITHOUT multiquery)
 
     Example test_configs:
     ```json
@@ -121,7 +138,6 @@ async def run_bulk_test(
     ]
     ```
 
-    Each config will produce 4 test results per question (2 filter variants × 2 multi-query variants).
     All tests use maximum accuracy settings (HNSW ef=256, m=64, ef_construct=256).
     """
     try:
@@ -146,13 +162,13 @@ async def run_quick_test(
     Quick test run with single configuration
 
     Convenience endpoint for running tests with a single configuration.
-    Each question will be automatically tested in 4 variants:
+    By default, each question will be tested in 4 variants:
     1. WITH location filters + WITH multi-query
     2. WITH location filters + WITHOUT multi-query
     3. WITHOUT location filters + WITH multi-query
     4. WITHOUT location filters + WITHOUT multi-query
 
-    Use the /run endpoint for testing multiple configurations.
+    Use the /run endpoint for testing multiple configurations or to control which variants to run.
     """
     try:
         # Parse question indices
@@ -294,14 +310,22 @@ async def export_to_excel(
     """
     Export comparison of multiple reports to Excel
 
-    Creates an Excel file with three sheets:
+    Creates an Excel file with five sheets:
     1. **Weighted Scores**: Average weighted score (score * relevance_rating) per question per experiment
     2. **Relevance Metrics**: Percentage of relevant datasets (rating >= 0.5) per question per experiment
-    3. **Detailed Ratings**: All datasets with their scores and relevance ratings
+    3. **Normalized Weighted**: Average normalized weighted score per question per experiment
+       - Scores normalized to 0-100 using global min/max across ALL questions in the experiment
+       - Then multiplied by relevance_rating
+       - Use this to compare performance across questions within same experiment
+    4. **Normalized Per Question**: Average normalized weighted score per question per experiment
+       - Scores normalized to 0-100 using min/max within EACH question separately
+       - Then multiplied by relevance_rating
+       - Use this to compare experiments within same question
+    5. **Detailed Ratings**: All datasets with their scores and relevance ratings
 
     The Excel file is structured as:
-    - Sheets 1-2: Rows = Questions, Columns = Experiments (different configurations/models)
-    - Sheet 3: Detailed list of all datasets with ratings
+    - Sheets 1-4: Rows = Questions, Columns = Experiments (different configurations/models)
+    - Sheet 5: Detailed list of all datasets with ratings
 
     Example usage:
     GET /testing/export/excel?report_ids=report1,report2,report3
