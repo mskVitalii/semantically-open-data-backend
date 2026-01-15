@@ -120,6 +120,7 @@ Each research question should:
 - Be specific and searchable against dataset metadata
 - Focus on the key data needed to answer the user's question
 - Include a brief reason explaining why this data is needed
+- Answer on the language of the question (or default english)
 
 Required JSON format:
 [
@@ -172,6 +173,7 @@ The datasets above include detailed field information with semantic interpretati
 - DO NOT make assumptions beyond what the data shows
 - DO NOT suggest what "could be" analyzed - only what IS in the data
 - If the answer cannot be determined from available fields, clearly state this
+- ALWAYS answer on the language of the question (or default english)
             """
         prompt = f"""{context}\n{instructions}"""
 

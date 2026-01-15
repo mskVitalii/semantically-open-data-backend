@@ -191,7 +191,16 @@ def make_field(data: dict) -> Field:
     cls = type_map.get(data.get("type"))
     if not cls:
         raise ValueError(f"Unknown field type: {data}")
-    return cls(**{k: v for k, v in data.items() if k != "type"})
+
+    field_data = {k: v for k, v in data.items() if k != "type"}
+
+    # Convert string dates back to datetime for FieldDate
+    if cls == FieldDate:
+        for key in ['min', 'max', 'mean']:
+            if key in field_data and isinstance(field_data[key], str):
+                field_data[key] = datetime.fromisoformat(field_data[key])
+
+    return cls(**field_data)
 
 
 @dataclass
