@@ -21,6 +21,205 @@ from src.vector_search.embedder import embed_batch_with_ids
 
 logger = get_prefixed_logger(__name__, "TESTING_SERVICE")
 
+
+# =============================================================================
+# AUEPORA RETRIEVAL METRICS
+# Based on: "Evaluation of Retrieval-Augmented Generation: A Survey" (Yu et al., 2024)
+# =============================================================================
+
+def precision_at_k(
+    datasets: List[DatasetResultItem],
+    k: int,
+    threshold: float = 0.5
+) -> float:
+    """
+    Precision@k: fraction of relevant documents among top-k retrieved.
+
+    Precision@k = |relevant ∩ top-k| / k
+
+    Args:
+        datasets: Ranked list of retrieved datasets
+        k: Number of top results to consider
+        threshold: Minimum relevance_rating to be considered relevant (default 0.5)
+
+    Returns:
+        Precision score between 0 and 1
+    """
+    if k <= 0:
+        return 0.0
+    top_k = datasets[:k]
+    relevant_count = sum(
+        1 for d in top_k
+        if d.relevance_rating is not None and d.relevance_rating >= threshold
+    )
+    return relevant_count / k
+
+
+def recall_at_k(
+    datasets: List[DatasetResultItem],
+    expected_datasets: Optional[dict[str, float]],
+    k: int,
+    threshold: float = 0.5
+) -> float:
+    """
+    Recall@k: fraction of relevant documents retrieved in top-k.
+
+    Recall@k = |relevant ∩ top-k| / |all relevant|
+
+    Args:
+        datasets: Ranked list of retrieved datasets
+        expected_datasets: Ground truth dict {dataset_id: relevance_rating}
+        k: Number of top results to consider
+        threshold: Minimum relevance_rating to be considered relevant
+
+    Returns:
+        Recall score between 0 and 1
+    """
+    if not expected_datasets:
+        return 0.0
+
+    # Get all relevant documents from ground truth
+    relevant_gt = {
+        did for did, rating in expected_datasets.items()
+        if rating >= threshold
+    }
+
+    if not relevant_gt:
+        return 0.0
+
+    # Get retrieved document IDs in top-k
+    top_k_ids = {d.dataset_id for d in datasets[:k]}
+
+    # Calculate intersection
+    retrieved_relevant = len(top_k_ids & relevant_gt)
+
+    return retrieved_relevant / len(relevant_gt)
+
+
+def reciprocal_rank(
+    datasets: List[DatasetResultItem],
+    threshold: float = 0.5
+) -> float:
+    """
+    Reciprocal Rank: 1/position of the first relevant document.
+
+    RR = 1 / rank_first_relevant
+
+    Args:
+        datasets: Ranked list of retrieved datasets
+        threshold: Minimum relevance_rating to be considered relevant
+
+    Returns:
+        Reciprocal rank between 0 and 1 (0 if no relevant found)
+    """
+    for i, d in enumerate(datasets):
+        if d.relevance_rating is not None and d.relevance_rating >= threshold:
+            return 1.0 / (i + 1)
+    return 0.0
+
+
+def average_precision_at_k(
+    datasets: List[DatasetResultItem],
+    k: int,
+    threshold: float = 0.5
+) -> float:
+    """
+    Average Precision@k: mean of precision values at each relevant position.
+
+    AP@k = (1/|relevant|) × Σ(P(i) × rel(i))
+
+    Args:
+        datasets: Ranked list of retrieved datasets
+        k: Number of top results to consider
+        threshold: Minimum relevance_rating to be considered relevant
+
+    Returns:
+        Average precision score between 0 and 1
+    """
+    top_k = datasets[:k]
+    precisions_at_relevant = []
+    relevant_count = 0
+
+    for i, d in enumerate(top_k):
+        if d.relevance_rating is not None and d.relevance_rating >= threshold:
+            relevant_count += 1
+            precision_at_i = relevant_count / (i + 1)
+            precisions_at_relevant.append(precision_at_i)
+
+    if not precisions_at_relevant:
+        return 0.0
+
+    return sum(precisions_at_relevant) / len(precisions_at_relevant)
+
+
+def hit_at_k(
+    datasets: List[DatasetResultItem],
+    k: int,
+    threshold: float = 0.5
+) -> int:
+    """
+    Hit@k: binary indicator if any relevant document is in top-k.
+
+    Hit@k = 1 if |relevant ∩ top-k| > 0, else 0
+
+    Args:
+        datasets: Ranked list of retrieved datasets
+        k: Number of top results to consider
+        threshold: Minimum relevance_rating to be considered relevant
+
+    Returns:
+        1 if hit, 0 otherwise
+    """
+    top_k = datasets[:k]
+    for d in top_k:
+        if d.relevance_rating is not None and d.relevance_rating >= threshold:
+            return 1
+    return 0
+
+
+def ndcg_at_k(
+    datasets: List[DatasetResultItem],
+    k: int
+) -> float:
+    """
+    Normalized Discounted Cumulative Gain@k: measures ranking quality
+    considering graded relevance.
+
+    DCG@k = Σ(rel_i / log2(i+1))
+    NDCG@k = DCG@k / IDCG@k
+
+    Args:
+        datasets: Ranked list of retrieved datasets
+        k: Number of top results to consider
+
+    Returns:
+        NDCG score between 0 and 1
+    """
+    import math
+
+    top_k = datasets[:k]
+
+    # Calculate DCG
+    dcg = 0.0
+    for i, d in enumerate(top_k):
+        rel = d.relevance_rating if d.relevance_rating is not None else 0.0
+        # Using formula: rel_i / log2(i + 2) to avoid log(1) = 0
+        dcg += rel / math.log2(i + 2)
+
+    # Calculate IDCG (ideal DCG with perfect ranking)
+    ideal_rels = sorted(
+        [d.relevance_rating if d.relevance_rating is not None else 0.0 for d in top_k],
+        reverse=True
+    )
+    idcg = 0.0
+    for i, rel in enumerate(ideal_rels):
+        idcg += rel / math.log2(i + 2)
+
+    if idcg == 0:
+        return 0.0
+
+    return dcg / idcg
+
 # File paths
 TEST_DATA_DIR = PROJECT_ROOT / "test_data"
 QUESTIONS_FILE = TEST_DATA_DIR / "questions.json"
@@ -802,12 +1001,96 @@ class TestingService:
                             }
                         )
 
+        # =============================================================================
+        # AUEPORA RETRIEVAL METRICS
+        # Based on: "Evaluation of Retrieval-Augmented Generation: A Survey" (Yu et al., 2024)
+        # =============================================================================
+
+        # Build question -> expected_datasets mapping from test questions
+        questions_data = self.get_all_questions()
+        question_to_expected = {q.question: q.expected_datasets for q in questions_data}
+
+        # Prepare data for AUEPORA metrics sheet (per question, per experiment)
+        auepora_metrics_data = []
+        for question in all_questions:
+            expected = question_to_expected.get(question, {})
+
+            for exp_name, report, config_dict in experiments:
+                # Find result for this question with matching config
+                question_result = None
+                for result in report.results:
+                    if result.question == question:
+                        result_config = result.config
+                        result_has_filters = bool(
+                            result.applied_city_filter
+                            or result.applied_state_filter
+                            or result.applied_country_filter
+                        )
+                        if (
+                            result_config.embedder_model.value == config_dict["embedder_model"]
+                            and result_config.limit == config_dict["limit"]
+                            and result.used_multi_query == config_dict["used_multi_query"]
+                            and result_has_filters == config_dict["has_location_filters"]
+                        ):
+                            question_result = result
+                            break
+
+                if question_result and question_result.datasets:
+                    datasets = question_result.datasets
+                    k_values = [5, 10, 25]
+
+                    row = {
+                        "Question": question[:80] + "..." if len(question) > 80 else question,
+                        "Experiment": exp_name,
+                        "Retrieved": len(datasets),
+                        "Expected": len(expected) if expected else 0,
+                    }
+
+                    # Calculate metrics for each k
+                    for k in k_values:
+                        row[f"P@{k}"] = round(precision_at_k(datasets, k), 4)
+                        row[f"R@{k}"] = round(recall_at_k(datasets, expected, k), 4)
+                        row[f"Hit@{k}"] = hit_at_k(datasets, k)
+                        row[f"AP@{k}"] = round(average_precision_at_k(datasets, k), 4)
+                        row[f"NDCG@{k}"] = round(ndcg_at_k(datasets, k), 4)
+
+                    # MRR (doesn't depend on k)
+                    row["MRR"] = round(reciprocal_rank(datasets), 4)
+
+                    auepora_metrics_data.append(row)
+
+        # Calculate mean metrics per experiment (summary)
+        auepora_summary_data = []
+        for exp_name, report, config_dict in experiments:
+            # Filter metrics for this experiment
+            exp_metrics = [m for m in auepora_metrics_data if m["Experiment"] == exp_name]
+
+            if exp_metrics:
+                summary_row = {
+                    "Experiment": exp_name,
+                    "Questions": len(exp_metrics),
+                }
+
+                # Calculate mean for each metric
+                metric_columns = [c for c in exp_metrics[0].keys()
+                                  if c not in ["Question", "Experiment", "Retrieved", "Expected"]]
+
+                for col in metric_columns:
+                    values = [m[col] for m in exp_metrics if m[col] is not None]
+                    if values:
+                        mean_val = sum(values) / len(values)
+                        summary_row[f"Mean {col}"] = round(mean_val, 4)
+
+                auepora_summary_data.append(summary_row)
+
         # Create DataFrames
         df_weighted_scores = pd.DataFrame(weighted_scores_data)
         df_relevance_metrics = pd.DataFrame(relevance_metrics_data)
         df_normalized_weighted = pd.DataFrame(normalized_weighted_data)
         df_normalized_per_question = pd.DataFrame(normalized_per_question_data)
         df_detailed_ratings = pd.DataFrame(detailed_ratings_data)
+        df_auepora_metrics = pd.DataFrame(auepora_metrics_data)
+        df_auepora_summary = pd.DataFrame(auepora_summary_data)
 
         # Generate output filename if not provided
         if output_file is None:
@@ -840,6 +1123,12 @@ class TestingService:
             )
             df_detailed_ratings.to_excel(
                 writer, sheet_name="Detailed Ratings", index=False
+            )
+            df_auepora_metrics.to_excel(
+                writer, sheet_name="AUEPORA Metrics", index=False
+            )
+            df_auepora_summary.to_excel(
+                writer, sheet_name="AUEPORA Summary", index=False
             )
 
             # Apply color formatting
@@ -879,6 +1168,12 @@ class TestingService:
 
             # Format Score column in Detailed Ratings (0 to 1 scale)
             self._apply_score_colors(workbook["Detailed Ratings"], df_detailed_ratings)
+
+            # Format AUEPORA Metrics sheet (0 to 1 scale for most metrics)
+            self._apply_auepora_colors(workbook["AUEPORA Metrics"], df_auepora_metrics)
+
+            # Format AUEPORA Summary sheet (0 to 1 scale for most metrics)
+            self._apply_auepora_summary_colors(workbook["AUEPORA Summary"], df_auepora_summary)
 
         logger.info(f"Excel report exported to: {output_file}")
         return str(output_file)
@@ -967,6 +1262,77 @@ class TestingService:
             cell.fill = PatternFill(
                 start_color=color, end_color=color, fill_type="solid"
             )
+
+    def _apply_auepora_colors(self, worksheet, dataframe):
+        """Apply color scale to AUEPORA metrics columns (0 to 1 scale)"""
+        from openpyxl.styles import PatternFill
+
+        # Columns to color (all metric columns, not Question/Experiment/Retrieved/Expected)
+        metric_columns = [
+            col for col in dataframe.columns
+            if col not in ["Question", "Experiment", "Retrieved", "Expected"]
+        ]
+
+        first_row = 2
+        last_row = len(dataframe) + 1
+
+        if last_row < first_row:
+            return
+
+        for col_name in metric_columns:
+            try:
+                col_idx = list(dataframe.columns).index(col_name) + 1
+            except ValueError:
+                continue
+
+            # Determine scale: Hit@k is 0-1 binary, others are 0-1 continuous
+            max_value = 1.0
+
+            for row_idx in range(first_row, last_row + 1):
+                cell = worksheet.cell(row=row_idx, column=col_idx)
+                value = cell.value
+
+                if value is None or not isinstance(value, (int, float)):
+                    continue
+
+                color = self._get_color_for_value(value, 0, max_value)
+                cell.fill = PatternFill(
+                    start_color=color, end_color=color, fill_type="solid"
+                )
+
+    def _apply_auepora_summary_colors(self, worksheet, dataframe):
+        """Apply color scale to AUEPORA summary columns (0 to 1 scale)"""
+        from openpyxl.styles import PatternFill
+
+        # All columns except Experiment and Questions
+        metric_columns = [
+            col for col in dataframe.columns
+            if col not in ["Experiment", "Questions"]
+        ]
+
+        first_row = 2
+        last_row = len(dataframe) + 1
+
+        if last_row < first_row:
+            return
+
+        for col_name in metric_columns:
+            try:
+                col_idx = list(dataframe.columns).index(col_name) + 1
+            except ValueError:
+                continue
+
+            for row_idx in range(first_row, last_row + 1):
+                cell = worksheet.cell(row=row_idx, column=col_idx)
+                value = cell.value
+
+                if value is None or not isinstance(value, (int, float)):
+                    continue
+
+                color = self._get_color_for_value(value, 0, 1)
+                cell.fill = PatternFill(
+                    start_color=color, end_color=color, fill_type="solid"
+                )
 
     # endregion
 
