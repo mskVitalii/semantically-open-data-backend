@@ -302,6 +302,7 @@ class TestingService:
         year_from: Optional[int] = None,
         year_to: Optional[int] = None,
         expected_datasets: Optional[dict[str, float]] = None,
+        target_city: Optional[str] = None,
     ) -> TestResult:
         """Execute a single test with given configuration"""
         start_time = time.perf_counter()
@@ -357,6 +358,17 @@ class TestingService:
 
             execution_time = time.perf_counter() - start_time
 
+            # Helper to determine relevance rating
+            def get_relevance_rating(dataset) -> Optional[float]:
+                # If dataset is from a different city than target → 0.0
+                if target_city and dataset.metadata.city:
+                    if dataset.metadata.city.lower() != target_city.lower():
+                        return 0.0
+                # Otherwise use expected_datasets or None
+                if expected_datasets:
+                    return expected_datasets.get(dataset.metadata.id)
+                return None
+
             return TestResult(
                 question=question,
                 config=config,
@@ -366,11 +378,7 @@ class TestingService:
                         title=ds.metadata.title,
                         score=ds.score,
                         dataset_id=ds.metadata.id,
-                        relevance_rating=(
-                            expected_datasets.get(ds.metadata.id)
-                            if expected_datasets
-                            else None
-                        ),
+                        relevance_rating=get_relevance_rating(ds),
                     )
                     for ds in datasets_found
                 ],
@@ -460,7 +468,7 @@ class TestingService:
         # Run all tests in parallel with semaphore (max 10 concurrent)
         import asyncio
 
-        semaphore = asyncio.Semaphore(10)
+        semaphore = asyncio.Semaphore(20)
         completed_count = 0
         completed_lock = asyncio.Lock()
 
@@ -483,6 +491,7 @@ class TestingService:
                     year_from=question.year_from if use_filters else None,
                     year_to=question.year_to if use_filters else None,
                     expected_datasets=question.expected_datasets,
+                    target_city=question.city,  # Always pass for relevance check
                 )
 
                 # Log progress
