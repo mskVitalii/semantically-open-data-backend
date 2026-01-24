@@ -31,7 +31,7 @@ async def embed_batch(
         response = await client.post(
             url=embedder_url + "/embed",
             json={"texts": texts},
-            timeout=len(texts) * 5,
+            timeout=len(texts) * 100,
         )
     response.raise_for_status()
     data = response.json()["embeddings"]
@@ -52,7 +52,7 @@ async def embed_batch_with_ids(
         response = await client.post(
             url=embedder_url + "/embed_with_ids",
             json={"texts": texts},
-            timeout=len(texts) * 5,
+            timeout=len(texts) * 100,
         )
     response.raise_for_status()
     data = response.json()["embeddings"]
