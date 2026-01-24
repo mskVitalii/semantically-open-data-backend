@@ -27,10 +27,9 @@ logger = get_prefixed_logger(__name__, "TESTING_SERVICE")
 # Based on: "Evaluation of Retrieval-Augmented Generation: A Survey" (Yu et al., 2024)
 # =============================================================================
 
+
 def precision_at_k(
-    datasets: List[DatasetResultItem],
-    k: int,
-    threshold: float = 0.5
+    datasets: List[DatasetResultItem], k: int, threshold: float = 0.5
 ) -> float:
     """
     Precision@k: fraction of relevant documents among top-k retrieved.
@@ -49,7 +48,8 @@ def precision_at_k(
         return 0.0
     top_k = datasets[:k]
     relevant_count = sum(
-        1 for d in top_k
+        1
+        for d in top_k
         if d.relevance_rating is not None and d.relevance_rating >= threshold
     )
     return relevant_count / k
@@ -59,7 +59,7 @@ def recall_at_k(
     datasets: List[DatasetResultItem],
     expected_datasets: Optional[dict[str, float]],
     k: int,
-    threshold: float = 0.5
+    threshold: float = 0.5,
 ) -> float:
     """
     Recall@k: fraction of relevant documents retrieved in top-k.
@@ -80,8 +80,7 @@ def recall_at_k(
 
     # Get all relevant documents from ground truth
     relevant_gt = {
-        did for did, rating in expected_datasets.items()
-        if rating >= threshold
+        did for did, rating in expected_datasets.items() if rating >= threshold
     }
 
     if not relevant_gt:
@@ -96,10 +95,7 @@ def recall_at_k(
     return retrieved_relevant / len(relevant_gt)
 
 
-def reciprocal_rank(
-    datasets: List[DatasetResultItem],
-    threshold: float = 0.5
-) -> float:
+def reciprocal_rank(datasets: List[DatasetResultItem], threshold: float = 0.5) -> float:
     """
     Reciprocal Rank: 1/position of the first relevant document.
 
@@ -119,9 +115,7 @@ def reciprocal_rank(
 
 
 def average_precision_at_k(
-    datasets: List[DatasetResultItem],
-    k: int,
-    threshold: float = 0.5
+    datasets: List[DatasetResultItem], k: int, threshold: float = 0.5
 ) -> float:
     """
     Average Precision@k: mean of precision values at each relevant position.
@@ -152,11 +146,7 @@ def average_precision_at_k(
     return sum(precisions_at_relevant) / len(precisions_at_relevant)
 
 
-def hit_at_k(
-    datasets: List[DatasetResultItem],
-    k: int,
-    threshold: float = 0.5
-) -> int:
+def hit_at_k(datasets: List[DatasetResultItem], k: int, threshold: float = 0.5) -> int:
     """
     Hit@k: binary indicator if any relevant document is in top-k.
 
@@ -177,10 +167,7 @@ def hit_at_k(
     return 0
 
 
-def ndcg_at_k(
-    datasets: List[DatasetResultItem],
-    k: int
-) -> float:
+def ndcg_at_k(datasets: List[DatasetResultItem], k: int) -> float:
     """
     Normalized Discounted Cumulative Gain@k: measures ranking quality
     considering graded relevance.
@@ -209,7 +196,7 @@ def ndcg_at_k(
     # Calculate IDCG (ideal DCG with perfect ranking)
     ideal_rels = sorted(
         [d.relevance_rating if d.relevance_rating is not None else 0.0 for d in top_k],
-        reverse=True
+        reverse=True,
     )
     idcg = 0.0
     for i, rel in enumerate(ideal_rels):
@@ -219,6 +206,7 @@ def ndcg_at_k(
         return 0.0
 
     return dcg / idcg
+
 
 # File paths
 TEST_DATA_DIR = PROJECT_ROOT / "test_data"
@@ -436,27 +424,33 @@ class TestingService:
         variants_to_run = []
 
         # Variant 1: WITH filters + WITH multiquery
-        if (request.filters is None or request.filters is True) and \
-           (request.multiquery is None or request.multiquery is True):
+        if (request.filters is None or request.filters is True) and (
+            request.multiquery is None or request.multiquery is True
+        ):
             variants_to_run.append((True, True))
 
         # Variant 2: WITH filters + WITHOUT multiquery
-        if (request.filters is None or request.filters is True) and \
-           (request.multiquery is None or request.multiquery is False):
+        if (request.filters is None or request.filters is True) and (
+            request.multiquery is None or request.multiquery is False
+        ):
             variants_to_run.append((True, False))
 
         # Variant 3: WITHOUT filters + WITH multiquery
-        if (request.filters is None or request.filters is False) and \
-           (request.multiquery is None or request.multiquery is True):
+        if (request.filters is None or request.filters is False) and (
+            request.multiquery is None or request.multiquery is True
+        ):
             variants_to_run.append((False, True))
 
         # Variant 4: WITHOUT filters + WITHOUT multiquery
-        if (request.filters is None or request.filters is False) and \
-           (request.multiquery is None or request.multiquery is False):
+        if (request.filters is None or request.filters is False) and (
+            request.multiquery is None or request.multiquery is False
+        ):
             variants_to_run.append((False, False))
 
         enabled_variants = len(variants_to_run)
-        total_tests = len(questions_to_test) * len(request.test_configs) * enabled_variants
+        total_tests = (
+            len(questions_to_test) * len(request.test_configs) * enabled_variants
+        )
 
         logger.info(
             f"Testing {len(questions_to_test)} questions with {len(request.test_configs)} configurations "
@@ -474,7 +468,9 @@ class TestingService:
 
                     # Prepare variant description
                     filters_desc = "WITH filters" if use_filters else "WITHOUT filters"
-                    multiquery_desc = "WITH multi-query" if use_multiquery else "WITHOUT multi-query"
+                    multiquery_desc = (
+                        "WITH multi-query" if use_multiquery else "WITHOUT multi-query"
+                    )
 
                     logger.info(
                         f"Running test {current_test}/{total_tests} ({filters_desc} + {multiquery_desc})"
@@ -740,8 +736,10 @@ class TestingService:
                             result_config.embedder_model.value
                             == config_dict["embedder_model"]
                             and result_config.limit == config_dict["limit"]
-                            and result.used_multi_query == config_dict["used_multi_query"]
-                            and result_has_filters == config_dict["has_location_filters"]
+                            and result.used_multi_query
+                            == config_dict["used_multi_query"]
+                            and result_has_filters
+                            == config_dict["has_location_filters"]
                         ):
                             question_result = result
                             break
@@ -788,8 +786,10 @@ class TestingService:
                             result_config.embedder_model.value
                             == config_dict["embedder_model"]
                             and result_config.limit == config_dict["limit"]
-                            and result.used_multi_query == config_dict["used_multi_query"]
-                            and result_has_filters == config_dict["has_location_filters"]
+                            and result.used_multi_query
+                            == config_dict["used_multi_query"]
+                            and result_has_filters
+                            == config_dict["has_location_filters"]
                         ):
                             question_result = result
                             break
@@ -801,7 +801,9 @@ class TestingService:
                         d.relevance_rating if d.relevance_rating is not None else 1.0
                         for d in question_result.datasets
                     )
-                    avg_relevance_pct = (relevance_sum / total * 100) if total > 0 else 0
+                    avg_relevance_pct = (
+                        (relevance_sum / total * 100) if total > 0 else 0
+                    )
                     row[exp_name] = round(avg_relevance_pct, 1)
                 else:
                     row[exp_name] = None
@@ -826,18 +828,26 @@ class TestingService:
                             or result.applied_country_filter
                         )
                         if (
-                            result_config.embedder_model.value == config_dict["embedder_model"]
+                            result_config.embedder_model.value
+                            == config_dict["embedder_model"]
                             and result_config.limit == config_dict["limit"]
-                            and result.used_multi_query == config_dict["used_multi_query"]
-                            and result_has_filters == config_dict["has_location_filters"]
+                            and result.used_multi_query
+                            == config_dict["used_multi_query"]
+                            and result_has_filters
+                            == config_dict["has_location_filters"]
                         ):
                             # Collect all scores from this result
-                            all_scores_for_exp.extend([d.score for d in result.datasets])
+                            all_scores_for_exp.extend(
+                                [d.score for d in result.datasets]
+                            )
                             break
 
             # Calculate global min/max for this experiment
             if all_scores_for_exp:
-                experiment_min_max[exp_name] = (min(all_scores_for_exp), max(all_scores_for_exp))
+                experiment_min_max[exp_name] = (
+                    min(all_scores_for_exp),
+                    max(all_scores_for_exp),
+                )
             else:
                 experiment_min_max[exp_name] = (0, 1)  # Default fallback
 
@@ -862,8 +872,10 @@ class TestingService:
                             result_config.embedder_model.value
                             == config_dict["embedder_model"]
                             and result_config.limit == config_dict["limit"]
-                            and result.used_multi_query == config_dict["used_multi_query"]
-                            and result_has_filters == config_dict["has_location_filters"]
+                            and result.used_multi_query
+                            == config_dict["used_multi_query"]
+                            and result_has_filters
+                            == config_dict["has_location_filters"]
                         ):
                             question_result = result
                             break
@@ -878,7 +890,9 @@ class TestingService:
                     for dataset in question_result.datasets:
                         # Normalize score to 0-100 range using global min/max
                         if max_score > min_score:
-                            normalized_score = ((dataset.score - min_score) / (max_score - min_score)) * 100
+                            normalized_score = (
+                                (dataset.score - min_score) / (max_score - min_score)
+                            ) * 100
                         else:
                             normalized_score = 100  # All scores are the same
 
@@ -893,7 +907,9 @@ class TestingService:
                         normalized_weighted_sum += normalized_score * rating
                         count += 1
 
-                    avg_normalized_weighted = normalized_weighted_sum / count if count > 0 else 0
+                    avg_normalized_weighted = (
+                        normalized_weighted_sum / count if count > 0 else 0
+                    )
                     row[exp_name] = round(avg_normalized_weighted, 2)
                 else:
                     row[exp_name] = None
@@ -921,8 +937,10 @@ class TestingService:
                             result_config.embedder_model.value
                             == config_dict["embedder_model"]
                             and result_config.limit == config_dict["limit"]
-                            and result.used_multi_query == config_dict["used_multi_query"]
-                            and result_has_filters == config_dict["has_location_filters"]
+                            and result.used_multi_query
+                            == config_dict["used_multi_query"]
+                            and result_has_filters
+                            == config_dict["has_location_filters"]
                         ):
                             question_result = result
                             break
@@ -939,7 +957,9 @@ class TestingService:
                     for dataset in question_result.datasets:
                         # Normalize score to 0-100 range using per-question min/max
                         if max_score > min_score:
-                            normalized_score = ((dataset.score - min_score) / (max_score - min_score)) * 100
+                            normalized_score = (
+                                (dataset.score - min_score) / (max_score - min_score)
+                            ) * 100
                         else:
                             normalized_score = 100  # All scores are the same
 
@@ -954,7 +974,9 @@ class TestingService:
                         normalized_weighted_sum += normalized_score * rating
                         count += 1
 
-                    avg_normalized_weighted = normalized_weighted_sum / count if count > 0 else 0
+                    avg_normalized_weighted = (
+                        normalized_weighted_sum / count if count > 0 else 0
+                    )
                     row[exp_name] = round(avg_normalized_weighted, 2)
                 else:
                     row[exp_name] = None
@@ -980,8 +1002,10 @@ class TestingService:
                             result_config.embedder_model.value
                             == config_dict["embedder_model"]
                             and result_config.limit == config_dict["limit"]
-                            and result.used_multi_query == config_dict["used_multi_query"]
-                            and result_has_filters == config_dict["has_location_filters"]
+                            and result.used_multi_query
+                            == config_dict["used_multi_query"]
+                            and result_has_filters
+                            == config_dict["has_location_filters"]
                         ):
                             question_result = result
                             break
@@ -1027,10 +1051,13 @@ class TestingService:
                             or result.applied_country_filter
                         )
                         if (
-                            result_config.embedder_model.value == config_dict["embedder_model"]
+                            result_config.embedder_model.value
+                            == config_dict["embedder_model"]
                             and result_config.limit == config_dict["limit"]
-                            and result.used_multi_query == config_dict["used_multi_query"]
-                            and result_has_filters == config_dict["has_location_filters"]
+                            and result.used_multi_query
+                            == config_dict["used_multi_query"]
+                            and result_has_filters
+                            == config_dict["has_location_filters"]
                         ):
                             question_result = result
                             break
@@ -1040,7 +1067,9 @@ class TestingService:
                     k_values = [5, 10, 25]
 
                     row = {
-                        "Question": question[:80] + "..." if len(question) > 80 else question,
+                        "Question": question[:80] + "..."
+                        if len(question) > 80
+                        else question,
                         "Experiment": exp_name,
                         "Retrieved": len(datasets),
                         "Expected": len(expected) if expected else 0,
@@ -1063,7 +1092,9 @@ class TestingService:
         auepora_summary_data = []
         for exp_name, report, config_dict in experiments:
             # Filter metrics for this experiment
-            exp_metrics = [m for m in auepora_metrics_data if m["Experiment"] == exp_name]
+            exp_metrics = [
+                m for m in auepora_metrics_data if m["Experiment"] == exp_name
+            ]
 
             if exp_metrics:
                 summary_row = {
@@ -1072,8 +1103,11 @@ class TestingService:
                 }
 
                 # Calculate mean for each metric
-                metric_columns = [c for c in exp_metrics[0].keys()
-                                  if c not in ["Question", "Experiment", "Retrieved", "Expected"]]
+                metric_columns = [
+                    c
+                    for c in exp_metrics[0].keys()
+                    if c not in ["Question", "Experiment", "Retrieved", "Expected"]
+                ]
 
                 for col in metric_columns:
                     values = [m[col] for m in exp_metrics if m[col] is not None]
@@ -1173,7 +1207,9 @@ class TestingService:
             self._apply_auepora_colors(workbook["AUEPORA Metrics"], df_auepora_metrics)
 
             # Format AUEPORA Summary sheet (0 to 1 scale for most metrics)
-            self._apply_auepora_summary_colors(workbook["AUEPORA Summary"], df_auepora_summary)
+            self._apply_auepora_summary_colors(
+                workbook["AUEPORA Summary"], df_auepora_summary
+            )
 
         logger.info(f"Excel report exported to: {output_file}")
         return str(output_file)
@@ -1269,7 +1305,8 @@ class TestingService:
 
         # Columns to color (all metric columns, not Question/Experiment/Retrieved/Expected)
         metric_columns = [
-            col for col in dataframe.columns
+            col
+            for col in dataframe.columns
             if col not in ["Question", "Experiment", "Retrieved", "Expected"]
         ]
 
@@ -1306,8 +1343,7 @@ class TestingService:
 
         # All columns except Experiment and Questions
         metric_columns = [
-            col for col in dataframe.columns
-            if col not in ["Experiment", "Questions"]
+            col for col in dataframe.columns if col not in ["Experiment", "Questions"]
         ]
 
         first_row = 2
