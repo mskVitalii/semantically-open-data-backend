@@ -468,7 +468,7 @@ class TestingService:
         # Run all tests in parallel with semaphore (max 10 concurrent)
         import asyncio
 
-        semaphore = asyncio.Semaphore(20)
+        semaphore = asyncio.Semaphore(25)
         completed_count = 0
         completed_lock = asyncio.Lock()
 
