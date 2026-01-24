@@ -791,6 +791,17 @@ class TestingService:
                     row[exp_name] = round(avg_weighted_score, 4)
                 else:
                     row[exp_name] = None
+                    # Debug logging for empty cells
+                    if question_result is None:
+                        logger.debug(
+                            f"Empty cell: No matching result found for question='{question[:50]}...' "
+                            f"exp={exp_name}"
+                        )
+                    elif not question_result.datasets:
+                        logger.debug(
+                            f"Empty cell: Result found but datasets empty for question='{question[:50]}...' "
+                            f"exp={exp_name}, datasets_found={question_result.datasets_found}"
+                        )
 
             weighted_scores_data.append(row)
 
