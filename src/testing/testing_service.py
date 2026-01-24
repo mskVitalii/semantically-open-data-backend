@@ -457,37 +457,57 @@ class TestingService:
             f"in {enabled_variants} variants each = {total_tests} total tests"
         )
 
-        # Run all tests
-        results = []
-        current_test = 0
+        # Run all tests in parallel with semaphore (max 10 concurrent)
+        import asyncio
 
-        for question in questions_to_test:
-            for config in request.test_configs:
-                for use_filters, use_multiquery in variants_to_run:
-                    current_test += 1
+        semaphore = asyncio.Semaphore(10)
+        completed_count = 0
+        completed_lock = asyncio.Lock()
 
-                    # Prepare variant description
+        async def run_with_semaphore(
+            question: TestQuestion,
+            config: TestConfig,
+            use_filters: bool,
+            use_multiquery: bool,
+        ) -> TestResult:
+            nonlocal completed_count
+
+            async with semaphore:
+                result = await self.run_single_test(
+                    question.question,
+                    config,
+                    use_multi_query=use_multiquery,
+                    city_filter=question.city if use_filters else None,
+                    state_filter=question.state if use_filters else None,
+                    country_filter=question.country if use_filters else None,
+                    year_from=question.year_from if use_filters else None,
+                    year_to=question.year_to if use_filters else None,
+                    expected_datasets=question.expected_datasets,
+                )
+
+                # Log progress
+                async with completed_lock:
+                    completed_count += 1
                     filters_desc = "WITH filters" if use_filters else "WITHOUT filters"
                     multiquery_desc = (
                         "WITH multi-query" if use_multiquery else "WITHOUT multi-query"
                     )
-
                     logger.info(
-                        f"Running test {current_test}/{total_tests} ({filters_desc} + {multiquery_desc})"
+                        f"Completed test {completed_count}/{total_tests} ({filters_desc} + {multiquery_desc})"
                     )
 
-                    result = await self.run_single_test(
-                        question.question,
-                        config,
-                        use_multi_query=use_multiquery,
-                        city_filter=question.city if use_filters else None,
-                        state_filter=question.state if use_filters else None,
-                        country_filter=question.country if use_filters else None,
-                        year_from=question.year_from if use_filters else None,
-                        year_to=question.year_to if use_filters else None,
-                        expected_datasets=question.expected_datasets,
-                    )
-                    results.append(result)
+                return result
+
+        # Create all tasks
+        tasks = [
+            run_with_semaphore(question, config, use_filters, use_multiquery)
+            for question in questions_to_test
+            for config in request.test_configs
+            for use_filters, use_multiquery in variants_to_run
+        ]
+
+        # Run all tasks concurrently (semaphore limits to 10 at a time)
+        results = list(await asyncio.gather(*tasks))
 
         # Calculate statistics
         execution_time = time.perf_counter() - start_time
@@ -749,11 +769,11 @@ class TestingService:
                     weighted_sum = 0
                     count = 0
                     for dataset in question_result.datasets:
-                        # Use 1.0 as default if relevance_rating is None
+                        # Use 0.0 as default if relevance_rating is None (not in ground truth)
                         rating = (
                             dataset.relevance_rating
                             if dataset.relevance_rating is not None
-                            else 1.0
+                            else 0.0
                         )
                         weighted_sum += dataset.score * rating
                         count += 1
@@ -798,7 +818,7 @@ class TestingService:
                     # Calculate average relevance rating as percentage
                     total = len(question_result.datasets)
                     relevance_sum = sum(
-                        d.relevance_rating if d.relevance_rating is not None else 1.0
+                        d.relevance_rating if d.relevance_rating is not None else 0.0
                         for d in question_result.datasets
                     )
                     avg_relevance_pct = (
@@ -896,11 +916,11 @@ class TestingService:
                         else:
                             normalized_score = 100  # All scores are the same
 
-                        # Use 1.0 as default if relevance_rating is None
+                        # Use 0.0 as default if relevance_rating is None (not in ground truth)
                         rating = (
                             dataset.relevance_rating
                             if dataset.relevance_rating is not None
-                            else 1.0
+                            else 0.0
                         )
 
                         # Multiply normalized score by relevance rating
@@ -963,11 +983,11 @@ class TestingService:
                         else:
                             normalized_score = 100  # All scores are the same
 
-                        # Use 1.0 as default if relevance_rating is None
+                        # Use 0.0 as default if relevance_rating is None (not in ground truth)
                         rating = (
                             dataset.relevance_rating
                             if dataset.relevance_rating is not None
-                            else 1.0
+                            else 0.0
                         )
 
                         # Multiply normalized score by relevance rating

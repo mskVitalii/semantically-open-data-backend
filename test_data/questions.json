@@ -952,5 +952,41 @@
       "81a86e18-7b45-44ee-961c-8312107bc97e": 0.0,
       "1ae46e0e-af40-439e-9ad8-eb5abf81679d": 0.0
     }
+  },
+  {
+    "id": "e1f2a3b4-0011-4eee-f111-111111111111",
+    "question": "Where are hospitals and emergency medical services located in Chemnitz?",
+    "city": "Chemnitz",
+    "state": "Saxony",
+    "country": "Germany",
+    "year_from": null,
+    "year_to": null,
+    "stakeholder": "citizens",
+    "created_at": "2026-01-23T12:10:00.000000",
+    "expected_datasets": {}
+  },
+  {
+    "id": "e1f2a3b4-0012-4eee-f111-111111111112",
+    "question": "Wo befinden sich Krankenhäuser und Notaufnahmen in Chemnitz?",
+    "city": "Chemnitz",
+    "state": "Saxony",
+    "country": "Germany",
+    "year_from": null,
+    "year_to": null,
+    "stakeholder": "citizens",
+    "created_at": "2026-01-23T12:10:00.000000",
+    "expected_datasets": {}
+  },
+  {
+    "id": "e1f2a3b4-0013-4eee-f111-111111111113",
+    "question": "Где расположены больницы и службы скорой медицинской помощи в Хемнице?",
+    "city": "Chemnitz",
+    "state": "Saxony",
+    "country": "Germany",
+    "year_from": null,
+    "year_to": null,
+    "stakeholder": "citizens",
+    "created_at": "2026-01-23T12:10:00.000000",
+    "expected_datasets": {}
   }
 ]
