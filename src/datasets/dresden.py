@@ -3,16 +3,8 @@ import io
 import json
 import logging
 import sys
-from pathlib import Path
-from typing import Optional
 
 import pandas as pd
-from aiohttp import (
-    ClientTimeout,
-    ClientError,
-    ClientConnectionError,
-    ClientResponseError,
-)
 
 from src.datasets.base_data_downloader import BaseDataDownloader
 from src.datasets.datasets_metadata import (
@@ -20,11 +12,7 @@ from src.datasets.datasets_metadata import (
     Dataset,
 )
 from src.infrastructure.logger import get_prefixed_logger
-from src.utils.datasets_utils import (
-    sanitize_title,
-    extract_fields,
-    load_metadata_from_file,
-)
+from src.utils.datasets_utils import sanitize_title
 from src.utils.file import save_file_with_task
 
 
@@ -83,22 +71,18 @@ class Dresden(BaseDataDownloader):
     # region LOGIC STEPS
 
     # 8.
-    async def download_file(
-        self, url: str, filename: str, dataset_dir: Path
-    ) -> (bool, list[dict] | None):
+    async def download_file(self, url: str) -> tuple[bool, list[dict] | None]:
         """
-        Download file with optimized async streaming
+        Download and parse file content into list of dicts.
+
+        Tries JSON first, then CSV. Result is always structured data.
 
         Args:
             url: File URL
-            filename: Filename to save
-            dataset_dir: Dataset directory
 
         Returns:
-            True if file successfully downloaded
+            Tuple of (success, parsed data)
         """
-        filepath = dataset_dir / filename
-
         # Check if URL previously failed
         if await self.is_url_failed(url):
             return False, None
@@ -122,8 +106,20 @@ class Dresden(BaseDataDownloader):
                         await self.mark_url_failed(url)
                         return False, None
 
-                    if filepath.suffix == ".csv":
-                        content = await response.read()
+                    content = await response.read()
+
+                    # Try JSON first
+                    try:
+                        data = json.loads(content)
+                        features = (
+                            data.get("features", []) if isinstance(data, dict) else data
+                        )
+                        return True, features
+                    except (json.JSONDecodeError, ValueError):
+                        pass
+
+                    # Try CSV
+                    try:
                         try:
                             df = pd.read_csv(
                                 io.BytesIO(content),
@@ -138,17 +134,9 @@ class Dresden(BaseDataDownloader):
                                 sep=None,
                                 engine="python",
                             )
-                        features = df.to_dict("records")
-                        await self.update_stats("files_downloaded")
-                        return True, features
-                    else:
-                        try:
-                            data = await response.json()
-                            features = data.get("features", [])
-                            await self.update_stats("files_downloaded")
-                            return True, features
-                        except json.JSONDecodeError:
-                            return False, None
+                        return True, df.to_dict("records")
+                    except Exception:
+                        return False, None
             except Exception as e:
                 if attempt < self.max_retries - 1:
                     await self.update_stats("retries")
@@ -160,123 +148,16 @@ class Dresden(BaseDataDownloader):
                     return False, None
         return False, None
 
-    # 7.
-    @staticmethod
-    def extract_from_distributions(metadata: dict) -> list[dict]:
-        """
-        Fallback method to extract download URLs from distribution metadata
-
-        Args:
-            metadata: Dataset metadata
-
-        Returns:
-            list of download information
-        """
-        downloads = []
-
-        if not metadata:
-            return downloads
-
-        # Search for distributions in metadata
-        for subject, predicates in metadata.items():
-            # Look for dcat:distribution
-            distributions = predicates.get("http://www.w3.org/ns/dcat#distribution", [])
-
-            for dist in distributions:
-                if dist.get("type") == "uri":
-                    dist_uri = dist.get("value")
-
-                    # Get distribution information
-                    dist_info = metadata.get(dist_uri, {})
-
-                    # Look for download URL
-                    download_url = None
-                    access_urls = dist_info.get(
-                        "http://www.w3.org/ns/dcat#downloadURL", []
-                    )
-                    if not access_urls:
-                        access_urls = dist_info.get(
-                            "http://www.w3.org/ns/dcat#accessURL", []
-                        )
-
-                    if access_urls and access_urls[0].get("type") == "uri":
-                        download_url = access_urls[0].get("value")
-
-                    # Look for file format
-                    format_info = dist_info.get("http://purl.org/dc/terms/format", [])
-                    media_type = dist_info.get(
-                        "http://www.w3.org/ns/dcat#mediaType", []
-                    )
-
-                    file_format = None
-                    if format_info and format_info[0].get("value"):
-                        file_format = format_info[0]["value"]
-                    elif media_type and media_type[0].get("value"):
-                        file_format = media_type[0]["value"]
-
-                    # Look for title
-                    title = dist_info.get("http://purl.org/dc/terms/title", [])
-                    file_title = (
-                        title[0].get("value", "untitled") if title else "untitled"
-                    )
-
-                    # Determine file extension
-                    extension = ""
-                    if file_format:
-                        format_lower = file_format.lower()
-                        if "csv" in format_lower:
-                            extension = ".csv"
-                        elif "json" in format_lower:
-                            extension = ".json"
-                        # elif "xml" in format_lower:
-                        #     extension = ".xml"
-                        # elif "xlsx" in format_lower or "excel" in format_lower:
-                        #     extension = ".xlsx"
-
-                    if download_url:
-                        downloads.append(
-                            {
-                                "url": download_url,
-                                "title": file_title,
-                                "format": file_format,
-                                "extension": extension,
-                                "distribution_uri": dist_uri,
-                            }
-                        )
-
-        return downloads
-
-    # 6.
-    async def check_url_availability_by_api(
-        self, url: str, format_info: dict
-    ) -> Optional[dict]:
-        """Check if a URL is available and return download info"""
-        try:
-            async with self.session.head(
-                url, timeout=ClientTimeout(total=10)
-            ) as response:
-                if response.status == 200:
-                    return {
-                        "url": url,
-                        "title": "content",
-                        "format": format_info["format"],
-                        "extension": format_info["ext"],
-                    }
-        except (
-            ClientError,
-            ClientConnectionError,
-            ClientResponseError,
-            asyncio.TimeoutError,
-        ):
-            pass
-        return None
-
     # 5.
-    async def extract_download_urls(
+    def extract_download_urls(
         self, dataset_metadata: dict, dataset_uri: str
     ) -> list[dict]:
         """
-        Extract download URLs from metadata using direct content.csv approach
+        Extract download URLs from distribution metadata.
+
+        Reads available formats from DCAT distributions and constructs
+        download URLs using the portal's content{extension} pattern.
+        Falls back to all known formats if metadata has no format info.
 
         Args:
             dataset_metadata: Dataset metadata
@@ -285,46 +166,78 @@ class Dresden(BaseDataDownloader):
         Returns:
             list of dictionaries with download file information
         """
+        if not dataset_uri or not dataset_metadata:
+            return []
+
+        format_to_ext = {
+            "csv": ".csv",
+            "json": ".json",
+            "xml": ".xml",
+            "xlsx": ".xlsx",
+            "excel": ".xlsx",
+        }
+
         downloads = []
 
-        if not dataset_uri:
-            self.logger.warning("No dataset URI provided")
-            return downloads
+        for subject, predicates in dataset_metadata.items():
+            distributions = predicates.get("http://www.w3.org/ns/dcat#distribution", [])
 
-        # Formats to try in priority order
-        format_attempts = [
-            {"suffix": "/content.json", "format": "application/json", "ext": ".json"},
-            {
-                "suffix": "/content.json",
-                "format": "application/json",
-                "ext": ".geojson",
-            },
-            {"suffix": "/content.csv", "format": "text/csv", "ext": ".csv"},
-            # {"suffix": "/content.xml", "format": "application/xml", "ext": ".xml"},
-            # {
-            #     "suffix": "/content.xlsx",
-            #     "format": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            #     "ext": ".xlsx",
-            # },
-        ]
+            if not distributions:
+                continue
 
-        # Check each format concurrently
-        check_tasks = []
-        for format_info in format_attempts:
-            url = f"{dataset_uri}{format_info['suffix']}"
-            task = self.check_url_availability_by_api(url, format_info)
-            check_tasks.append(task)
+            # Format info lives on the dataset level, not distribution level
+            dataset_format_values = predicates.get(
+                "http://purl.org/dc/terms/format", []
+            ) or predicates.get("http://www.w3.org/ns/dcat#mediaType", [])
 
-        results = await asyncio.gather(*check_tasks, return_exceptions=True)
+            for dist in distributions:
+                if dist.get("type") != "uri":
+                    continue
 
-        # Add successful results
-        for result in results:
-            if isinstance(result, dict) and result:
-                downloads.append(result)
+                dist_uri = dist.get("value", "")
 
-        # Fallback: try to extract from distribution metadata if no direct files found
+                # Extract format from distribution URI fragment (#dist-csv → csv)
+                extension = None
+                format_name = None
+                if "#dist-" in dist_uri:
+                    format_name = dist_uri.split("#dist-")[-1]
+                    extension = format_to_ext.get(format_name)
+
+                # Fallback: use dataset-level dc:format
+                if not extension and dataset_format_values:
+                    format_name = dataset_format_values[0].get("value", "")
+                    for key, ext in format_to_ext.items():
+                        if key in format_name.lower():
+                            extension = ext
+                            break
+
+                if not extension:
+                    continue
+
+                downloads.append(
+                    {
+                        "url": f"{dataset_uri}/content{extension}",
+                        "title": f"content_{len(downloads) + 1}",
+                        "format": format_name,
+                        "extension": extension,
+                    }
+                )
+
+        # Fallback: if no formats found in metadata, try all known formats
         if not downloads:
-            downloads = self.extract_from_distributions(dataset_metadata)
+            self.logger.debug(
+                f"No formats in distribution metadata for {dataset_uri}, "
+                "falling back to all known formats"
+            )
+            for ext in [".json", ".csv"]:
+                downloads.append(
+                    {
+                        "url": f"{dataset_uri}/content{ext}",
+                        "title": "content",
+                        "format": ext.lstrip("."),
+                        "extension": ext,
+                    }
+                )
 
         return downloads
 
@@ -409,29 +322,39 @@ class Dresden(BaseDataDownloader):
                         description = description_info[0].get("value")
 
                     # Extract publisher URI
-                    publisher_info = predicates.get("http://purl.org/dc/terms/publisher", [])
+                    publisher_info = predicates.get(
+                        "http://purl.org/dc/terms/publisher", []
+                    )
                     if publisher_info:
                         publisher = publisher_info[0].get("value")
 
                     # Extract license
-                    license_data = predicates.get("http://purl.org/dc/terms/license", [])
+                    license_data = predicates.get(
+                        "http://purl.org/dc/terms/license", []
+                    )
                     if license_data:
                         license_info = license_data[0].get("value")
 
                     # Extract modified date from dataset metadata (fallback)
                     if not modified_date:
-                        mod_info = predicates.get("http://purl.org/dc/terms/modified", [])
+                        mod_info = predicates.get(
+                            "http://purl.org/dc/terms/modified", []
+                        )
                         if mod_info:
                             modified_date = mod_info[0].get("value")
 
                     # Extract maintainer (author)
-                    maintainer_info = predicates.get("http://dcat-ap.de/def/dcatde/maintainer", [])
+                    maintainer_info = predicates.get(
+                        "http://dcat-ap.de/def/dcatde/maintainer", []
+                    )
                     if maintainer_info:
                         maintainer_uri = maintainer_info[0].get("value")
                         # Try to get maintainer name from metadata
                         if maintainer_uri and maintainer_uri.startswith("_:"):
                             maintainer_data = dataset_metadata.get(maintainer_uri, {})
-                            name_info = maintainer_data.get("http://xmlns.com/foaf/0.1/name", [])
+                            name_info = maintainer_data.get(
+                                "http://xmlns.com/foaf/0.1/name", []
+                            )
                             if name_info:
                                 author = name_info[0].get("value")
 
@@ -440,7 +363,9 @@ class Dresden(BaseDataDownloader):
                         # Publisher is a URI, try to get its name from metadata
                         if publisher in dataset_metadata:
                             publisher_data = dataset_metadata[publisher]
-                            org_name = publisher_data.get("http://xmlns.com/foaf/0.1/name", [])
+                            org_name = publisher_data.get(
+                                "http://xmlns.com/foaf/0.1/name", []
+                            )
                             if org_name:
                                 organization = org_name[0].get("value")
 
@@ -456,20 +381,6 @@ class Dresden(BaseDataDownloader):
         safe_title = sanitize_title(title)
         ds_name = f"{context_id}_{entry_id}_{safe_title}"
         dataset_dir = self.output_dir / ds_name
-
-        # Check if dataset already processed by finding directory that starts with {context_id}_{entry_id}_
-        if self.use_file_system:
-            metadata_file = dataset_dir / "metadata.json"
-            if metadata_file.exists():
-                self.logger.debug(f"Dataset already processed: {ds_name}")
-                await self.update_stats("datasets_processed")
-                await self.update_stats("files_downloaded")
-
-                package_meta = load_metadata_from_file(metadata_file)
-                if package_meta and self.use_embeddings and self.vector_db_buffer:
-                    await self.vector_db_buffer.add(package_meta)
-
-                return True
 
         self.logger.debug(f"Processing dataset: {ds_name}")
 
@@ -490,7 +401,7 @@ class Dresden(BaseDataDownloader):
         )
 
         # Extract download links
-        downloads = await self.extract_download_urls(dataset_metadata, dataset_uri)
+        downloads = self.extract_download_urls(dataset_metadata, dataset_uri)
         if not downloads:
             await self.update_stats("datasets_processed")
             await self.update_stats("failed_datasets", ds_name)
@@ -507,44 +418,63 @@ class Dresden(BaseDataDownloader):
         )
 
         async def download_with_semaphore(_download_info):
+            url = _download_info["url"]
+            file_title = _download_info.get("title", "file")
+            filename = sanitize_title(f"{file_title}.json")
+            filepath = dataset_dir / filename
+            if filepath.exists():
+                self.logger.debug(f"File already exists: {filename}")
+                await self.update_stats("files_downloaded")
+                return True, None
             async with download_semaphore:
-                url = _download_info["url"]
-                file_title = _download_info.get("title", "file")
-                extension = _download_info.get("extension", "")
-                filename = sanitize_title(f"{file_title}{extension}")
-                return await self.download_file(url, filename, dataset_dir)
+                success, data = await self.download_file(url)
+            if success and data is not None:
+                dataset_dir.mkdir(exist_ok=True)
+                save_file_with_task(
+                    filepath,
+                    json.dumps(data, ensure_ascii=False, indent=2),
+                )
+                await self.update_stats("files_downloaded")
+            return success, data
 
-        # Try to download files
-        success = False
-        data = []
+        # Download all resources
+        any_success = False
+        all_data = []
 
         for download_info in sorted_downloads:
             success, data = await download_with_semaphore(download_info)
             if success:
-                break  # Stop after first successful download
+                any_success = True
+                if data:
+                    all_data.extend(data)
 
-        if success:
-            package_meta.fields = extract_fields(data)
-
+        if any_success:
             # Save metadata
             if self.use_file_system:
                 dataset_dir.mkdir(exist_ok=True)
-                metadata_file = dataset_dir / "metadata.json"
+                metadata_file = dataset_dir / "_metadata.json"
                 content = package_meta.to_json()
                 save_file_with_task(metadata_file, content)
+
+                # Save dataset data
+                dataset_info_file = dataset_dir / "_dataset_info.json"
+                save_file_with_task(
+                    dataset_info_file,
+                    json.dumps(dataset_info, ensure_ascii=False, indent=2),
+                )
 
             if self.use_embeddings and self.vector_db_buffer:
                 await self.vector_db_buffer.add(package_meta)
 
             if self.use_store and self.dataset_db_buffer:
-                dataset = Dataset(metadata=package_meta, data=data)
+                dataset = Dataset(metadata=package_meta, data=all_data)
                 await self.dataset_db_buffer.add(dataset)
 
         await self.update_stats("datasets_processed")
-        return success
+        return any_success
 
     # 3.
-    async def search_datasets_by_api(self, limit: int = 150, offset: int = 0) -> dict:
+    async def search_datasets_by_api(self, limit: int = 100, offset: int = 0) -> dict:
         """
         Search Dresden datasets via API with retry logic
 
@@ -569,7 +499,8 @@ class Dresden(BaseDataDownloader):
                     self.search_endpoint, params=params
                 ) as response:
                     response.raise_for_status()
-                    return await response.json()
+                    json_ = await response.json()
+                    return json_
             except Exception as e:
                 if attempt < self.max_retries - 1:
                     await self.update_stats("retries")
@@ -584,7 +515,7 @@ class Dresden(BaseDataDownloader):
         """Collect all datasets from the API"""
         all_datasets = []
         offset = 0
-        limit = 150
+        limit = 100
 
         while True:
             # Search for datasets
@@ -607,12 +538,12 @@ class Dresden(BaseDataDownloader):
 
             all_datasets.extend(children)
 
-            # Move to next page
-            offset += limit
-
-            # If we got fewer results than requested, this is the last page
-            if len(children) < limit:
+            # Stop if we've collected all results
+            if len(all_datasets) >= total_results:
                 break
+
+            # Move to next page by actual page size
+            offset += len(children)
 
         return all_datasets
 
@@ -681,8 +612,8 @@ async def async_main():
         "--max-workers",
         "-w",
         type=int,
-        default=20,
-        help="Number of parallel workers (default: 20)",
+        default=128,
+        help="Number of parallel workers (default: 128)",
     )
     parser.add_argument(
         "--delay",
@@ -695,14 +626,14 @@ async def async_main():
         "--batch-size",
         "-b",
         type=int,
-        default=50,
-        help="Batch size for processing (default: 50)",
+        default=128,
+        help="Batch size for processing (default: 128)",
     )
     parser.add_argument(
         "--connection-limit",
         type=int,
-        default=100,
-        help="Total connection pool size (default: 100)",
+        default=200,
+        help="Total connection pool size (default: 200)",
     )
     parser.add_argument(
         "--max-retries",
