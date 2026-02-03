@@ -63,6 +63,7 @@ class DatasetMetadata:
     groups: Optional[list[str]] = None
     url: Optional[str] = None
     author: Optional[str] = None
+    is_geo: bool = False
     embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL
 
     def to_searchable_text(self) -> str:
@@ -109,6 +110,7 @@ class DatasetMetadata:
             "groups": self.groups,
             "url": self.url,
             "author": self.author,
+            "is_geo": self.is_geo,
             "embedder_model": embedder_model_value,
             "year": year,  # Add year for range filtering
         }

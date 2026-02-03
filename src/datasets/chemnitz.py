@@ -208,6 +208,7 @@ class Chemnitz(BaseDataDownloader):
                 groups=groups,
                 url=csv_metadata.get("url"),
                 author=csv_metadata.get("owner"),
+                is_geo=True,
             )
 
             await self.update_stats("files_downloaded")
@@ -286,6 +287,7 @@ class Chemnitz(BaseDataDownloader):
                 groups=groups,
                 url=csv_metadata.get("url"),
                 author=csv_metadata.get("owner"),
+                is_geo=True,
             )
 
             # Get all features (layers and tables)
