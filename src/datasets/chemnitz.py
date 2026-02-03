@@ -223,7 +223,7 @@ class Chemnitz(BaseDataDownloader):
                     dataset_dir / "_metadata.json", package_meta.to_json()
                 )
                 save_file_with_task(
-                    dataset_dir / "_service_info.json",
+                    dataset_dir / "_dataset_info.json",
                     json.dumps(service_info, ensure_ascii=False, indent=2),
                 )
 
@@ -366,7 +366,7 @@ class Chemnitz(BaseDataDownloader):
                         dataset_dir / "_metadata.json", package_meta.to_json()
                     )
                     save_file_with_task(
-                        dataset_dir / "_service_info.json",
+                        dataset_dir / "_dataset_info.json",
                         json.dumps(service_info, ensure_ascii=False, indent=2),
                     )
 
