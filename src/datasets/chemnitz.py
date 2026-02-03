@@ -93,7 +93,7 @@ class Chemnitz(BaseDataDownloader):
         """Download data for a single layer via query endpoint (JSON format).
 
         Returns:
-            Tuple of (success, json_data)
+            Tuple of (success, JSON_data)
         """
         query_url = f"{service_url}/{layer_id}/query"
         params = {
