@@ -4,22 +4,14 @@ import csv
 import json
 import logging
 import sys
-from itertools import chain
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import aiofiles
-import pandas as pd
-
 from src.datasets.base_data_downloader import BaseDataDownloader
-from src.datasets.datasets_metadata import (
-    DatasetMetadataWithFields,
-    Dataset,
-)
+from src.datasets.datasets_metadata import DatasetMetadataWithFields
 from src.utils.datasets_utils import (
     sanitize_title,
-    extract_fields,
-    load_metadata_from_file,
 )
 from src.infrastructure.logger import get_prefixed_logger
 from src.utils.file import save_file_with_task
@@ -97,67 +89,39 @@ class Chemnitz(BaseDataDownloader):
         service_url: str,
         layer_id: int,
         layer_name: str,
-    ) -> (bool, list[dict] | None):
-        """Download data for a single layer with optimized retry logic"""
-        formats_to_try = [
-            ("geojson", "json"),
-            ("csv", "csv"),
-            ("json", "json"),
-        ]
+    ) -> tuple[bool, dict | None]:
+        """Download data for a single layer via query endpoint (JSON format).
 
-        for format_name, file_ext in formats_to_try:
-            query_url = f"{service_url}/{layer_id}/query"
-            params = {
-                "where": "1=1",
-                "outFields": "*",
-                "f": format_name,
-                "returnGeometry": "true",
-            }
+        Returns:
+            Tuple of (success, json_data)
+        """
+        query_url = f"{service_url}/{layer_id}/query"
+        params = {
+            "where": "1=1",
+            "outFields": "*",
+            "f": "json",
+            "returnGeometry": "true",
+        }
 
-            for attempt in range(self.max_retries):
-                try:
-                    async with self.session.get(query_url, params=params) as response:
-                        if response.status == 200:
-                            if format_name == "geojson" or format_name == "json":
-                                try:
-                                    data = await response.json()
-                                    features = data.get("features", [])
-                                    await self.update_stats("layers_downloaded")
-                                    return True, features
+        for attempt in range(self.max_retries):
+            try:
+                async with self.session.get(query_url, params=params) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        if "error" not in data:
+                            await self.update_stats("layers_downloaded")
+                            return True, data
 
-                                except json.JSONDecodeError:
-                                    return False, None
-                            else:
-                                content = await response.read()
-                                try:
-                                    df = pd.read_csv(
-                                        io.BytesIO(content),
-                                        encoding="utf-8-sig",
-                                        sep=None,
-                                        engine="python",
-                                    )
-                                except UnicodeDecodeError:
-                                    df = pd.read_csv(
-                                        io.BytesIO(content),
-                                        encoding="ISO-8859-1",
-                                        sep=None,
-                                        engine="python",
-                                    )
-                                features = df.to_dict("records")
-                                await self.update_stats("layers_downloaded")
-                                return True, features
+                    return False, None
 
-                except Exception as e:
-                    if attempt < self.max_retries - 1:
-                        await self.update_stats("retries")
-                        await asyncio.sleep(2**attempt)
-                    else:
-                        self.logger.error(
-                            f"Error downloading layer {layer_name} with format {format_name}: {e}"
-                        )
-                        return False, None
+            except Exception as e:
+                if attempt < self.max_retries - 1:
+                    await self.update_stats("retries")
+                    await asyncio.sleep(2**attempt)
+                else:
+                    self.logger.error(f"Error downloading layer {layer_name}: {e}")
+                    return False, None
 
-        self.logger.error(f"⚠ Couldn't download layer {layer_name}")
         return False, None
 
     # 5.
@@ -190,14 +154,103 @@ class Chemnitz(BaseDataDownloader):
                     return None
         return None
 
-    # 4.
+    # 4a.
+    async def download_map_service_metadata(
+        self,
+        csv_metadata: Dict[str, str],
+    ) -> bool:
+        """Download metadata for a Map Service (raster/WMS - no downloadable data)"""
+        service_url = csv_metadata["url"]
+        title = csv_metadata["title"]
+        safe_title = sanitize_title(title)
+
+        try:
+            # Check if metadata file already exists
+            if self.use_file_system:
+                dataset_dir = self.output_dir / safe_title
+                metadata_file = dataset_dir / "_metadata.json"
+                if metadata_file.exists():
+                    self.logger.debug(f"Metadata already exists: {title}")
+                    await self.update_stats("datasets_processed")
+                    await self.update_stats("files_downloaded")
+                    return True
+
+            # Get service info
+            service_info = await self.get_service_info_by_api(service_url)
+            if not service_info:
+                await self.update_stats("datasets_processed")
+                await self.update_stats("failed_datasets", title)
+                return True
+
+            # Parse tags and categories from CSV
+            tags_str = csv_metadata.get("tags", "")
+            tags = [t.strip() for t in tags_str.split(",")] if tags_str else None
+
+            categories_str = csv_metadata.get("categories", "")
+            groups = (
+                [c.strip() for c in categories_str.split(",")]
+                if categories_str
+                else None
+            )
+
+            # Prepare metadata
+            package_meta = DatasetMetadataWithFields(
+                id=service_info.get("serviceItemId") or csv_metadata.get("id"),
+                title=title,
+                description=csv_metadata.get("description"),
+                organization=csv_metadata.get("source"),
+                metadata_created=csv_metadata.get("created"),
+                metadata_modified=csv_metadata.get("modified"),
+                city="Chemnitz",
+                state="Saxony",
+                country="Germany",
+                tags=tags,
+                groups=groups,
+                url=csv_metadata.get("url"),
+                author=csv_metadata.get("owner"),
+            )
+
+            await self.update_stats("files_downloaded")
+
+            if self.use_embeddings and self.vector_db_buffer:
+                await self.vector_db_buffer.add(package_meta)
+
+            if self.use_file_system:
+                dataset_dir = self.output_dir / safe_title
+                dataset_dir.mkdir(exist_ok=True)
+                save_file_with_task(
+                    dataset_dir / "_metadata.json", package_meta.to_json()
+                )
+                save_file_with_task(
+                    dataset_dir / "_service_info.json",
+                    json.dumps(service_info, ensure_ascii=False, indent=2),
+                )
+
+            await self.update_stats("datasets_processed")
+            return True
+
+        except Exception as e:
+            self.logger.error(
+                f"\tError processing Map Service {title}: {e}", exc_info=True
+            )
+            await self.update_stats("datasets_processed")
+            await self.update_stats("failed_datasets", title)
+            await self.update_stats("errors")
+            return False
+
+    # 4b.
     async def download_feature_service_data(
         self,
         csv_metadata: Dict[str, str],
     ) -> bool:
-        """Download all data from a feature service with optimized concurrency"""
+        """Download all data from a feature service with optimized concurrency.
+
+        Each layer is saved under its own name in all available formats:
+        - {layer_name}.json
+        """
         service_url = csv_metadata["url"]
         title = csv_metadata["title"]
+        safe_title = sanitize_title(title)
 
         try:
             # Get service info
@@ -212,7 +265,11 @@ class Chemnitz(BaseDataDownloader):
             tags = [t.strip() for t in tags_str.split(",")] if tags_str else None
 
             categories_str = csv_metadata.get("categories", "")
-            groups = [c.strip() for c in categories_str.split(",")] if categories_str else None
+            groups = (
+                [c.strip() for c in categories_str.split(",")]
+                if categories_str
+                else None
+            )
 
             # Prepare metadata with all available fields
             package_meta = DatasetMetadataWithFields(
@@ -231,12 +288,12 @@ class Chemnitz(BaseDataDownloader):
                 author=csv_metadata.get("owner"),
             )
 
-            # Get all features
+            # Get all features (layers and tables)
             layers = service_info.get("layers", [])
             tables = service_info.get("tables", [])
-            all_features = layers + tables
+            all_layers = layers + tables
 
-            if not all_features:
+            if not all_layers:
                 await self.update_stats("datasets_processed")
                 await self.update_stats("failed_datasets", title)
                 return True
@@ -246,49 +303,73 @@ class Chemnitz(BaseDataDownloader):
                 self.max_workers if self.use_parallel else 1
             )
 
-            async def download_with_semaphore(feature):
-                async with layer_semaphore:
-                    layer_id = feature.get("id", 0)
-                    layer_name = feature.get("name", f"layer_{layer_id}")
-                    return await self.download_layer_data_by_api(
-                        service_url, layer_id, layer_name
+            async def download_with_semaphore(layer_info):
+                _layer_id = layer_info.get("id", 0)
+                _layer_name = layer_info.get("name", f"layer_{_layer_id}")
+                _safe_layer_name = sanitize_title(_layer_name)
+
+                # Skip if layer file already exists
+                if self.use_file_system:
+                    layer_file = (
+                        self.output_dir / safe_title / f"{_safe_layer_name}.json"
                     )
+                    if layer_file.exists():
+                        self.logger.debug(f"Layer already exists: {_layer_name}")
+                        await self.update_stats("layers_downloaded")
+                        return _layer_name, True, None, True
+
+                async with layer_semaphore:
+                    _success, _data = await self.download_layer_data_by_api(
+                        service_url, _layer_id, _layer_name
+                    )
+                    return _layer_name, _success, _data, False
 
             # Create download tasks
-            download_tasks = [download_with_semaphore(f) for f in all_features]
+            download_tasks = [download_with_semaphore(layer) for layer in all_layers]
 
             # Wait for all downloads
             results = await asyncio.gather(*download_tasks, return_exceptions=True)
 
-            # Count successful downloads
-            success_count = sum(
-                1
-                for result in results
-                if not isinstance(result, Exception)
-                and isinstance(result, tuple)
-                and len(result) == 2
-                and result[0] is True
-            )
-            safe_title = sanitize_title(title)
-            if success_count > 0:
-                data = list(chain.from_iterable(res[1] for res in results))
-                package_meta.fields = extract_fields(data)
+            # Process results and save files
+            files_saved = 0
+            dataset_dir = self.output_dir / safe_title
+            if self.use_file_system:
+                dataset_dir.mkdir(exist_ok=True)
 
-                await self.update_stats("files_downloaded")
+            for result in results:
+                if isinstance(result, Exception):
+                    await self.update_stats("failed_datasets", title)
+                    continue
+                layer_name, success, data, exists = result
+                if success and exists:
+                    files_saved += 1
+                    continue
+                if not success:
+                    await self.update_stats("failed_datasets", title)
+                    continue
+
+                if self.use_file_system:
+                    safe_layer_name = sanitize_title(layer_name)
+                    save_file_with_task(
+                        dataset_dir / f"{safe_layer_name}.json",
+                        json.dumps(data, ensure_ascii=False, indent=2),
+                    )
+                    files_saved += 1
+
+            if files_saved > 0:
+                await self.update_stats("files_downloaded", files_saved)
+
+                if self.use_file_system:
+                    save_file_with_task(
+                        dataset_dir / "_metadata.json", package_meta.to_json()
+                    )
+                    save_file_with_task(
+                        dataset_dir / "_service_info.json",
+                        json.dumps(service_info, ensure_ascii=False, indent=2),
+                    )
 
                 if self.use_embeddings and self.vector_db_buffer:
                     await self.vector_db_buffer.add(package_meta)
-
-                if self.use_store and self.dataset_db_buffer:
-                    dataset = Dataset(metadata=package_meta, data=data)
-                    await self.dataset_db_buffer.add(dataset)
-
-                if self.use_file_system:
-                    dataset_dir = self.output_dir / safe_title
-                    dataset_dir.mkdir(exist_ok=True)
-                    save_file_with_task(
-                        dataset_dir / "metadata.json", package_meta.to_json()
-                    )
 
             await self.update_stats("datasets_processed")
             return True
@@ -306,29 +387,15 @@ class Chemnitz(BaseDataDownloader):
         title = metadata["title"]
         dataset_type = metadata["type"]
 
-        safe_title = sanitize_title(title)
-        if await self.is_dataset_unsuitable(safe_title):
-            self.logger.debug(f"Skipping unsuitable dataset from cache: {title}")
-            await self.update_stats("datasets_processed")
-            await self.update_stats("datasets_not_suitable")
-            return True
-
-        if self.use_file_system:
-            metadata_file = self.output_dir / safe_title / "metadata.json"
-            if metadata_file.exists():
-                self.logger.debug(f"Dataset already processed: {title}")
-                await self.update_stats("datasets_processed")
-                await self.update_stats("files_downloaded")
-
-                package_meta = load_metadata_from_file(metadata_file)
-                if package_meta and self.use_embeddings and self.vector_db_buffer:
-                    await self.vector_db_buffer.add(package_meta)
-
         try:
-            if "Feature Service" == dataset_type:
+            if dataset_type == "Feature Service":
                 return await self.download_feature_service_data(metadata)
+            elif dataset_type == "Map Service":
+                return await self.download_map_service_metadata(metadata)
             else:
-                return False
+                self.logger.warning(f"Unknown dataset type '{dataset_type}': {title}")
+                await self.update_stats("datasets_processed")
+                return True
 
         except Exception as e:
             self.logger.error(f"❌ Error processing {title}: {e}")
@@ -448,8 +515,8 @@ async def async_main():
         "--max-workers",
         "-w",
         type=int,
-        default=20,
-        help="Number of parallel workers (default: 20)",
+        default=128,
+        help="Number of parallel workers (default: 128)",
     )
     parser.add_argument(
         "--delay",
