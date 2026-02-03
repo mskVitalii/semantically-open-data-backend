@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import sys
+import zipfile
 from typing import Optional
 
 import pandas as pd
@@ -16,7 +17,6 @@ from src.infrastructure.logger import get_prefixed_logger
 from src.utils.datasets_utils import (
     sanitize_title,
     safe_delete,
-    extract_fields,
     load_metadata_from_file,
 )
 from src.utils.file import save_file_with_task
@@ -75,6 +75,76 @@ class Leipzig(BaseDataDownloader):
 
     # endregion
 
+    # region PARSING
+
+    def _parse_csv(self, content: bytes) -> list[dict] | None:
+        """Parse CSV content trying multiple encodings"""
+        encodings_to_try = ["utf-8-sig", "utf-8", "ISO-8859-1", "latin1", "cp1252"]
+        last_error = None
+
+        for encoding in encodings_to_try:
+            try:
+                df = pd.read_csv(
+                    io.BytesIO(content),
+                    encoding=encoding,
+                    sep=None,
+                    engine="python",
+                    on_bad_lines="skip",
+                )
+                return df.to_dict("records")
+            except (UnicodeDecodeError, pd.errors.ParserError) as e:
+                last_error = e
+                continue
+
+        self.logger.error(
+            f"\t❌ Failed to parse CSV with all encodings. Last error: {last_error}"
+        )
+        return None
+
+    def _parse_json(self, content: bytes) -> list[dict] | None:
+        """Parse JSON content"""
+        try:
+            data = json.loads(content)
+            if isinstance(data, dict):
+                return data.get("features", [])
+            elif isinstance(data, list):
+                return data
+            else:
+                self.logger.warning(f"Unknown JSON type: {type(data)}")
+                return None
+        except json.JSONDecodeError as e:
+            self.logger.error(f"\t❌ JSON parsing error: {e}")
+            return None
+
+    def _parse_zip(self, content: bytes) -> list[dict] | None:
+        """Extract and parse CSV/JSON/GeoJSON files from a ZIP archive"""
+        try:
+            all_features = []
+            with zipfile.ZipFile(io.BytesIO(content)) as zf:
+                for name in zf.namelist():
+                    ext = name.rsplit(".", 1)[-1].lower() if "." in name else ""
+                    file_content = zf.read(name)
+
+                    if ext == "csv":
+                        features = self._parse_csv(file_content)
+                    elif ext in {"json", "geojson"}:
+                        features = self._parse_json(file_content)
+                    else:
+                        continue
+
+                    if features:
+                        all_features.extend(features)
+
+            if not all_features:
+                self.logger.warning("\t⚠️ ZIP archive contained no parseable files")
+                return None
+            return all_features
+        except zipfile.BadZipFile as e:
+            self.logger.error(f"\t❌ Bad ZIP file: {e}")
+            return None
+
+    # endregion
+
     # region LOGIC STEPS
 
     # 7.
@@ -94,40 +164,20 @@ class Leipzig(BaseDataDownloader):
                         response.raise_for_status()
                         if resource_format == "csv":
                             content = await response.read()
-                            encodings_to_try = [
-                                "utf-8-sig",
-                                "utf-8",
-                                "ISO-8859-1",
-                                "latin1",
-                                "cp1252",
-                            ]
-
-                            df = None
-                            last_error = None
-
-                            for encoding in encodings_to_try:
-                                try:
-                                    df = pd.read_csv(
-                                        io.BytesIO(content),
-                                        encoding=encoding,
-                                        sep=None,
-                                        engine="python",
-                                        on_bad_lines="skip",
-                                    )
-                                    break
-                                except (UnicodeDecodeError, pd.errors.ParserError) as e:
-                                    last_error = e
-                                    continue
-
-                            if df is None:
-                                self.logger.error(
-                                    f"\t❌ Failed to parse CSV with all encodings. Last error: {last_error}"
-                                )
+                            features = self._parse_csv(content)
+                            if features is None:
                                 return False, None
-
-                            features = df.to_dict("records")
                             await self.update_stats("layers_downloaded")
                             return True, features
+
+                        elif resource_format == "zip":
+                            content = await response.read()
+                            features = self._parse_zip(content)
+                            if features is None:
+                                return False, None
+                            await self.update_stats("layers_downloaded")
+                            return True, features
+
                         else:
                             try:
                                 data = await response.json()
@@ -169,7 +219,7 @@ class Leipzig(BaseDataDownloader):
 
             if self.use_file_system:
                 dataset_dir = self.output_dir / safe_title
-                metadata_file = dataset_dir / "metadata.json"
+                metadata_file = dataset_dir / "_metadata.json"
                 if metadata_file.exists():
                     self.logger.debug(f"Dataset already processed: {package_title}")
                     await self.update_stats("datasets_processed")
@@ -202,15 +252,6 @@ class Leipzig(BaseDataDownloader):
                 country="Germany",
             )
 
-            # Sort resources - prioritize JSON
-            json_resources = [
-                r for r in target_resources if r.get("format", "").lower() == "json"
-            ]
-            other_resources = [
-                r for r in target_resources if r.get("format", "").lower() != "json"
-            ]
-            sorted_resources = json_resources + other_resources
-
             async def download_with_semaphore(_resource):
                 url = _resource.get("url")
                 if not url:
@@ -220,32 +261,55 @@ class Leipzig(BaseDataDownloader):
 
                 return await self.download_resource_by_api(_resource)
 
-            # Try to download a resource
-            success = False
-            data = []
-            for resource in sorted_resources:
+            # Download all resources
+            all_data = []
+            any_success = False
+            is_geo = False
+
+            dataset_dir = self.output_dir / safe_title
+            if self.use_file_system:
+                dataset_dir.mkdir(exist_ok=True)
+
+            for resource in target_resources:
+                resource_format = resource.get("format", "").lower()
+                resource_name = sanitize_title(
+                    resource.get("name", resource.get("id", "unnamed"))
+                )
                 success, data = await download_with_semaphore(resource)
                 if success:
                     await self.update_stats("files_downloaded")
-                    break  # Stop after first successful download
+                    any_success = True
+                    if data:
+                        all_data.extend(data)
+                        if self.use_file_system:
+
+                            save_file_with_task(
+                                dataset_dir / f"{resource_name}.json",
+                                json.dumps(data, ensure_ascii=False, indent=2),
+                            )
+                    if resource_format == "geojson":
+                        is_geo = True
                 else:
                     await self.update_stats("errors")
 
-            if success:
-                package_meta.fields = extract_fields(data)
+            if any_success:
+                package_meta.is_geo = is_geo
 
                 # Save metadata
                 if self.use_file_system:
-                    dataset_dir = self.output_dir / safe_title
-                    dataset_dir.mkdir(exist_ok=True)
-                    metadata_file = dataset_dir / "metadata.json"
+                    metadata_file = dataset_dir / "_metadata.json"
                     save_file_with_task(metadata_file, package_meta.to_json())
+                    dataset_info_file = dataset_dir / "_dataset_info.json"
+                    save_file_with_task(
+                        dataset_info_file,
+                        json.dumps(metadata, ensure_ascii=False, indent=2),
+                    )
 
                 if self.use_embeddings and self.vector_db_buffer:
                     await self.vector_db_buffer.add(package_meta)
 
                 if self.use_store and self.dataset_db_buffer:
-                    dataset = Dataset(metadata=package_meta, data=data)
+                    dataset = Dataset(metadata=package_meta, data=all_data)
                     await self.dataset_db_buffer.add(dataset)
             else:
                 # Clean up empty dataset
@@ -296,16 +360,11 @@ class Leipzig(BaseDataDownloader):
         if not package_data:
             return None
 
-        # Check for target formats
-        target_resources = []
-        for resource in package_data.get("resources", []):
-            resource_format = resource.get("format", "").lower()
-            resource_mimetype = resource.get("mimetype", "")
-            if (
-                resource_format in {"csv", "json", "geojson"}
-                and resource_mimetype != "application/zip"
-            ):
-                target_resources.append(resource)
+        target_resources = [
+            r
+            for r in package_data.get("resources", [])
+            if r.get("format", "").lower() in {"csv", "json", "geojson", "zip"}
+        ]
 
         if target_resources:
             await self.update_stats("datasets_found", len(target_resources))
@@ -444,8 +503,8 @@ async def async_main():
         "--max-workers",
         "-w",
         type=int,
-        default=20,
-        help="Number of parallel workers (default: 20)",
+        default=128,
+        help="Number of parallel workers (default: 128)",
     )
     parser.add_argument(
         "--delay",
@@ -458,8 +517,8 @@ async def async_main():
         "--batch-size",
         "-b",
         type=int,
-        default=50,
-        help="Batch size for processing (default: 50)",
+        default=128,
+        help="Batch size for processing (default: 128)",
     )
     parser.add_argument(
         "--connection-limit",
