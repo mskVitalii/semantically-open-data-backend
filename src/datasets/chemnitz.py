@@ -372,7 +372,13 @@ class Chemnitz(BaseDataDownloader):
 
                 # Collect records in memory for field extraction
                 if fmt == "csv" and isinstance(data, str):
-                    reader = csv.DictReader(io.StringIO(data))
+                    # Auto-detect delimiter using csv.Sniffer
+                    try:
+                        sample = data[:4096]
+                        dialect = csv.Sniffer().sniff(sample, delimiters=',;\t|')
+                        reader = csv.DictReader(io.StringIO(data), dialect=dialect)
+                    except csv.Error:
+                        reader = csv.DictReader(io.StringIO(data))
                     all_records.extend(reader)
                 elif isinstance(data, dict):
                     # ArcGIS format: pass whole feature object (attributes + geometry)

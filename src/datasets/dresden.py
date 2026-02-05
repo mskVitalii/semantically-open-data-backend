@@ -1,4 +1,5 @@
 import asyncio
+import csv
 import io
 import json
 import logging
@@ -12,7 +13,7 @@ from src.datasets.datasets_metadata import (
     Dataset,
 )
 from src.infrastructure.logger import get_prefixed_logger
-from src.utils.datasets_utils import sanitize_title
+from src.utils.datasets_utils import sanitize_title, extract_fields
 from src.utils.file import save_file_with_task
 
 
@@ -71,21 +72,23 @@ class Dresden(BaseDataDownloader):
     # region LOGIC STEPS
 
     # 8.
-    async def download_file(self, url: str) -> tuple[bool, list[dict] | None]:
+    async def download_file(
+        self, url: str
+    ) -> tuple[bool, list[dict] | str | None, str]:
         """
-        Download and parse file content into list of dicts.
-
-        Tries JSON first, then CSV. Result is always structured data.
+        Download file content. Tries CSV first (priority), then JSON.
 
         Args:
             url: File URL
 
         Returns:
-            Tuple of (success, parsed data)
+            Tuple of (success, data, format) where:
+            - format is "csv" or "json"
+            - data is raw CSV string or list of dicts for JSON
         """
         # Check if URL previously failed
         if await self.is_url_failed(url):
-            return False, None
+            return False, None, "json"
 
         for attempt in range(self.max_retries):
             try:
@@ -104,39 +107,56 @@ class Dresden(BaseDataDownloader):
                             f"Response appears to be an error page: {url}"
                         )
                         await self.mark_url_failed(url)
-                        return False, None
+                        return False, None, "json"
 
                     content = await response.read()
 
-                    # Try JSON first
+                    # Try CSV first (priority)
+                    if "csv" in url.lower() or "csv" in content_type:
+                        try:
+                            # Decode and return raw CSV string
+                            for encoding in ["utf-8-sig", "utf-8", "ISO-8859-1"]:
+                                try:
+                                    csv_text = content.decode(encoding)
+                                    # Validate it's actual CSV by parsing
+                                    pd.read_csv(
+                                        io.StringIO(csv_text), sep=None, engine="python", nrows=1
+                                    )
+                                    return True, csv_text, "csv"
+                                except (UnicodeDecodeError, pd.errors.ParserError):
+                                    continue
+                        except Exception:
+                            pass
+
+                    # Try JSON
                     try:
                         data = json.loads(content)
-                        features = (
-                            data.get("features", []) if isinstance(data, dict) else data
-                        )
-                        return True, features
+                        # Return full structure (features will be extracted later)
+                        if isinstance(data, dict) and "features" in data:
+                            return True, data["features"], "json"
+                        elif isinstance(data, list):
+                            return True, data, "json"
+                        else:
+                            return True, [data], "json"
                     except (json.JSONDecodeError, ValueError):
                         pass
 
-                    # Try CSV
+                    # Fallback: try CSV anyway
                     try:
-                        try:
-                            df = pd.read_csv(
-                                io.BytesIO(content),
-                                encoding="utf-8-sig",
-                                sep=None,
-                                engine="python",
-                            )
-                        except UnicodeDecodeError:
-                            df = pd.read_csv(
-                                io.BytesIO(content),
-                                encoding="ISO-8859-1",
-                                sep=None,
-                                engine="python",
-                            )
-                        return True, df.to_dict("records")
+                        for encoding in ["utf-8-sig", "utf-8", "ISO-8859-1"]:
+                            try:
+                                csv_text = content.decode(encoding)
+                                pd.read_csv(
+                                    io.StringIO(csv_text), sep=None, engine="python", nrows=1
+                                )
+                                return True, csv_text, "csv"
+                            except (UnicodeDecodeError, pd.errors.ParserError):
+                                continue
                     except Exception:
-                        return False, None
+                        pass
+
+                    return False, None, "json"
+
             except Exception as e:
                 if attempt < self.max_retries - 1:
                     await self.update_stats("retries")
@@ -145,8 +165,8 @@ class Dresden(BaseDataDownloader):
                     self.logger.error(f"Error downloading {url}: {e}")
                     await self.update_stats("errors")
                     await self.mark_url_failed(url)
-                    return False, None
-        return False, None
+                    return False, None, "json"
+        return False, None, "json"
 
     # 5.
     def extract_download_urls(
@@ -407,10 +427,10 @@ class Dresden(BaseDataDownloader):
             await self.update_stats("failed_datasets", ds_name)
             return False
 
-        # Sort downloads to prioritize JSON files
-        json_downloads = [d for d in downloads if d.get("extension") == ".json"]
-        other_downloads = [d for d in downloads if d.get("extension") != ".json"]
-        sorted_downloads = json_downloads + other_downloads
+        # Sort downloads to prioritize CSV files
+        csv_downloads = [d for d in downloads if d.get("extension") == ".csv"]
+        other_downloads = [d for d in downloads if d.get("extension") != ".csv"]
+        sorted_downloads = csv_downloads + other_downloads
 
         # Download files with limited concurrency
         download_semaphore = asyncio.Semaphore(
@@ -420,35 +440,60 @@ class Dresden(BaseDataDownloader):
         async def download_with_semaphore(_download_info):
             url = _download_info["url"]
             file_title = _download_info.get("title", "file")
-            filename = sanitize_title(f"{file_title}.json")
-            filepath = dataset_dir / filename
-            if filepath.exists():
-                self.logger.debug(f"File already exists: {filename}")
+            safe_file_title = sanitize_title(file_title)
+
+            # Check if file already exists (either .csv or .json)
+            csv_path = dataset_dir / f"{safe_file_title}.csv"
+            json_path = dataset_dir / f"{safe_file_title}.json"
+            if csv_path.exists() or json_path.exists():
+                self.logger.debug(f"File already exists: {safe_file_title}")
                 await self.update_stats("files_downloaded")
-                return True, None
+                return True, None, None, "csv"
+
             async with download_semaphore:
-                success, data = await self.download_file(url)
+                success, data, fmt = await self.download_file(url)
+
             if success and data is not None:
                 dataset_dir.mkdir(exist_ok=True)
-                save_file_with_task(
-                    filepath,
-                    json.dumps(data, ensure_ascii=False, indent=2),
-                )
+                if fmt == "csv":
+                    save_file_with_task(csv_path, data)
+                else:
+                    save_file_with_task(
+                        json_path,
+                        json.dumps(data, ensure_ascii=False, indent=2),
+                    )
                 await self.update_stats("files_downloaded")
-            return success, data
+            return success, data, fmt
 
         # Download all resources
         any_success = False
-        all_data = []
+        all_records: list[dict] = []
 
         for download_info in sorted_downloads:
-            success, data = await download_with_semaphore(download_info)
+            result = await download_with_semaphore(download_info)
+            success, data, fmt = result[0], result[1], result[2] if len(result) > 2 else "json"
+
             if success:
                 any_success = True
                 if data:
-                    all_data.extend(data)
+                    # Collect records for field extraction
+                    if fmt == "csv" and isinstance(data, str):
+                        # Auto-detect delimiter using csv.Sniffer
+                        try:
+                            sample = data[:4096]
+                            dialect = csv.Sniffer().sniff(sample, delimiters=',;\t|')
+                            reader = csv.DictReader(io.StringIO(data), dialect=dialect)
+                        except csv.Error:
+                            reader = csv.DictReader(io.StringIO(data))
+                        all_records.extend(reader)
+                    elif isinstance(data, list):
+                        all_records.extend(data)
 
         if any_success:
+            # Extract fields from in-memory records
+            if all_records:
+                package_meta.fields = extract_fields(all_records)
+
             # Save metadata
             if self.use_file_system:
                 dataset_dir.mkdir(exist_ok=True)
@@ -467,7 +512,7 @@ class Dresden(BaseDataDownloader):
                 await self.vector_db_buffer.add(package_meta)
 
             if self.use_store and self.dataset_db_buffer:
-                dataset = Dataset(metadata=package_meta, data=all_data)
+                dataset = Dataset(metadata=package_meta, data=all_records)
                 await self.dataset_db_buffer.add(dataset)
 
         await self.update_stats("datasets_processed")

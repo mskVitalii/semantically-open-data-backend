@@ -289,13 +289,19 @@ def extract_fields(data: list[dict]) -> dict[str, Field]:
 
 
 def _parse_csv_to_records(file_path: Path) -> list[dict]:
-    """Parse a CSV file into a list of dicts, trying multiple encodings."""
+    """Parse a CSV file into a list of dicts, trying multiple encodings and delimiters."""
     encodings = ["utf-8-sig", "utf-8", "ISO-8859-1", "latin1", "cp1252"]
     for encoding in encodings:
         try:
             with open(file_path, "r", encoding=encoding) as f:
                 content = f.read()
-            reader = csv.DictReader(io.StringIO(content))
+            # Auto-detect delimiter
+            try:
+                sample = content[:4096]
+                dialect = csv.Sniffer().sniff(sample, delimiters=',;\t|')
+                reader = csv.DictReader(io.StringIO(content), dialect=dialect)
+            except csv.Error:
+                reader = csv.DictReader(io.StringIO(content))
             records = list(reader)
             if records:
                 return records
