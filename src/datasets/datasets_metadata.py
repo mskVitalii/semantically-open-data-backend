@@ -154,12 +154,12 @@ class FieldNumeric(Field):
     quantile_50_median: float
     quantile_75: float
     quantile_100_max: float
-    distribution: str
 
 
 @dataclass
 class FieldString(Field):
     type: str = field(default="String", init=False)
+    top_values: Optional[dict[str, int]] = None  # {value: count, ...} top 25
 
 
 @dataclass
@@ -198,7 +198,7 @@ def make_field(data: dict) -> Field:
 
     # Convert string dates back to datetime for FieldDate
     if cls == FieldDate:
-        for key in ['min', 'max', 'mean']:
+        for key in ["min", "max", "mean"]:
             if key in field_data and isinstance(field_data[key], str):
                 field_data[key] = datetime.fromisoformat(field_data[key])
 

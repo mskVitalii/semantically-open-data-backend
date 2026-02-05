@@ -1,6 +1,9 @@
+import csv
+import io
 import json
 import logging
 import shutil
+from collections import Counter
 from datetime import datetime
 from logging import Logger
 from pathlib import Path
@@ -235,7 +238,6 @@ def extract_fields(data: list[dict]) -> dict[str, Field]:
             q0, q25, q50, q75, q100 = np.percentile(arr, [0, 25, 50, 75, 100])
             mean = float(arr.mean())
             std = float(arr.std())
-            distribution = detect_distribution(arr)
             fields[key] = FieldNumeric(
                 name=key,
                 mean=float(mean),
@@ -245,7 +247,6 @@ def extract_fields(data: list[dict]) -> dict[str, Field]:
                 quantile_50_median=float(q50),
                 quantile_75=float(q75),
                 quantile_100_max=float(q100),
-                distribution=distribution,
                 unique_count=unique_count,
                 null_count=null_count,
             )
@@ -266,15 +267,93 @@ def extract_fields(data: list[dict]) -> dict[str, Field]:
                     null_count=null_count,
                 )
             except ValueError:
+                top_values = dict(Counter(values).most_common(25))
                 fields[key] = FieldString(
-                    name=key, unique_count=unique_count, null_count=null_count
+                    name=key,
+                    unique_count=unique_count,
+                    null_count=null_count,
+                    top_values=top_values,
                 )
         else:
+            # Non-string values - convert to str for top_values
+            str_values = [str(v) for v in values if v is not None]
+            top_values = dict(Counter(str_values).most_common(25)) if str_values else None
             fields[key] = FieldString(
-                name=key, unique_count=unique_count, null_count=null_count
+                name=key,
+                unique_count=unique_count,
+                null_count=null_count,
+                top_values=top_values,
             )
 
     return fields
+
+
+def _parse_csv_to_records(file_path: Path) -> list[dict]:
+    """Parse a CSV file into a list of dicts, trying multiple encodings."""
+    encodings = ["utf-8-sig", "utf-8", "ISO-8859-1", "latin1", "cp1252"]
+    for encoding in encodings:
+        try:
+            with open(file_path, "r", encoding=encoding) as f:
+                content = f.read()
+            reader = csv.DictReader(io.StringIO(content))
+            records = list(reader)
+            if records:
+                return records
+        except (UnicodeDecodeError, csv.Error):
+            continue
+    return []
+
+
+def _parse_json_to_records(file_path: Path) -> list[dict]:
+    """Parse a JSON file into a list of dicts. Handles ArcGIS and plain formats."""
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return []
+
+    # ArcGIS format: {"features": [{"attributes": {...}}, ...]}
+    if isinstance(data, dict) and "features" in data:
+        return data["features"]
+
+    # Plain list of dicts
+    if isinstance(data, list):
+        return [r for r in data if isinstance(r, dict)]
+
+    return []
+
+
+def extract_fields_from_folder(
+    folder: Path, overwrite: bool = False
+) -> dict[str, Field] | None:
+    """Extract fields from all data files in a folder.
+
+    1. If overwrite=False and _metadata.json already has fields, returns them as-is.
+    2. Reads all .csv and .json data files (skipping _-prefixed service files).
+    3. Runs extract_fields on the combined records.
+    """
+    # 1. Check existing fields
+    metadata_file = folder / "_metadata.json"
+    if not overwrite and metadata_file.exists():
+        metadata = load_metadata_from_file(metadata_file)
+        if metadata and metadata.fields:
+            return metadata.fields
+
+    # 2. Collect records from all data files
+    all_records: list[dict] = []
+    for file_path in sorted(folder.iterdir()):
+        if file_path.name.startswith("_") or not file_path.is_file():
+            continue
+        if file_path.suffix == ".csv":
+            all_records.extend(_parse_csv_to_records(file_path))
+        elif file_path.suffix == ".json":
+            all_records.extend(_parse_json_to_records(file_path))
+
+    if not all_records:
+        return None
+
+    # 3. Extract fields
+    return extract_fields(all_records)
 
 
 def load_metadata_from_file(metadata_file: Path) -> DatasetMetadataWithFields | None:

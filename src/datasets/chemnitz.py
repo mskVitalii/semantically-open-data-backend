@@ -12,6 +12,8 @@ from src.datasets.base_data_downloader import BaseDataDownloader
 from src.datasets.datasets_metadata import DatasetMetadataWithFields
 from src.utils.datasets_utils import (
     sanitize_title,
+    extract_fields,
+    extract_fields_from_folder,
 )
 from src.infrastructure.logger import get_prefixed_logger
 from src.utils.file import save_file_with_task
@@ -89,40 +91,53 @@ class Chemnitz(BaseDataDownloader):
         service_url: str,
         layer_id: int,
         layer_name: str,
-    ) -> tuple[bool, dict | None]:
-        """Download data for a single layer via query endpoint (JSON format).
+    ) -> tuple[bool, str | dict | None, str]:
+        """Download data for a single layer via query endpoint.
+
+        Tries CSV format first, falls back to JSON if CSV fails.
 
         Returns:
-            Tuple of (success, JSON_data)
+            Tuple of (success, data, format) where format is "csv" or "json"
         """
         query_url = f"{service_url}/{layer_id}/query"
-        params = {
+        base_params = {
             "where": "1=1",
             "outFields": "*",
-            "f": "json",
             "returnGeometry": "true",
         }
 
-        for attempt in range(self.max_retries):
-            try:
-                async with self.session.get(query_url, params=params) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        if "error" not in data:
-                            await self.update_stats("layers_downloaded")
-                            return True, data
+        # Try CSV first, then JSON
+        for fmt in ("csv", "json"):
+            params = {**base_params, "f": fmt}
+            for attempt in range(self.max_retries):
+                try:
+                    async with self.session.get(query_url, params=params) as response:
+                        if response.status == 200:
+                            if fmt == "csv":
+                                text = await response.text()
+                                # ArcGIS returns JSON error even for CSV requests
+                                if not text.strip() or text.strip().startswith("{"):
+                                    break  # Try JSON format
+                                await self.update_stats("layers_downloaded")
+                                return True, text, "csv"
+                            else:
+                                data = await response.json()
+                                if "error" not in data:
+                                    await self.update_stats("layers_downloaded")
+                                    return True, data, "json"
+                        break  # Non-200 status, try next format
 
-                    return False, None
+                except Exception as e:
+                    if attempt < self.max_retries - 1:
+                        await self.update_stats("retries")
+                        await asyncio.sleep(2**attempt)
+                    else:
+                        self.logger.error(
+                            f"Error downloading layer {layer_name} as {fmt}: {e}"
+                        )
+                        break  # Try next format
 
-            except Exception as e:
-                if attempt < self.max_retries - 1:
-                    await self.update_stats("retries")
-                    await asyncio.sleep(2**attempt)
-                else:
-                    self.logger.error(f"Error downloading layer {layer_name}: {e}")
-                    return False, None
-
-        return False, None
+        return False, None, "json"
 
     # 5.
     async def get_service_info_by_api(self, service_url: str) -> Optional[dict]:
@@ -246,8 +261,9 @@ class Chemnitz(BaseDataDownloader):
     ) -> bool:
         """Download all data from a feature service with optimized concurrency.
 
-        Each layer is saved under its own name in all available formats:
-        - {layer_name}.json
+        Each layer is saved as CSV (preferred) or JSON (fallback):
+        - {layer_name}.csv  (if API returns CSV)
+        - {layer_name}.json (fallback)
         """
         service_url = csv_metadata["url"]
         title = csv_metadata["title"]
@@ -310,21 +326,21 @@ class Chemnitz(BaseDataDownloader):
                 _layer_name = layer_info.get("name", f"layer_{_layer_id}")
                 _safe_layer_name = sanitize_title(_layer_name)
 
-                # Skip if layer file already exists
+                # Skip if layer file already exists (check both CSV and JSON)
                 if self.use_file_system:
-                    layer_file = (
-                        self.output_dir / safe_title / f"{_safe_layer_name}.json"
-                    )
-                    if layer_file.exists():
+                    layer_dir = self.output_dir / safe_title
+                    csv_file = layer_dir / f"{_safe_layer_name}.csv"
+                    json_file = layer_dir / f"{_safe_layer_name}.json"
+                    if csv_file.exists() or json_file.exists():
                         self.logger.debug(f"Layer already exists: {_layer_name}")
                         await self.update_stats("layers_downloaded")
-                        return _layer_name, True, None, True
+                        return _layer_name, True, None, True, "csv"
 
                 async with layer_semaphore:
-                    _success, _data = await self.download_layer_data_by_api(
+                    _success, _data, _fmt = await self.download_layer_data_by_api(
                         service_url, _layer_id, _layer_name
                     )
-                    return _layer_name, _success, _data, False
+                    return _layer_name, _success, _data, False, _fmt
 
             # Create download tasks
             download_tasks = [download_with_semaphore(layer) for layer in all_layers]
@@ -334,6 +350,7 @@ class Chemnitz(BaseDataDownloader):
 
             # Process results and save files
             files_saved = 0
+            all_records: list[dict] = []
             dataset_dir = self.output_dir / safe_title
             if self.use_file_system:
                 dataset_dir.mkdir(exist_ok=True)
@@ -342,24 +359,53 @@ class Chemnitz(BaseDataDownloader):
                 if isinstance(result, Exception):
                     await self.update_stats("failed_datasets", title)
                     continue
-                layer_name, success, data, exists = result
-                if success and exists:
-                    files_saved += 1
-                    continue
+                layer_name, success, data, exists, fmt = result
                 if not success:
                     await self.update_stats("failed_datasets", title)
                     continue
 
+                files_saved += 1
+
+                # Skip saving if file already exists
+                if exists:
+                    continue
+
+                # Collect records in memory for field extraction
+                if fmt == "csv" and isinstance(data, str):
+                    reader = csv.DictReader(io.StringIO(data))
+                    all_records.extend(reader)
+                elif isinstance(data, dict):
+                    # ArcGIS format: pass whole feature object (attributes + geometry)
+                    # flatten_dict in extract_fields will create attributes.X, geometry.x, etc.
+                    if "features" in data:
+                        all_records.extend(data["features"])
+                    else:
+                        # Single feature or plain dict
+                        all_records.append(data)
+
+                self.logger.debug(f"Layer {layer_name}: fmt={fmt}, records collected: {len(all_records)}")
+
                 if self.use_file_system:
                     safe_layer_name = sanitize_title(layer_name)
-                    save_file_with_task(
-                        dataset_dir / f"{safe_layer_name}.json",
-                        json.dumps(data, ensure_ascii=False, indent=2),
-                    )
-                    files_saved += 1
+                    if fmt == "csv":
+                        save_file_with_task(
+                            dataset_dir / f"{safe_layer_name}.csv",
+                            data,
+                        )
+                    else:
+                        save_file_with_task(
+                            dataset_dir / f"{safe_layer_name}.json",
+                            json.dumps(data, ensure_ascii=False, indent=2),
+                        )
 
             if files_saved > 0:
                 await self.update_stats("files_downloaded", files_saved)
+
+                # Extract fields from in-memory records (files may not be on disk yet)
+                self.logger.debug(f"Total records for field extraction: {len(all_records)}")
+                if all_records:
+                    package_meta.fields = extract_fields(all_records)
+                    self.logger.debug(f"Extracted fields: {list(package_meta.fields.keys()) if package_meta.fields else 'None'}")
 
                 if self.use_file_system:
                     save_file_with_task(
