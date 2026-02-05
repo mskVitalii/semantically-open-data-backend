@@ -4,6 +4,7 @@ import json
 import logging
 import random
 import sys
+import zipfile
 from itertools import chain
 from typing import Dict, Optional, Set
 
@@ -18,9 +19,7 @@ from src.datasets.datasets_metadata import (
     Dataset,
 )
 from src.infrastructure.logger import get_prefixed_logger
-from src.utils.datasets_utils import (
-    extract_fields,
-)
+from src.utils.datasets_utils import extract_fields
 from src.utils.file import save_file_with_task
 
 
@@ -310,62 +309,176 @@ class Berlin(BaseDataDownloader):
             for indicator in formats
         )
 
+    # Web map services — not downloadable files, skip entirely
+    WEB_SERVICE_FORMATS = {"wms", "wfs", "wcs", "wmts"}
+
+    GEO_FORMATS = {
+        "geojson",
+        "kml",
+        "kmz",
+        "gml",
+        "gpx",  # Vector formats
+        "shp",
+        "shx",
+        "dbf",
+        "prj",
+        "shz",  # Shapefile components
+        "gpkg",
+        "geopackage",  # GeoPackage
+        "geotiff",
+        "tif",
+        "tiff",  # Raster formats
+        "ecw",
+        "mrsid",
+        "sid",  # Compressed imagery
+    }
+
+    # Binary formats where _parse_content will waste time
+    BINARY_GEO_FORMATS = {
+        "shp",
+        "shx",
+        "dbf",
+        "prj",
+        "shz",
+        "gpkg",
+        "geopackage",
+        "geotiff",
+        "tif",
+        "tiff",
+        "ecw",
+        "mrsid",
+        "sid",
+        "kml",
+        "kmz",
+    }
+
+    @staticmethod
+    def is_web_service(resource: Dict) -> bool:
+        """Check if resource is a web map service (WMS/WFS/WCS/WMTS)"""
+        pkg_format = resource.get("format", "").lower()
+        url = resource.get("url", "").lower()
+        return any(
+            svc in pkg_format or svc in url for svc in Berlin.WEB_SERVICE_FORMATS
+        )
+
     @staticmethod
     def is_geo_resource(resource: Dict) -> bool:
         url = resource.get("url", "").lower()
         pkg_format = resource.get("format", "").lower()
 
-        # Geographic/geospatial formats to skip
-        geo_formats = {
-            "wms",
-            "wfs",
-            "wcs",
-            "wmts",  # Web map services
-            "geojson",
-            "kml",
-            "kmz",
-            "gml",
-            "gpx",  # Vector formats
-            "shp",
-            "shx",
-            "dbf",
-            "prj",
-            "shz",  # Shapefile components
-            "gpkg",
-            "geopackage",  # GeoPackage
-            "geotiff",
-            "tif",
-            "tiff",  # Raster formats
-            "ecw",
-            "mrsid",
-            "sid",  # Compressed imagery
-        }
+        all_geo = Berlin.GEO_FORMATS | Berlin.WEB_SERVICE_FORMATS
 
-        # Check format field
-        if pkg_format and any(geo_fmt in pkg_format for geo_fmt in geo_formats):
+        if pkg_format and any(geo_fmt in pkg_format for geo_fmt in all_geo):
             return True
-
-        # Check URL for geographic extensions
-        if url and any(url.endswith(f".{geo_fmt}") for geo_fmt in geo_formats):
+        if url and any(url.endswith(f".{geo_fmt}") for geo_fmt in all_geo):
             return True
-
         return False
 
+    @staticmethod
+    def is_binary_geo(resource: Dict) -> bool:
+        """Check if resource is a binary geo format (skip _parse_content fallback)"""
+        pkg_format = resource.get("format", "").lower()
+        url = resource.get("url", "").lower()
+        return any(
+            fmt in pkg_format or url.endswith(f".{fmt}")
+            for fmt in Berlin.BINARY_GEO_FORMATS
+        )
+
     # 5.
+    def _parse_content(self, content: bytes, url: str) -> list[dict] | None:
+        """Try to parse raw bytes as CSV, Excel, or JSON. Returns records or None."""
+        # Try CSV
+        try:
+            df = pd.read_csv(
+                io.BytesIO(content),
+                encoding="utf-8-sig",
+                sep=None,
+                engine="python",
+            )
+            return df.to_dict("records")
+        except Exception:
+            pass
+
+        # Try CSV with ISO encoding
+        try:
+            df = pd.read_csv(
+                io.BytesIO(content),
+                encoding="ISO-8859-1",
+                sep=None,
+                engine="python",
+            )
+            return df.to_dict("records")
+        except Exception:
+            pass
+
+        # Try Excel (openpyxl)
+        try:
+            df = pd.read_excel(io.BytesIO(content), engine="openpyxl")
+            return df.to_dict("records")
+        except Exception:
+            pass
+
+        # Try Excel (xlrd)
+        try:
+            df = pd.read_excel(io.BytesIO(content), engine="xlrd")
+            return df.to_dict("records")
+        except Exception:
+            pass
+
+        # Try JSON
+        try:
+            data = json.loads(content.decode("utf-8"))
+            if isinstance(data, list):
+                return data
+            if isinstance(data, dict):
+                return data.get("features", [data])
+            return [data]
+        except Exception:
+            pass
+
+        return None
+
+    def _extract_zip(self, content: bytes, url: str) -> list[dict]:
+        """Extract ZIP archive and parse all parseable files inside."""
+        records = []
+        try:
+            with zipfile.ZipFile(io.BytesIO(content)) as zf:
+                for name in zf.namelist():
+                    if name.endswith("/"):
+                        continue
+                    try:
+                        file_bytes = zf.read(name)
+                        parsed = self._parse_content(file_bytes, name)
+                        if parsed:
+                            records.extend(parsed)
+                            self.logger.debug(
+                                f"Parsed {name} from ZIP ({len(parsed)} records)"
+                            )
+                    except Exception as e:
+                        self.logger.debug(f"Could not parse {name} from ZIP: {e}")
+        except zipfile.BadZipFile:
+            self.logger.warning(f"Bad ZIP file: {url}")
+        return records
+
     async def download_resource_by_api(
         self, resource: dict
-    ) -> (bool, list[dict] | None):
-        """Optimized file download with streaming"""
+    ) -> tuple[bool, list[dict] | None]:
+        """Download and parse a resource. Handles CSV, JSON, Excel, ZIP, geo, HTML."""
+        import time
+
         url = resource.get("url")
+        url_lower = url.lower() if url else ""
+        is_binary = self.is_binary_geo(resource)
+        t0 = time.monotonic()
         try:
             async with self.session.get(
-                url, timeout=ClientTimeout(total=600), ssl=False
+                url, timeout=ClientTimeout(total=60), ssl=False
             ) as response:
                 response.raise_for_status()
                 content_type = response.headers.get("content-type", "").lower()
 
+                # HTML → Playwright
                 if "html" in content_type:
-                    # Use Playwright for HTML content that triggers download
                     if not self.use_playwright:
                         return False, None
 
@@ -374,40 +487,32 @@ class Berlin(BaseDataDownloader):
                     if content is None:
                         return False, None
 
-                    # Try to detect file type and parse
-                    try:
-                        # Try CSV first
-                        df = pd.read_csv(
-                            io.BytesIO(content),
-                            encoding="utf-8-sig",
-                            sep=None,
-                            engine="python",
-                        )
-                        features = df.to_dict("records")
+                    parsed = self._parse_content(content, url)
+                    if parsed is not None:
                         await self.update_stats("files_downloaded")
-                        return True, features
-                    except Exception:
-                        try:
-                            # Try Excel
-                            df = pd.read_excel(io.BytesIO(content), engine="openpyxl")
-                            features = df.to_dict("records")
-                            await self.update_stats("files_downloaded")
-                            return True, features
-                        except Exception:
-                            # Try JSON
-                            try:
-                                data = json.loads(content.decode("utf-8"))
-                                features = data.get("features", [])
-                                await self.update_stats("files_downloaded")
-                                return True, features
-                            except Exception:
-                                return False, None
-                elif (
+                        return True, parsed
+                    return False, None
+
+                content = await response.read()
+                elapsed = time.monotonic() - t0
+                size_mb = len(content) / (1024 * 1024)
+                if elapsed > 5:
+                    self.logger.info(
+                        f"Slow download ({elapsed:.1f}s, {size_mb:.1f}MB): {url}"
+                    )
+
+                # ZIP
+                if "zip" in content_type or url_lower.endswith(".zip"):
+                    records = self._extract_zip(content, url)
+                    await self.update_stats("files_downloaded")
+                    return True, records
+
+                # CSV / plain text
+                if (
                     "csv" in content_type
                     or "text/plain" in content_type
-                    or url.endswith(".csv")
+                    or url_lower.endswith(".csv")
                 ):
-                    content = await response.read()
                     try:
                         df = pd.read_csv(
                             io.BytesIO(content),
@@ -422,46 +527,74 @@ class Berlin(BaseDataDownloader):
                             sep=None,
                             engine="python",
                         )
-                    features = df.to_dict("records")
                     await self.update_stats("files_downloaded")
-                    return True, features
-                elif (
+                    return True, df.to_dict("records")
+
+                # JSON / GeoJSON / octet-stream
+                if (
                     "json" in content_type
                     or "application/octet-stream" in content_type
-                    or url.endswith(".json")
+                    or url_lower.endswith(".json")
+                    or url_lower.endswith(".geojson")
                 ):
-                    raw = await response.read()
                     try:
-                        data = json.loads(raw.decode("utf-8"))
-                        features = data.get("features", [])
+                        data = json.loads(content.decode("utf-8"))
+                        if isinstance(data, list):
+                            features = data
+                        elif isinstance(data, dict):
+                            features = data.get("features", [data])
+                        else:
+                            features = [data]
                         await self.update_stats("files_downloaded")
                         return True, features
                     except Exception:
                         return False, None
-                elif (
+
+                # Excel
+                if (
                     "vnd.ms-excel" in content_type
                     or "spreadsheetml.sheet" in content_type
-                    or url.endswith(".xls")
-                    or url.endswith(".xlsx")
+                    or url_lower.endswith(".xls")
+                    or url_lower.endswith(".xlsx")
                 ):
-                    content = await response.read()
                     try:
                         df = pd.read_excel(io.BytesIO(content), engine="openpyxl")
                     except Exception:
-                        # Fallback to xlrd for old .xls files
                         try:
                             df = pd.read_excel(io.BytesIO(content), engine="xlrd")
                         except Exception as e:
                             self.logger.error(f"Failed to read Excel file {url}: {e}")
                             return False, None
-                    features = df.to_dict("records")
                     await self.update_stats("files_downloaded")
-                    return True, features
-                else:
-                    self.logger.warning(
-                        f"Unknown content type {content_type} for {url}"
-                    )
-                    return False, None
+                    return True, df.to_dict("records")
+
+                # XML
+                if "xml" in content_type or url_lower.endswith(".xml"):
+                    try:
+                        df = pd.read_xml(io.BytesIO(content))
+                        await self.update_stats("files_downloaded")
+                        return True, df.to_dict("records")
+                    except Exception:
+                        pass
+
+                # Binary geo formats — don't waste time trying parsers
+                if is_binary:
+                    self.logger.debug(f"Binary geo ({content_type}): {url}")
+                    await self.update_stats("files_downloaded")
+                    return True, []
+
+                # Fallback: try to auto-detect the content
+                parsed = self._parse_content(content, url)
+                if parsed is not None:
+                    await self.update_stats("files_downloaded")
+                    return True, parsed
+
+                # Unparseable — still count as downloaded
+                self.logger.debug(
+                    f"Unparseable content ({content_type}) for {url}, downloaded as-is"
+                )
+                await self.update_stats("files_downloaded")
+                return True, []
 
         except Exception as e:
             if "Not Found" in str(e):
@@ -525,24 +658,24 @@ class Berlin(BaseDataDownloader):
 
         # Create dataset directory
         dataset_dir = self.output_dir / f"{package_name}"
-        metadata_file = dataset_dir / "metadata.json"
+        metadata_file = dataset_dir / "_metadata.json"
 
         # Skip if already processed successfully
-        # if self.use_file_system:
-        #     if metadata_file.exists():
-        #         self.logger.debug(f"Dataset already processed: {package_name}")
-        #         await self.update_stats("datasets_processed")
-        #         await self.update_stats("files_downloaded")
-        #
-        #         # Load metadata from file
-        #         package_meta = load_metadata_from_file(metadata_file)
-        #         if package_meta and self.use_embeddings and self.vector_db_buffer:
-        #             await self.vector_db_buffer.add(package_meta)
-        #         # I don't need to store the data...
-        #         # if self.use_store and self.dataset_db_buffer:
-        #         #     dataset = Dataset(metadata=package_meta, data=)
-        #         #     await self.dataset_db_buffer.add(dataset)
-        #         return True
+        if self.use_file_system:
+            if metadata_file.exists():
+                self.logger.debug(f"Dataset already processed: {package_name}")
+                await self.update_stats("datasets_processed")
+                await self.update_stats("files_downloaded")
+
+                # Load metadata from file
+                # package_meta = load_metadata_from_file(metadata_file)
+                # if package_meta and self.use_embeddings and self.vector_db_buffer:
+                #     await self.vector_db_buffer.add(package_meta)
+                # I don't need to store the data...
+                # if self.use_store and self.dataset_db_buffer:
+                #     dataset = Dataset(metadata=package_meta, data=)
+                #     await self.dataset_db_buffer.add(dataset)
+                return True
 
         # Minimal delay to respect server
         await asyncio.sleep(self.delay)
@@ -569,25 +702,37 @@ class Berlin(BaseDataDownloader):
                 f"Processing dataset: {package_name} ({len(resources)} resources)"
             )
 
-            # Filter and prioritize resources
+            # Collect all resources with URLs, detect geo, skip web services
             valid_resources = []
             is_geo_format = False
             for i, resource in enumerate(resources):
+                if not resource.get("url"):
+                    continue
+
+                # WMS/WFS/WCS/WMTS are services, not downloadable files
+                if self.is_web_service(resource):
+                    is_geo_format = True
+                    self.logger.debug(f"Skipping web service: {resource.get('url')}")
+                    continue
+
                 if self.is_geo_resource(resource):
                     is_geo_format = True
-                    continue
-
-                if not resource.get("url") or self.should_skip_resource(resource):
-                    continue
 
                 # Prioritize by format
-                format_priority = {"json": 1, "csv": 2, "xlsx": 3, "xls": 4}
+                format_priority = {
+                    "json": 1,
+                    "geojson": 1,
+                    "csv": 2,
+                    "xlsx": 3,
+                    "xls": 4,
+                    "xml": 5,
+                    "zip": 6,
+                }
                 format_str = resource.get("format", "").lower()
-                priority = min(
-                    format_priority.get(fmt, 999)
-                    for fmt in format_priority
-                    if fmt in format_str
-                )
+                matching = [
+                    format_priority[fmt] for fmt in format_priority if fmt in format_str
+                ]
+                priority = min(matching) if matching else 99
                 valid_resources.append((priority, i, resource))
 
             # Sort by priority
@@ -651,6 +796,7 @@ class Berlin(BaseDataDownloader):
                     city="Berlin",
                     state="Berlin",
                     country="Germany",
+                    is_geo=is_geo_format,
                 )
 
                 data = list(
@@ -660,13 +806,17 @@ class Berlin(BaseDataDownloader):
                         if not isinstance(res, Exception) and res[0] is True and res[1]
                     )
                 )
-                package_meta.fields = extract_fields(data)
 
                 if self.use_file_system:
                     dataset_dir.mkdir(exist_ok=True)
                     save_file_with_task(metadata_file, package_meta.to_json())
+                    save_file_with_task(
+                        dataset_dir / "_dataset_info.json",
+                        json.dumps(package, ensure_ascii=False, indent=2),
+                    )
 
                 if self.use_embeddings and self.vector_db_buffer:
+                    package_meta.fields = extract_fields(data)
                     await self.vector_db_buffer.add(package_meta)
 
                 if self.use_store and self.dataset_db_buffer:
@@ -795,8 +945,8 @@ async def main():
         "--max-workers",
         "-w",
         type=int,
-        default=20,
-        help="Number of parallel workers (default: 20)",
+        default=128,
+        help="Number of parallel workers (default: 128)",
     )
     parser.add_argument(
         "--delay",
@@ -809,14 +959,14 @@ async def main():
         "--batch-size",
         "-b",
         type=int,
-        default=50,
-        help="Batch size for processing (default: 50)",
+        default=128,
+        help="Batch size for processing (default: 128)",
     )
     parser.add_argument(
         "--connection-limit",
         type=int,
-        default=100,
-        help="Total connection pool size (default: 100)",
+        default=128,
+        help="Total connection pool size (default: 128)",
     )
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     parser.add_argument("--debug", action="store_true", help="Debug output")
