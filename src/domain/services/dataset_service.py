@@ -55,10 +55,14 @@ class DatasetService:
             payload = dict(dataset.payload)
             # Remove year field as it's only used for filtering, not part of the model
             payload.pop("year", None)
-            payload.pop("fields", None)  # Remove fields as they're not needed in basic search
+            payload.pop(
+                "fields", None
+            )  # Remove fields as they're not needed in basic search
 
             # Convert embedder_model from string to EmbedderModel enum if needed
-            if "embedder_model" in payload and isinstance(payload["embedder_model"], str):
+            if "embedder_model" in payload and isinstance(
+                payload["embedder_model"], str
+            ):
                 payload["embedder_model"] = EmbedderModel(payload["embedder_model"])
 
             metadatas.append(
@@ -104,7 +108,9 @@ class DatasetService:
             payload.pop("year", None)
 
             # Convert embedder_model from string to EmbedderModel enum if needed
-            if "embedder_model" in payload and isinstance(payload["embedder_model"], str):
+            if "embedder_model" in payload and isinstance(
+                payload["embedder_model"], str
+            ):
                 payload["embedder_model"] = EmbedderModel(payload["embedder_model"])
 
             metadata = DatasetMetadataWithFields(
@@ -174,10 +180,10 @@ class DatasetService:
                     if not dataset_dir.is_dir():
                         continue
 
-                    metadata_file = dataset_dir / "metadata.json"
+                    metadata_file = dataset_dir / "_metadata.json"
                     if not metadata_file.exists():
                         logger.debug(
-                            f"Skipping {dataset_dir.name} - no metadata.json found"
+                            f"Skipping {dataset_dir.name} - no _metadata.json found"
                         )
                         continue
 

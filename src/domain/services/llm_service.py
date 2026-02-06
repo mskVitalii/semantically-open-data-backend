@@ -1,4 +1,5 @@
 # src/datasets_api/service.py
+import json
 from typing import Optional
 
 import aiohttp
@@ -72,7 +73,10 @@ class LLMService:
                 raise Exception(f"Error {response.status}: {error}")
 
     async def openai_by_api(
-        self, system_prompt: str, messages: list[str] | None = None
+        self,
+        system_prompt: str,
+        messages: list[str] | None = None,
+        response_format: dict | None = None,
     ):
         if messages is None:
             messages = []
@@ -90,8 +94,10 @@ class LLMService:
                 [{"role": "system", "content": system_prompt}]
                 + [{"role": "user", "content": m} for m in messages]
             ),
-            # "max_completion_tokens": max_completion_tokens,
         }
+
+        if response_format is not None:
+            data["response_format"] = response_format
 
         async with self.session.post(url, json=data, headers=headers) as response:
             if response.status == 200:
@@ -107,37 +113,43 @@ class LLMService:
 
     system_prompt = """You are an urban data researcher specializing in city analytics and evidence-based urban planning. Your task is to provide data-driven insights based on available datasets from Chemnitz, Saxony, Germany. Always ground your analysis in the specific data provided and clearly reference which datasets support your conclusions."""
 
+    _research_questions_format = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "research_questions",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "questions": {
+                        "type": "array",
+                        "items": LLMQuestion.json_schema,
+                    }
+                },
+                "required": ["questions"],
+                "additionalProperties": False,
+            },
+        },
+    }
+
     async def get_research_questions(self, initial_question: str) -> list[LLMQuestion]:
         prompt = f"""Given this user question: "{initial_question}"
 
 Generate 2-4 focused research questions that would help find relevant datasets to answer this question.
 
-CRITICAL: Your response must be ONLY a JSON array, with absolutely no other text, formatting, or markdown.
-Do NOT wrap the JSON in code blocks (```json), do NOT add explanations before or after.
-Return ONLY the raw JSON array starting with [ and ending with ].
-
 Each research question should:
 - Be specific and searchable against dataset metadata
 - Focus on the key data needed to answer the user's question
 - Include a brief reason explaining why this data is needed
-- Answer on the language of the question (or default english)
+- Answer on the language of the question (or default english)"""
 
-Required JSON format:
-[
-  {{"question": "What datasets contain X data?", "reason": "To understand Y aspect"}},
-  {{"question": "Which datasets track Z metrics?", "reason": "To analyze W patterns"}}
-]
-
-Remember: Output ONLY the JSON array. No markdown, no code blocks, no explanations."""
         result = await self.openai_by_api(
-            system_prompt=self.system_prompt, messages=[prompt]
+            system_prompt=self.system_prompt,
+            messages=[prompt],
+            response_format=self._research_questions_format,
         )
-        try:
-            valid_result = extract_json(result)
-            return [LLMQuestion(**item) for item in valid_result]
-        except Exception as e:
-            logger.error(f"Failed to parse research questions: {e}", exc_info=True)
-            raise
+        parsed = json.loads(result)
+        return [LLMQuestion(**item) for item in parsed["questions"]]
 
     async def answer_research_question(
         self, question: LLMQuestionWithDatasets

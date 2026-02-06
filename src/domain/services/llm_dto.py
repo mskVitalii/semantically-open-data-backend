@@ -1,6 +1,7 @@
 import hashlib
 import json
 from dataclasses import dataclass, asdict
+from typing import ClassVar
 
 import numpy as np
 
@@ -12,6 +13,16 @@ from src.datasets_api.datasets_dto import DatasetResponse
 class LLMQuestion:
     question: str
     reason: str
+
+    json_schema: ClassVar[dict] = {
+        "type": "object",
+        "properties": {
+            "question": {"type": "string"},
+            "reason": {"type": "string"},
+        },
+        "required": ["question", "reason"],
+        "additionalProperties": False,
+    }
 
     @property
     def question_hash(self) -> str:
@@ -109,23 +120,29 @@ class LLMQuestionWithDatasets(LLMQuestion):
 
             # Fields information - CRITICAL DATA
             if ds.fields:
-                context_parts.append(f"\n**Dataset Structure & Fields** ({len(ds.fields)} fields):")
+                context_parts.append(
+                    f"\n**Dataset Structure & Fields** ({len(ds.fields)} fields):"
+                )
                 context_parts.append(
                     "Each field below represents a specific data dimension with its characteristics and semantic meaning:"
                 )
 
                 for field_name, field_info in ds.fields.items():
-                    context_parts.append(f"\n**`{field_name}`** — {field_info.type} field")
+                    context_parts.append(
+                        f"\n**`{field_name}`** — {field_info.type} field"
+                    )
 
                     # Data quality indicators
                     total_values = field_info.unique_count + field_info.null_count
-                    data_completeness = (
-                        100 * (1 - field_info.null_count / max(total_values, 1))
+                    data_completeness = 100 * (
+                        1 - field_info.null_count / max(total_values, 1)
                     )
                     context_parts.append(
                         f"• Completeness: {data_completeness:.1f}% complete ({field_info.null_count} nulls out of {total_values})"
                     )
-                    context_parts.append(f"• Cardinality: {field_info.unique_count} distinct values")
+                    context_parts.append(
+                        f"• Cardinality: {field_info.unique_count} distinct values"
+                    )
 
                     # Numeric field statistics with semantic interpretation
                     if isinstance(field_info, FieldNumeric):
@@ -142,44 +159,69 @@ class LLMQuestionWithDatasets(LLMQuestion):
                         context_parts.append(
                             f"  - Distribution Quartiles: Q1={field_info.quantile_25:.2f}, Q3={field_info.quantile_75:.2f}"
                         )
-                        context_parts.append(f"  - Distribution Shape: {field_info.distribution}")
+                        context_parts.append(
+                            f"  - Distribution Shape: {field_info.distribution}"
+                        )
 
                         # Semantic interpretation based on statistics
                         if field_info.std > 0 and field_info.mean != 0:
                             cv = (field_info.std / abs(field_info.mean)) * 100
                             if cv < 15:
-                                context_parts.append("  ⇒ **Interpretation**: Values are highly consistent (low variation)")
+                                context_parts.append(
+                                    "  ⇒ **Interpretation**: Values are highly consistent (low variation)"
+                                )
                             elif cv < 40:
-                                context_parts.append("  ⇒ **Interpretation**: Moderate spread in values (medium variation)")
+                                context_parts.append(
+                                    "  ⇒ **Interpretation**: Moderate spread in values (medium variation)"
+                                )
                             else:
-                                context_parts.append("  ⇒ **Interpretation**: Wide range of values (high variation)")
+                                context_parts.append(
+                                    "  ⇒ **Interpretation**: Wide range of values (high variation)"
+                                )
 
                         # Check for skewness
-                        if abs(field_info.mean - field_info.quantile_50_median) > field_info.std * 0.5:
-                            context_parts.append("  ⇒ **Note**: Mean and median differ significantly - data may be skewed")
+                        if (
+                            abs(field_info.mean - field_info.quantile_50_median)
+                            > field_info.std * 0.5
+                        ):
+                            context_parts.append(
+                                "  ⇒ **Note**: Mean and median differ significantly - data may be skewed"
+                            )
 
                     # Date field statistics with semantic interpretation
                     elif isinstance(field_info, FieldDate):
                         context_parts.append("• **Temporal Characteristics:**")
-                        context_parts.append(f"  - Time Period: {field_info.min.isoformat()} → {field_info.max.isoformat()}")
-                        context_parts.append(f"  - Temporal Midpoint: {field_info.mean.isoformat()}")
+                        context_parts.append(
+                            f"  - Time Period: {field_info.min.isoformat()} → {field_info.max.isoformat()}"
+                        )
+                        context_parts.append(
+                            f"  - Temporal Midpoint: {field_info.mean.isoformat()}"
+                        )
 
                         # Calculate and interpret time range
                         time_span_days = (field_info.max - field_info.min).days
                         if time_span_days < 31:
-                            context_parts.append(f"  ⇒ **Interpretation**: Short-term temporal data ({time_span_days} days)")
+                            context_parts.append(
+                                f"  ⇒ **Interpretation**: Short-term temporal data ({time_span_days} days)"
+                            )
                         elif time_span_days < 365:
                             months = time_span_days // 30
-                            context_parts.append(f"  ⇒ **Interpretation**: Medium-term temporal data (~{months} months)")
+                            context_parts.append(
+                                f"  ⇒ **Interpretation**: Medium-term temporal data (~{months} months)"
+                            )
                         else:
                             years = time_span_days / 365.25
-                            context_parts.append(f"  ⇒ **Interpretation**: Long-term temporal data (~{years:.1f} years)")
+                            context_parts.append(
+                                f"  ⇒ **Interpretation**: Long-term temporal data (~{years:.1f} years)"
+                            )
 
                     # String field with semantic interpretation
                     elif isinstance(field_info, FieldString):
                         context_parts.append("• **Categorical Characteristics:**")
                         if field_info.unique_count == 1:
-                            context_parts.append("  ⇒ **Interpretation**: Constant field (single value across all records)")
+                            context_parts.append(
+                                "  ⇒ **Interpretation**: Constant field (single value across all records)"
+                            )
                         elif field_info.unique_count < 5:
                             context_parts.append(
                                 f"  ⇒ **Interpretation**: Very low cardinality ({field_info.unique_count} categories) - likely a classification/status field"
