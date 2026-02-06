@@ -1,11 +1,11 @@
 import asyncio
+import csv
 import io
 import json
 import logging
 import random
 import sys
 import zipfile
-from itertools import chain
 from typing import Dict, Optional, Set
 
 import aiohttp
@@ -19,7 +19,7 @@ from src.datasets.datasets_metadata import (
     Dataset,
 )
 from src.infrastructure.logger import get_prefixed_logger
-from src.utils.datasets_utils import extract_fields
+from src.utils.datasets_utils import extract_fields, sanitize_title
 from src.utils.file import save_file_with_task
 
 
@@ -438,6 +438,38 @@ class Berlin(BaseDataDownloader):
 
         return None
 
+    @staticmethod
+    def _parse_csv_to_records(data: str) -> list[dict]:
+        """Parse CSV string to list of dicts (synchronous - call in executor)."""
+        try:
+            sample = data[:4096]
+            dialect = csv.Sniffer().sniff(sample, delimiters=",;\t|")
+            reader = csv.DictReader(io.StringIO(data), dialect=dialect)
+        except csv.Error:
+            reader = csv.DictReader(io.StringIO(data))
+        return list(reader)
+
+    def _parse_excel(self, content: bytes, url: str) -> list[dict] | None:
+        """Parse Excel file (synchronous - call in executor)."""
+        try:
+            df = pd.read_excel(io.BytesIO(content), engine="openpyxl")
+            return df.to_dict("records")
+        except Exception:
+            try:
+                df = pd.read_excel(io.BytesIO(content), engine="xlrd")
+                return df.to_dict("records")
+            except Exception as e:
+                self.logger.error(f"Failed to read Excel file {url}: {e}")
+                return None
+
+    def _parse_xml(self, content: bytes) -> list[dict] | None:
+        """Parse XML file (synchronous - call in executor)."""
+        try:
+            df = pd.read_xml(io.BytesIO(content))
+            return df.to_dict("records")
+        except Exception:
+            return None
+
     def _extract_zip(self, content: bytes, url: str) -> list[dict]:
         """Extract ZIP archive and parse all parseable files inside."""
         records = []
@@ -462,8 +494,14 @@ class Berlin(BaseDataDownloader):
 
     async def download_resource_by_api(
         self, resource: dict
-    ) -> tuple[bool, list[dict] | None]:
-        """Download and parse a resource. Handles CSV, JSON, Excel, ZIP, geo, HTML."""
+    ) -> tuple[bool, list[dict] | str | None, str]:
+        """Download and parse a resource. Handles CSV, JSON, Excel, ZIP, geo, HTML.
+
+        Returns:
+            Tuple of (success, data, format) where:
+            - format is "csv" or "json"
+            - data is raw CSV string or list of dicts for JSON
+        """
         import time
 
         url = resource.get("url")
@@ -476,22 +514,34 @@ class Berlin(BaseDataDownloader):
             ) as response:
                 response.raise_for_status()
                 content_type = response.headers.get("content-type", "").lower()
+                content_length = response.headers.get("content-length")
+
+                # Skip very large files (>100MB)
+                if content_length and int(content_length) > 100 * 1024 * 1024:
+                    self.logger.warning(
+                        f"Skipping large file ({int(content_length) / 1024 / 1024:.1f}MB): {url}"
+                    )
+                    return False, None, "json"
 
                 # HTML → Playwright
                 if "html" in content_type:
                     if not self.use_playwright:
-                        return False, None
+                        return False, None, "json"
 
                     self.logger.debug(f"Using Playwright for: {url}")
                     content = await self.download_file_playwright(url)
                     if content is None:
-                        return False, None
+                        return False, None, "json"
 
-                    parsed = self._parse_content(content, url)
+                    # Run synchronous parsing in executor to avoid blocking
+                    loop = asyncio.get_event_loop()
+                    parsed = await loop.run_in_executor(
+                        None, self._parse_content, content, url
+                    )
                     if parsed is not None:
                         await self.update_stats("files_downloaded")
-                        return True, parsed
-                    return False, None
+                        return True, parsed, "json"
+                    return False, None, "json"
 
                 content = await response.read()
                 elapsed = time.monotonic() - t0
@@ -501,34 +551,43 @@ class Berlin(BaseDataDownloader):
                         f"Slow download ({elapsed:.1f}s, {size_mb:.1f}MB): {url}"
                     )
 
-                # ZIP
+                # ZIP — skip large archives to avoid blocking event loop
                 if "zip" in content_type or url_lower.endswith(".zip"):
-                    records = self._extract_zip(content, url)
+                    if len(content) > 50 * 1024 * 1024:  # >50MB
+                        self.logger.warning(
+                            f"Skipping large ZIP ({len(content) / 1024 / 1024:.1f}MB): {url}"
+                        )
+                        await self.update_stats("files_downloaded")
+                        return True, [], "json"
+                    # Run in executor to avoid blocking event loop
+                    loop = asyncio.get_event_loop()
+                    records = await loop.run_in_executor(
+                        None, self._extract_zip, content, url
+                    )
                     await self.update_stats("files_downloaded")
-                    return True, records
+                    return True, records, "json"
 
-                # CSV / plain text
+                # CSV / plain text — return raw string for native storage
                 if (
                     "csv" in content_type
                     or "text/plain" in content_type
                     or url_lower.endswith(".csv")
                 ):
-                    try:
-                        df = pd.read_csv(
-                            io.BytesIO(content),
-                            encoding="utf-8-sig",
-                            sep=None,
-                            engine="python",
-                        )
-                    except UnicodeDecodeError:
-                        df = pd.read_csv(
-                            io.BytesIO(content),
-                            encoding="ISO-8859-1",
-                            sep=None,
-                            engine="python",
-                        )
-                    await self.update_stats("files_downloaded")
-                    return True, df.to_dict("records")
+                    for encoding in ["utf-8-sig", "utf-8", "ISO-8859-1", "latin1"]:
+                        try:
+                            csv_text = content.decode(encoding)
+                            # Validate it's parseable
+                            pd.read_csv(
+                                io.StringIO(csv_text),
+                                sep=None,
+                                engine="python",
+                                nrows=1,
+                            )
+                            await self.update_stats("files_downloaded")
+                            return True, csv_text, "csv"
+                        except (UnicodeDecodeError, pd.errors.ParserError):
+                            continue
+                    return False, None, "csv"
 
                 # JSON / GeoJSON / octet-stream
                 if (
@@ -546,62 +605,62 @@ class Berlin(BaseDataDownloader):
                         else:
                             features = [data]
                         await self.update_stats("files_downloaded")
-                        return True, features
+                        return True, features, "json"
                     except Exception:
-                        return False, None
+                        return False, None, "json"
 
-                # Excel
+                # Excel (run in executor - can be slow)
                 if (
                     "vnd.ms-excel" in content_type
                     or "spreadsheetml.sheet" in content_type
                     or url_lower.endswith(".xls")
                     or url_lower.endswith(".xlsx")
                 ):
-                    try:
-                        df = pd.read_excel(io.BytesIO(content), engine="openpyxl")
-                    except Exception:
-                        try:
-                            df = pd.read_excel(io.BytesIO(content), engine="xlrd")
-                        except Exception as e:
-                            self.logger.error(f"Failed to read Excel file {url}: {e}")
-                            return False, None
-                    await self.update_stats("files_downloaded")
-                    return True, df.to_dict("records")
-
-                # XML
-                if "xml" in content_type or url_lower.endswith(".xml"):
-                    try:
-                        df = pd.read_xml(io.BytesIO(content))
+                    loop = asyncio.get_event_loop()
+                    records = await loop.run_in_executor(
+                        None, self._parse_excel, content, url
+                    )
+                    if records is not None:
                         await self.update_stats("files_downloaded")
-                        return True, df.to_dict("records")
-                    except Exception:
-                        pass
+                        return True, records, "json"
+                    return False, None, "json"
+
+                # XML (run in executor)
+                if "xml" in content_type or url_lower.endswith(".xml"):
+                    loop = asyncio.get_event_loop()
+                    records = await loop.run_in_executor(None, self._parse_xml, content)
+                    if records is not None:
+                        await self.update_stats("files_downloaded")
+                        return True, records, "json"
 
                 # Binary geo formats — don't waste time trying parsers
                 if is_binary:
                     self.logger.debug(f"Binary geo ({content_type}): {url}")
                     await self.update_stats("files_downloaded")
-                    return True, []
+                    return True, [], "json"
 
-                # Fallback: try to auto-detect the content
-                parsed = self._parse_content(content, url)
+                # Fallback: try to auto-detect the content (run in executor)
+                loop = asyncio.get_event_loop()
+                parsed = await loop.run_in_executor(
+                    None, self._parse_content, content, url
+                )
                 if parsed is not None:
                     await self.update_stats("files_downloaded")
-                    return True, parsed
+                    return True, parsed, "json"
 
                 # Unparseable — still count as downloaded
                 self.logger.debug(
                     f"Unparseable content ({content_type}) for {url}, downloaded as-is"
                 )
                 await self.update_stats("files_downloaded")
-                return True, []
+                return True, [], "json"
 
         except Exception as e:
             if "Not Found" in str(e):
-                return False, None
+                return False, None, "json"
 
             self.logger.error(f"\t❌ Unexpected error: {e}. For {url}")
-            return False, None
+            return False, None, "json"
 
     # 4.
     async def get_package_details_by_api(self, package_name: str) -> Optional[dict]:
@@ -648,6 +707,7 @@ class Berlin(BaseDataDownloader):
     # 3.
     async def process_dataset(self, package_name: str) -> bool:
         """Process dataset with optimized resource handling"""
+        self.logger.info(f"Processing dataset: {package_name}")
 
         # Skip if dataset is known to be unsuitable
         if await self.is_dataset_unsuitable(package_name):
@@ -702,27 +762,36 @@ class Berlin(BaseDataDownloader):
                 f"Processing dataset: {package_name} ({len(resources)} resources)"
             )
 
-            # Collect all resources with URLs, detect geo, skip web services
+            # Collect all resources with URLs, detect geo, collect web services
             valid_resources = []
+            web_services = []
             is_geo_format = False
             for i, resource in enumerate(resources):
                 if not resource.get("url"):
                     continue
 
-                # WMS/WFS/WCS/WMTS are services, not downloadable files
+                # WMS/WFS/WCS/WMTS are services, not downloadable files — save URLs
                 if self.is_web_service(resource):
                     is_geo_format = True
-                    self.logger.debug(f"Skipping web service: {resource.get('url')}")
+                    web_services.append(
+                        {
+                            "name": resource.get("name", f"service_{i}"),
+                            "url": resource.get("url"),
+                            "format": resource.get("format", "").upper(),
+                            "description": resource.get("description"),
+                        }
+                    )
+                    self.logger.debug(f"Found web service: {resource.get('url')}")
                     continue
 
                 if self.is_geo_resource(resource):
                     is_geo_format = True
 
-                # Prioritize by format
+                # Prioritize by format (CSV first)
                 format_priority = {
-                    "json": 1,
-                    "geojson": 1,
-                    "csv": 2,
+                    "csv": 1,
+                    "json": 2,
+                    "geojson": 2,
                     "xlsx": 3,
                     "xls": 4,
                     "xml": 5,
@@ -742,31 +811,93 @@ class Berlin(BaseDataDownloader):
                 await self.update_stats("geo_packages")
 
             if len(valid_resources) == 0:
+                # No downloadable resources, but may have web services
+                if web_services and self.use_file_system:
+                    dataset_dir.mkdir(exist_ok=True)
+
+                    # Extract author/maintainer
+                    author = package.get("author")
+                    maintainer = package.get("maintainer")
+                    author_str = author if author else None
+                    if maintainer:
+                        author_str = (
+                            f"{author_str}, {maintainer}" if author_str else maintainer
+                        )
+
+                    # Create metadata without fields
+                    package_meta = DatasetMetadataWithFields(
+                        id=meta_id,
+                        title=title,
+                        groups=[
+                            group.get("title") for group in package.get("groups", [])
+                        ],
+                        organization=package.get("organization", {}).get("title"),
+                        tags=[tag.get("name") for tag in package.get("tags", [])],
+                        description=package.get("notes"),
+                        metadata_created=package.get("metadata_created"),
+                        metadata_modified=package.get("metadata_modified"),
+                        author=author_str,
+                        url=package.get("url"),
+                        city="Berlin",
+                        state="Berlin",
+                        country="Germany",
+                        is_geo=is_geo_format,
+                    )
+
+                    save_file_with_task(metadata_file, package_meta.to_json())
+                    save_file_with_task(
+                        dataset_dir / "web_services.json",
+                        json.dumps(web_services, ensure_ascii=False, indent=2),
+                    )
+                    self.logger.debug(f"Dataset {package_name} has only web services")
+                    await self.update_stats("datasets_processed")
+                    return True
+
                 self.logger.debug(f"Dataset {package_name} has no suitable resources")
                 await self.mark_dataset_unsuitable(package_name)
                 await self.update_stats("datasets_processed")
                 await self.update_stats("datasets_not_suitable")
                 return True
 
-            # Download resources concurrently (but limit to avoid overwhelming)
-            download_tasks = []
+            # Download resources concurrently with timeout
+            async def download_with_info(resource_name: str, idx: int, resource: dict):
+                url = resource.get("url", "")
+                self.logger.debug(f"Starting download: {url[:80]}...")
+                try:
+                    result = await asyncio.wait_for(
+                        self.download_resource_by_api(resource),
+                        timeout=120,  # 2 min timeout per resource
+                    )
+                    self.logger.debug(f"Finished download: {url[:80]}...")
+                    return resource_name, idx, result
+                except asyncio.TimeoutError:
+                    self.logger.warning(f"Timeout (2min) downloading {url}")
+                    return resource_name, idx, (False, None, "json")
+                except Exception as e:
+                    self.logger.warning(f"Error downloading {url}: {e}")
+                    return resource_name, idx, (False, None, "json")
 
-            for priority, i, resource in valid_resources:
-                # resource_name = resource.get("name", f"resource_{i}")
-                # resource_format = resource.get("format", "")
-                # extension = self.get_file_extension(url, resource_format)
-
-                # filename = sanitize_title(f"{resource_name}_{i}{extension}")
-                # filepath = dataset_dir / filename
-
-                task = self.download_resource_by_api(resource)
-                download_tasks.append(task)
-
-            # Wait for downloads
-            results = await asyncio.gather(*download_tasks, return_exceptions=True)
-            success_count = sum(
-                1 for r in results if not isinstance(r, Exception) and r[0] is True
+            self.logger.info(
+                f"Downloading {len(valid_resources)} resources for {package_name}"
             )
+
+            download_tasks = [
+                download_with_info(resource.get("name", f"resource_{i}"), i, resource)
+                for priority, i, resource in valid_resources
+            ]
+
+            # Wait for all downloads in parallel
+            results = await asyncio.gather(*download_tasks, return_exceptions=True)
+
+            # Filter out exceptions
+            results = [
+                r
+                if not isinstance(r, Exception)
+                else (f"resource_{i}", i, (False, None, "json"))
+                for i, r in enumerate(results)
+            ]
+
+            success_count = sum(1 for _, _, r in results if r[0] is True)
 
             if success_count > 0:
                 # Extract author/maintainer
@@ -799,28 +930,66 @@ class Berlin(BaseDataDownloader):
                     is_geo=is_geo_format,
                 )
 
-                data = list(
-                    chain.from_iterable(
-                        res[1]
-                        for res in results
-                        if not isinstance(res, Exception) and res[0] is True and res[1]
-                    )
-                )
+                # Collect records for field extraction and save files
+                all_records: list[dict] = []
 
                 if self.use_file_system:
                     dataset_dir.mkdir(exist_ok=True)
+
+                for resource_name, i, res in results:
+                    if not res[0]:
+                        continue
+                    data, fmt = res[1], res[2]
+                    if not data:
+                        continue
+
+                    safe_name = sanitize_title(f"{resource_name}_{i}")
+
+                    if fmt == "csv" and isinstance(data, str):
+                        # Save CSV file
+                        if self.use_file_system:
+                            save_file_with_task(dataset_dir / f"{safe_name}.csv", data)
+
+                        # Parse CSV in executor to avoid blocking
+                        loop = asyncio.get_event_loop()
+                        records = await loop.run_in_executor(
+                            None, self._parse_csv_to_records, data
+                        )
+                        all_records.extend(records)
+                    elif isinstance(data, list):
+                        # Save JSON file
+                        if self.use_file_system:
+                            save_file_with_task(
+                                dataset_dir / f"{safe_name}.json",
+                                json.dumps(data, ensure_ascii=False, indent=2),
+                            )
+                        all_records.extend(data)
+
+                # Extract fields from in-memory records (run in executor - can be slow)
+                if all_records:
+                    loop = asyncio.get_event_loop()
+                    package_meta.fields = await loop.run_in_executor(
+                        None, extract_fields, all_records
+                    )
+
+                if self.use_file_system:
                     save_file_with_task(metadata_file, package_meta.to_json())
                     save_file_with_task(
                         dataset_dir / "_dataset_info.json",
                         json.dumps(package, ensure_ascii=False, indent=2),
                     )
+                    # Save web service URLs for map display
+                    if web_services:
+                        save_file_with_task(
+                            dataset_dir / "web_services.json",
+                            json.dumps(web_services, ensure_ascii=False, indent=2),
+                        )
 
                 if self.use_embeddings and self.vector_db_buffer:
-                    package_meta.fields = extract_fields(data)
                     await self.vector_db_buffer.add(package_meta)
 
                 if self.use_store and self.dataset_db_buffer:
-                    dataset = Dataset(metadata=package_meta, data=data)
+                    dataset = Dataset(metadata=package_meta, data=all_records)
                     await self.dataset_db_buffer.add(dataset)
 
             await self.update_stats("datasets_processed")
@@ -997,7 +1166,7 @@ async def main():
             connection_limit=args.connection_limit,
             batch_size=args.batch_size,
             use_parallel=True,
-            use_playwright=False,
+            use_playwright=True,
         ) as downloader:
             await downloader.process_all_datasets()
 
