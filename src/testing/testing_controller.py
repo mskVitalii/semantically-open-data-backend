@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.responses import FileResponse
-from typing import Optional
 
 from src.domain.services.dataset_service import DatasetService, get_dataset_service
 from src.domain.services.llm_service import LLMService, get_llm_service_dep
@@ -10,7 +9,6 @@ from src.testing.testing_dto import (
     QuestionListResponse,
     BulkTestRequest,
     TestReport,
-    TestConfig,
     UpdateRelevanceRequest,
 )
 from src.testing.testing_service import get_testing_service
@@ -33,7 +31,9 @@ async def add_question(
     Add a new test question to the test suite
 
     Parameters:
-    - question: The question text
+    - question_en: The question text in English
+    - question_de: The question text in German
+    - question_ru: The question text in Russian
     - city: Optional city filter
     - state: Optional state/region filter
     - country: Optional country filter
@@ -44,7 +44,9 @@ async def add_question(
     try:
         testing_service = get_testing_service(dataset_service, llm_service)
         question = testing_service.add_question(
-            question=request.question,
+            question_en=request.question_en,
+            question_de=request.question_de,
+            question_ru=request.question_ru,
             city=request.city,
             state=request.state,
             country=request.country,
@@ -146,53 +148,6 @@ async def run_bulk_test(
         return report
     except Exception as e:
         logger.error(f"Failed to run bulk test: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/run/quick")
-async def run_quick_test(
-    question_indices: Optional[str] = Query(
-        None, description="Comma-separated question indices (e.g., '0,1,2')"
-    ),
-    limit: int = Query(5, ge=1, le=20, description="Results per query"),
-    dataset_service: DatasetService = Depends(get_dataset_service),
-    llm_service: LLMService = Depends(get_llm_service_dep),
-):
-    """
-    Quick test run with single configuration
-
-    Convenience endpoint for running tests with a single configuration.
-    By default, each question will be tested in 4 variants:
-    1. WITH location filters + WITH multi-query
-    2. WITH location filters + WITHOUT multi-query
-    3. WITHOUT location filters + WITH multi-query
-    4. WITHOUT location filters + WITHOUT multi-query
-
-    Use the /run endpoint for testing multiple configurations or to control which variants to run.
-    """
-    try:
-        # Parse question indices
-        indices = None
-        if question_indices:
-            indices = [int(i.strip()) for i in question_indices.split(",")]
-
-        # Create request
-        request = BulkTestRequest(
-            question_indices=indices,
-            test_configs=[
-                TestConfig(
-                    limit=limit,
-                )
-            ],
-        )
-
-        testing_service = get_testing_service(dataset_service, llm_service)
-        report = await testing_service.run_bulk_test(request)
-        return report
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid question_indices: {e}")
-    except Exception as e:
-        logger.error(f"Failed to run quick test: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -346,6 +301,7 @@ async def export_to_excel(
 
         # Get the filename from the path
         from pathlib import Path
+
         filename = Path(excel_file).name
 
         return FileResponse(

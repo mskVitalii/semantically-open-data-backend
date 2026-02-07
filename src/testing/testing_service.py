@@ -222,7 +222,8 @@ class TestingService:
         self.llm_service = llm_service
         self._ensure_directories()
 
-    def _ensure_directories(self):
+    @staticmethod
+    def _ensure_directories():
         """Ensure test data directories exist"""
         TEST_DATA_DIR.mkdir(exist_ok=True)
         REPORTS_DIR.mkdir(exist_ok=True)
@@ -236,7 +237,9 @@ class TestingService:
 
     def add_question(
         self,
-        question: str,
+        question_en: str,
+        question_de: str,
+        question_ru: str,
         city: Optional[str] = None,
         state: Optional[str] = None,
         country: Optional[str] = None,
@@ -249,7 +252,9 @@ class TestingService:
 
         new_question = TestQuestion(
             id=str(uuid.uuid4()),
-            question=question,
+            question_en=question_en,
+            question_de=question_de,
+            question_ru=question_ru,
             city=city,
             state=state,
             country=country,
@@ -262,12 +267,13 @@ class TestingService:
         self._save_questions(questions)
 
         logger.info(
-            f"Added new test question: {question} (city={city}, state={state}, country={country}, "
+            f"Added new test question: {question_en} (city={city}, state={state}, country={country}, "
             f"year_from={year_from}, year_to={year_to}, expected_datasets={expected_datasets})"
         )
         return new_question
 
-    def get_all_questions(self) -> List[TestQuestion]:
+    @staticmethod
+    def get_all_questions() -> List[TestQuestion]:
         """Get all test questions"""
         try:
             with open(QUESTIONS_FILE, "r", encoding="utf-8") as f:
@@ -277,7 +283,8 @@ class TestingService:
             logger.error(f"Error loading questions: {e}")
             return []
 
-    def _save_questions(self, questions: List[TestQuestion]):
+    @staticmethod
+    def _save_questions(questions: List[TestQuestion]):
         """Save questions to file"""
         with open(QUESTIONS_FILE, "w", encoding="utf-8") as f:
             json.dump(
@@ -303,6 +310,7 @@ class TestingService:
         year_to: Optional[int] = None,
         expected_datasets: Optional[dict[str, float]] = None,
         target_city: Optional[str] = None,
+        question_language: str = "en",
     ) -> TestResult:
         """Execute a single test with given configuration"""
         start_time = time.perf_counter()
@@ -371,6 +379,7 @@ class TestingService:
 
             return TestResult(
                 question=question,
+                question_language=question_language,
                 config=config,
                 datasets_found=len(datasets_found),
                 datasets=[
@@ -398,6 +407,7 @@ class TestingService:
             logger.error(f"Test failed for question '{question}': {e}", exc_info=True)
             return TestResult(
                 question=question,
+                question_language=question_language,
                 config=config,
                 datasets_found=0,
                 datasets=[],
@@ -455,6 +465,10 @@ class TestingService:
         ):
             variants_to_run.append((False, False))
 
+        # Language to test
+        lang_code = request.language
+        lang_attr = f"question_{lang_code}"
+
         enabled_variants = len(variants_to_run)
         total_tests = (
             len(questions_to_test) * len(request.test_configs) * enabled_variants
@@ -462,13 +476,13 @@ class TestingService:
 
         logger.info(
             f"Testing {len(questions_to_test)} questions with {len(request.test_configs)} configurations "
-            f"in {enabled_variants} variants each = {total_tests} total tests"
+            f"in {enabled_variants} variants (lang={lang_code}) = {total_tests} total tests"
         )
 
-        # Run all tests in parallel with semaphore (max 10 concurrent)
+        # Run all tests in parallel with semaphore
         import asyncio
 
-        semaphore = asyncio.Semaphore(25)
+        semaphore = asyncio.Semaphore(10)
         completed_count = 0
         completed_lock = asyncio.Lock()
 
@@ -479,10 +493,10 @@ class TestingService:
             use_multiquery: bool,
         ) -> TestResult:
             nonlocal completed_count
-
+            question_text = getattr(question, lang_attr)
             async with semaphore:
                 result = await self.run_single_test(
-                    question.question,
+                    question_text,
                     config,
                     use_multi_query=use_multiquery,
                     city_filter=question.city if use_filters else None,
@@ -491,7 +505,8 @@ class TestingService:
                     year_from=question.year_from if use_filters else None,
                     year_to=question.year_to if use_filters else None,
                     expected_datasets=question.expected_datasets,
-                    target_city=question.city,  # Always pass for relevance check
+                    target_city=question.city,
+                    question_language=lang_code,
                 )
 
                 # Log progress
@@ -502,7 +517,8 @@ class TestingService:
                         "WITH multi-query" if use_multiquery else "WITHOUT multi-query"
                     )
                     logger.info(
-                        f"Completed test {completed_count}/{total_tests} ({filters_desc} + {multiquery_desc})"
+                        f"Completed test {completed_count}/{total_tests} "
+                        f"({filters_desc} + {multiquery_desc} + lang={lang_code})"
                     )
 
                 return result
@@ -1070,9 +1086,13 @@ class TestingService:
         # Based on: "Evaluation of Retrieval-Augmented Generation: A Survey" (Yu et al., 2024)
         # =============================================================================
 
-        # Build question -> expected_datasets mapping from test questions
+        # Build question -> expected_datasets mapping from test questions (all languages)
         questions_data = self.get_all_questions()
-        question_to_expected = {q.question: q.expected_datasets for q in questions_data}
+        question_to_expected = {}
+        for q in questions_data:
+            question_to_expected[q.question_en] = q.expected_datasets
+            question_to_expected[q.question_de] = q.expected_datasets
+            question_to_expected[q.question_ru] = q.expected_datasets
 
         # Prepare data for AUEPORA metrics sheet (per question, per experiment)
         auepora_metrics_data = []

@@ -21,12 +21,18 @@ class TestQuestion(BaseModel):
     """Test question for bulk testing"""
 
     id: str = Field(..., description="Unique question ID")
-    question: str = Field(..., description="Question text")
+    question_en: str = Field(..., description="Question text")
+    question_de: str = Field(..., description="Question deutsch text")
+    question_ru: str = Field(..., description="Question ru text")
     city: Optional[str] = Field(None, description="Filter by city")
     state: Optional[str] = Field(None, description="Filter by state/region")
     country: Optional[str] = Field(None, description="Filter by country")
-    year_from: Optional[int] = Field(None, description="Filter datasets from this year (inclusive)")
-    year_to: Optional[int] = Field(None, description="Filter datasets up to this year (inclusive)")
+    year_from: Optional[int] = Field(
+        None, description="Filter datasets from this year (inclusive)"
+    )
+    year_to: Optional[int] = Field(
+        None, description="Filter datasets up to this year (inclusive)"
+    )
     created_at: datetime = Field(default_factory=datetime.now)
     expected_datasets: Optional[Dict[str, float]] = Field(
         None,
@@ -56,6 +62,7 @@ class TestResult(BaseModel):
     """Result of a single test execution"""
 
     question: str
+    question_language: str = Field("en", description="Language of the question (en/de/ru)")
     config: TestConfig
     datasets_found: int
     datasets: List[DatasetResultItem] = Field(
@@ -98,11 +105,15 @@ class BulkTestRequest(BaseModel):
     # Control which test variants to run
     filters: Optional[bool] = Field(
         None,
-        description="None = both variants (with/without filters), True = only WITH filters, False = only WITHOUT filters"
+        description="None = both variants (with/without filters), True = only WITH filters, False = only WITHOUT filters",
     )
     multiquery: Optional[bool] = Field(
         None,
-        description="None = both variants (with/without multiquery), True = only WITH multiquery, False = only WITHOUT multiquery"
+        description="None = both variants (with/without multiquery), True = only WITH multiquery, False = only WITHOUT multiquery",
+    )
+    language: str = Field(
+        "en",
+        description="Language to test: 'en', 'de', or 'ru'",
     )
 
 
@@ -121,12 +132,18 @@ class TestReport(BaseModel):
 class AddQuestionRequest(BaseModel):
     """Request to add a new test question"""
 
-    question: str
+    question_en: str = Field(..., description="Question text in English")
+    question_de: str = Field(..., description="Question text in German")
+    question_ru: str = Field(..., description="Question text in Russian")
     city: Optional[str] = Field(None, description="Filter by city")
     state: Optional[str] = Field(None, description="Filter by state/region")
     country: Optional[str] = Field(None, description="Filter by country")
-    year_from: Optional[int] = Field(None, description="Filter datasets from this year (inclusive)")
-    year_to: Optional[int] = Field(None, description="Filter datasets up to this year (inclusive)")
+    year_from: Optional[int] = Field(
+        None, description="Filter datasets from this year (inclusive)"
+    )
+    year_to: Optional[int] = Field(
+        None, description="Filter datasets up to this year (inclusive)"
+    )
     expected_datasets: Optional[Dict[str, float]] = Field(
         None,
         description="Expected dataset IDs with relevance ratings (0-1)",
