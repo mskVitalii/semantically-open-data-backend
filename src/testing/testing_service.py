@@ -616,6 +616,72 @@ class TestingService:
         logger.warning(f"Report {report_id} not found")
         return None
 
+    def collect_unrated_candidates(self, report_id: str) -> dict:
+        """
+        Extract datasets with relevance_rating=null from a report into candidates file.
+
+        Candidates file format:
+        {
+          "question_text": {
+            "dataset_id": {"title": "Dataset Title", "relevance": null},
+            ...
+          },
+          ...
+        }
+
+        Rules:
+        - Adds new unrated datasets if not already present
+        - Removes entries where user has already filled in a rating (relevance != null)
+        - Skips dataset_ids that already exist with null relevance (no overwrite)
+        """
+        candidates_file = TEST_DATA_DIR / "candidates.json"
+
+        report = self.get_report(report_id)
+        if report is None:
+            logger.error(f"Report {report_id} not found")
+            return {}
+
+        # Load existing candidates
+        candidates: dict[str, dict[str, dict]] = {}
+        if candidates_file.exists():
+            with open(candidates_file, "r", encoding="utf-8") as f:
+                candidates = json.load(f)
+
+        # Remove already-rated entries (relevance != null)
+        for question in list(candidates.keys()):
+            for dataset_id in list(candidates[question].keys()):
+                entry = candidates[question][dataset_id]
+                if isinstance(entry, dict) and entry.get("relevance") is not None:
+                    del candidates[question][dataset_id]
+                elif not isinstance(entry, dict) and entry is not None:
+                    # Legacy format (title: score) - remove rated
+                    del candidates[question][dataset_id]
+            if not candidates[question]:
+                del candidates[question]
+
+        # Add new unrated datasets from report
+        for result in report.results:
+            question = result.question
+            for dataset in result.datasets:
+                if dataset.relevance_rating is None:
+                    if question not in candidates:
+                        candidates[question] = {}
+                    if dataset.dataset_id not in candidates[question]:
+                        candidates[question][dataset.dataset_id] = {
+                            "title": dataset.title,
+                            "relevance": None,
+                        }
+
+        # Save
+        with open(candidates_file, "w", encoding="utf-8") as f:
+            json.dump(candidates, f, ensure_ascii=False, indent=2)
+
+        total = sum(len(ds) for ds in candidates.values())
+        logger.info(
+            f"Candidates file updated: {len(candidates)} questions, {total} unrated datasets"
+        )
+        return candidates
+
     # endregion
 
     # region Relevance Rating

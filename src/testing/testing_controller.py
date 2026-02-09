@@ -247,6 +247,32 @@ async def update_relevance_rating(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/reports/{report_id}/collect-candidates")
+async def collect_unrated_candidates(
+    report_id: str,
+    dataset_service: DatasetService = Depends(get_dataset_service),
+    llm_service: LLMService = Depends(get_llm_service_dep),
+):
+    """
+    Extract datasets with null relevance_rating from a report into test_data/candidates.json.
+
+    Run this after each test to accumulate unrated dataset candidates.
+    Manually fill in ratings (0, 0.5, 1) in the file, then run again — rated entries get removed.
+    """
+    try:
+        testing_service = get_testing_service(dataset_service, llm_service)
+        candidates = testing_service.collect_unrated_candidates(report_id)
+        total = sum(len(titles) for titles in candidates.values())
+        return {
+            "ok": True,
+            "questions": len(candidates),
+            "unrated_datasets": total,
+        }
+    except Exception as e:
+        logger.error(f"Failed to collect candidates: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # endregion
 
 

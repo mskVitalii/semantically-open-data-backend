@@ -159,9 +159,6 @@ class LLMQuestionWithDatasets(LLMQuestion):
                         context_parts.append(
                             f"  - Distribution Quartiles: Q1={field_info.quantile_25:.2f}, Q3={field_info.quantile_75:.2f}"
                         )
-                        context_parts.append(
-                            f"  - Distribution Shape: {field_info.distribution}"
-                        )
 
                         # Semantic interpretation based on statistics
                         if field_info.std > 0 and field_info.mean != 0:
