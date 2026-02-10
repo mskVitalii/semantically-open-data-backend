@@ -17,7 +17,8 @@ from src.testing.testing_dto import (
     BulkTestRequest,
     DatasetResultItem,
 )
-from src.vector_search.embedder import embed_batch_with_ids
+from src.infrastructure.config import SearchMode
+from src.vector_search.embedder import embed_batch_with_ids, embed_multi
 
 logger = get_prefixed_logger(__name__, "TESTING_SERVICE")
 
@@ -302,6 +303,7 @@ class TestingService:
         self,
         question: str,
         config: TestConfig,
+        search_mode: SearchMode,
         use_multi_query: bool,
         city_filter: Optional[str] = None,
         state_filter: Optional[str] = None,
@@ -328,21 +330,21 @@ class TestingService:
                     LLMQuestion(question=question, reason="Direct user query")
                 ]
 
-            # Step 2: Generate embeddings with specified embedder model
-            questions_list = [
-                {"text": q.question, "id": q.question_hash}
-                for q in research_questions_objs
-            ]
-            embeddings = await embed_batch_with_ids(
-                questions_list, embedder_model=config.embedder_model
+            # Step 2: Generate embeddings with specified embedder model and mode
+            texts = [q.question for q in research_questions_objs]
+            vectors = await embed_multi(
+                texts,
+                embedder_model=config.embedder_model,
+                mode=search_mode,
             )
 
-            # Step 3: Search for each research question using specified embedder
+            # Step 3: Search for each research question using specified embedder and mode
             # Note: search uses maximum accuracy settings (ef=256) automatically
             all_datasets = []
-            for emb in embeddings:
-                datasets = await self.dataset_service.search_datasets_with_embeddings(
-                    emb["embedding"],
+            for vec in vectors:
+                datasets = await self.dataset_service.search_datasets_with_vector(
+                    vec,
+                    search_mode=search_mode,
                     embedder_model=config.embedder_model,
                     city_filter=city_filter,
                     state_filter=state_filter,
@@ -400,6 +402,7 @@ class TestingService:
                 applied_year_from=year_from,
                 applied_year_to=year_to,
                 used_multi_query=use_multi_query,
+                applied_search_mode=search_mode,
             )
 
         except Exception as e:
@@ -420,6 +423,7 @@ class TestingService:
                 applied_year_from=year_from,
                 applied_year_to=year_to,
                 used_multi_query=use_multi_query,
+                applied_search_mode=search_mode,
             )
 
     async def run_bulk_test(self, request: BulkTestRequest) -> TestReport:
@@ -465,18 +469,28 @@ class TestingService:
         ):
             variants_to_run.append((False, False))
 
+        # Determine which search modes to test
+        if request.search_modes is not None:
+            search_modes_to_run = request.search_modes
+        else:
+            search_modes_to_run = list(SearchMode)
+
         # Language to test
         lang_code = request.language
         lang_attr = f"question_{lang_code}"
 
         enabled_variants = len(variants_to_run)
         total_tests = (
-            len(questions_to_test) * len(request.test_configs) * enabled_variants
+            len(questions_to_test)
+            * len(request.test_configs)
+            * enabled_variants
+            * len(search_modes_to_run)
         )
 
         logger.info(
             f"Testing {len(questions_to_test)} questions with {len(request.test_configs)} configurations "
-            f"in {enabled_variants} variants (lang={lang_code}) = {total_tests} total tests"
+            f"x {enabled_variants} filter/mq variants x {len(search_modes_to_run)} search modes "
+            f"(lang={lang_code}) = {total_tests} total tests"
         )
 
         # Run all tests in parallel with semaphore
@@ -489,6 +503,7 @@ class TestingService:
         async def run_with_semaphore(
             question: TestQuestion,
             config: TestConfig,
+            s_mode: SearchMode,
             use_filters: bool,
             use_multiquery: bool,
         ) -> TestResult:
@@ -498,6 +513,7 @@ class TestingService:
                 result = await self.run_single_test(
                     question_text,
                     config,
+                    search_mode=s_mode,
                     use_multi_query=use_multiquery,
                     city_filter=question.city if use_filters else None,
                     state_filter=question.state if use_filters else None,
@@ -518,16 +534,17 @@ class TestingService:
                     )
                     logger.info(
                         f"Completed test {completed_count}/{total_tests} "
-                        f"({filters_desc} + {multiquery_desc} + lang={lang_code})"
+                        f"({filters_desc} + {multiquery_desc} + {s_mode.value} + lang={lang_code})"
                     )
 
                 return result
 
         # Create all tasks
         tasks = [
-            run_with_semaphore(question, config, use_filters, use_multiquery)
+            run_with_semaphore(question, config, s_mode, use_filters, use_multiquery)
             for question in questions_to_test
             for config in request.test_configs
+            for s_mode in search_modes_to_run
             for use_filters, use_multiquery in variants_to_run
         ]
 
@@ -793,6 +810,7 @@ class TestingService:
                 )
                 config_key = (
                     config.embedder_model.value,
+                    result.applied_search_mode.value,
                     config.limit,
                     result.used_multi_query,  # Use actual multi-query flag from result
                     has_location_filters,  # Flag instead of specific values
@@ -802,7 +820,7 @@ class TestingService:
                     configs_seen[config_key] = (config, result)
 
                     # Create experiment name
-                    exp_name = f"{config.embedder_model.value}_limit{config.limit}"
+                    exp_name = f"{config.embedder_model.value}_{result.applied_search_mode.value}_limit{config.limit}"
 
                     # Add multi-query indicator
                     if result.used_multi_query:
@@ -819,6 +837,7 @@ class TestingService:
                     # Store as dict for easy comparison
                     config_dict = {
                         "embedder_model": config.embedder_model.value,
+                        "search_mode": result.applied_search_mode.value,
                         "limit": config.limit,
                         "used_multi_query": result.used_multi_query,
                         "has_location_filters": has_location_filters,
@@ -846,6 +865,8 @@ class TestingService:
                         if (
                             result_config.embedder_model.value
                             == config_dict["embedder_model"]
+                            and result.applied_search_mode.value
+                            == config_dict["search_mode"]
                             and result_config.limit == config_dict["limit"]
                             and result.used_multi_query
                             == config_dict["used_multi_query"]
@@ -907,6 +928,8 @@ class TestingService:
                         if (
                             result_config.embedder_model.value
                             == config_dict["embedder_model"]
+                            and result.applied_search_mode.value
+                            == config_dict["search_mode"]
                             and result_config.limit == config_dict["limit"]
                             and result.used_multi_query
                             == config_dict["used_multi_query"]
@@ -952,6 +975,8 @@ class TestingService:
                         if (
                             result_config.embedder_model.value
                             == config_dict["embedder_model"]
+                            and result.applied_search_mode.value
+                            == config_dict["search_mode"]
                             and result_config.limit == config_dict["limit"]
                             and result.used_multi_query
                             == config_dict["used_multi_query"]
@@ -993,6 +1018,8 @@ class TestingService:
                         if (
                             result_config.embedder_model.value
                             == config_dict["embedder_model"]
+                            and result.applied_search_mode.value
+                            == config_dict["search_mode"]
                             and result_config.limit == config_dict["limit"]
                             and result.used_multi_query
                             == config_dict["used_multi_query"]
@@ -1058,6 +1085,8 @@ class TestingService:
                         if (
                             result_config.embedder_model.value
                             == config_dict["embedder_model"]
+                            and result.applied_search_mode.value
+                            == config_dict["search_mode"]
                             and result_config.limit == config_dict["limit"]
                             and result.used_multi_query
                             == config_dict["used_multi_query"]
@@ -1123,6 +1152,8 @@ class TestingService:
                         if (
                             result_config.embedder_model.value
                             == config_dict["embedder_model"]
+                            and result.applied_search_mode.value
+                            == config_dict["search_mode"]
                             and result_config.limit == config_dict["limit"]
                             and result.used_multi_query
                             == config_dict["used_multi_query"]
@@ -1179,6 +1210,8 @@ class TestingService:
                         if (
                             result_config.embedder_model.value
                             == config_dict["embedder_model"]
+                            and result.applied_search_mode.value
+                            == config_dict["search_mode"]
                             and result_config.limit == config_dict["limit"]
                             and result.used_multi_query
                             == config_dict["used_multi_query"]

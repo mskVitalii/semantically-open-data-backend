@@ -4,16 +4,26 @@ from typing import List, Optional
 
 from numpy import ndarray
 from qdrant_client import AsyncQdrantClient
-from qdrant_client.http.models import QueryRequest, ScoredPoint
+from qdrant_client.http.models import (
+    QueryRequest,
+    ScoredPoint,
+    SearchParams,
+    FusionQuery,
+    Fusion,
+    Prefetch,
+)
 from qdrant_client.models import (
     Distance,
     VectorParams,
+    SparseVectorParams,
     PointStruct,
     Filter,
     FieldCondition,
     MatchValue,
     PayloadSchemaType,
     Range,
+    SparseVector as QdrantSparseVector,
+    HnswConfigDiff,
 )
 
 from src.datasets.datasets_metadata import DatasetMetadataWithFields
@@ -24,41 +34,53 @@ from src.infrastructure.config import (
     QDRANT_HTTP_PORT,
     EmbedderModel,
     DEFAULT_EMBEDDER_MODEL,
+    DEFAULT_SPARSE_DIM,
+    DEFAULT_SPARSE_MODE,
     get_collection_name,
     get_embedding_dim,
 )
 from src.infrastructure.logger import get_prefixed_logger
-from src.vector_search.embedder import embed_batch
+from src.vector_search.embedder import (
+    embed_batch_hybrid,
+    SparseVector,
+    HybridEmbedding,
+)
 
 logger = get_prefixed_logger(__name__, "VECTOR_DB")
 
+# Named vector keys (every collection is hybrid)
+DENSE_VECTOR_NAME = "dense"
+SPARSE_VECTOR_NAME = "lexical"
+
+# Payload index fields
+_KEYWORD_FIELDS = ["city", "state", "country", "organization", "embedder_model"]
+
 
 class VectorDB:
-    """Vector DB system with gRPC support"""
+    """Vector DB system with gRPC support and hybrid search.
+
+    Every collection stores both dense and sparse (lexical) vectors.
+    Index once, search with any strategy: dense / sparse / hybrid (RRF).
+    """
 
     # region LIFE CYCLE
 
     def __init__(self):
-        """Initialize with gRPC or HTTP client"""
-        # Use environment variable if not explicitly set
         self.use_grpc = USE_GRPC
         self.qdrant: AsyncQdrantClient | None = None
 
     async def initialize(self):
-        """Async initialization of client and resources"""
         self.qdrant = await get_qdrant(self.use_grpc)
         await self._wait_for_qdrant()
         await self.setup_collection()
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Async context manager exit"""
         logger.warning("VectorDB __aexit__".upper())
 
     def __del__(self):
         logger.warning("VectorDB instance is being deleted".upper())
 
     async def _wait_for_qdrant(self, max_retries: int = 10, retry_delay: int = 2):
-        """Wait for Qdrant to be ready"""
         for i in range(max_retries):
             try:
                 await self.qdrant.get_collections()
@@ -75,123 +97,169 @@ class VectorDB:
 
     # endregion
 
+    # ------------------------------------------------------------------
+    # Collection helpers
+    # ------------------------------------------------------------------
+
+    async def _collection_exists(self, name: str) -> bool:
+        collections = (await self.qdrant.get_collections()).collections
+        return any(c.name == name for c in collections)
+
+    async def _create_payload_indexes(self, collection_name: str):
+        for field in _KEYWORD_FIELDS:
+            await self.qdrant.create_payload_index(
+                collection_name=collection_name,
+                field_name=field,
+                field_schema=PayloadSchemaType.KEYWORD,
+            )
+        await self.qdrant.create_payload_index(
+            collection_name=collection_name,
+            field_name="year",
+            field_schema=PayloadSchemaType.INTEGER,
+        )
+
+    # ------------------------------------------------------------------
+    # Collection setup (always hybrid: named dense + sparse)
+    # ------------------------------------------------------------------
+
     async def setup_collection(
         self, embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL
     ):
-        """Create Qdrant collection if not exists for specific embedder model"""
+        """Create hybrid Qdrant collection with named dense + sparse vectors."""
         collection_name = get_collection_name(embedder_model)
         embedding_dim = get_embedding_dim(embedder_model)
         logger.info(
-            f"setup_collection for {embedder_model.value} (dimension: {embedding_dim})"
+            f"setup_collection for {embedder_model.value} (dense dim: {embedding_dim})"
         )
-        collections_response = await self.qdrant.get_collections()
-        collections = collections_response.collections
 
-        collection_exists = any(c.name == collection_name for c in collections)
-
-        if collection_exists:
-            # Check if existing collection has the correct dimension
+        if await self._collection_exists(collection_name):
+            # Check if existing collection has the correct hybrid schema
             try:
-                collection_info = await self.qdrant.get_collection(collection_name)
-                existing_dim = collection_info.config.params.vectors.size
-
-                if existing_dim != embedding_dim:
+                info = await self.qdrant.get_collection(collection_name)
+                vectors_cfg = info.config.params.vectors
+                # Old collections have a single unnamed VectorParams (not a dict)
+                # New hybrid collections have a dict with "dense" key
+                is_hybrid = isinstance(vectors_cfg, dict) and DENSE_VECTOR_NAME in vectors_cfg
+                if is_hybrid:
+                    logger.info(f"Collection {collection_name} already exists (hybrid)")
+                    return
+                else:
                     logger.warning(
-                        f"Collection {collection_name} exists with wrong dimension "
-                        f"(expected {embedding_dim}, got {existing_dim}). Recreating..."
+                        f"Collection {collection_name} has legacy schema (unnamed vector). "
+                        f"Recreating as hybrid..."
                     )
                     await self.qdrant.delete_collection(collection_name)
-                    collection_exists = False
-                else:
-                    logger.info(
-                        f"Collection {collection_name} already exists with correct dimension {embedding_dim}"
-                    )
             except Exception as e:
-                logger.error(f"Error checking collection dimension: {e}")
-                # If we can't check, assume it needs recreation
+                logger.error(f"Error checking collection schema: {e}")
                 await self.qdrant.delete_collection(collection_name)
-                collection_exists = False
 
-        if not collection_exists:
-            logger.info(
-                f"Creating collection {collection_name} with dimension {embedding_dim}"
-            )
-            from qdrant_client.models import HnswConfigDiff
-
-            await self.qdrant.create_collection(
-                collection_name=collection_name,
-                vectors_config=VectorParams(
+        logger.info(f"Creating collection {collection_name}")
+        await self.qdrant.create_collection(
+            collection_name=collection_name,
+            vectors_config={
+                DENSE_VECTOR_NAME: VectorParams(
                     size=embedding_dim, distance=Distance.COSINE
                 ),
-                # HNSW configuration optimized for maximum accuracy
-                hnsw_config=HnswConfigDiff(
-                    m=64,  # Number of edges per node (default 16, higher = better recall)
-                    ef_construct=256,  # Construction time ef (default 100, higher = better quality graph)
-                ),
-            )
+            },
+            sparse_vectors_config={
+                SPARSE_VECTOR_NAME: SparseVectorParams(),
+            },
+            hnsw_config=HnswConfigDiff(m=64, ef_construct=256),
+        )
+        await self._create_payload_indexes(collection_name)
+        logger.info(f"Collection {collection_name} created with indexes")
 
-            # Create indexes for filtering
-            for field in ["city", "state", "country", "organization", "embedder_model"]:
-                await self.qdrant.create_payload_index(
-                    collection_name=collection_name,
-                    field_name=field,
-                    field_schema=PayloadSchemaType.KEYWORD,
-                )
-
-            # Create integer index for year filtering
-            await self.qdrant.create_payload_index(
-                collection_name=collection_name,
-                field_name="year",
-                field_schema=PayloadSchemaType.INTEGER,
-            )
-            logger.info(f"Collection {collection_name} created with indexes")
+    # ------------------------------------------------------------------
+    # Indexing (always hybrid — stores both dense + sparse)
+    # ------------------------------------------------------------------
 
     async def index_datasets(
         self,
         datasets: List[DatasetMetadataWithFields],
         embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
         batch_size: int = 100,
+        sparse_dim: int = DEFAULT_SPARSE_DIM,
+        sparse_mode: str = DEFAULT_SPARSE_MODE,
     ):
-        """Index multiple datasets with batching for better performance using specified embedder"""
+        """Index datasets — always stores both dense and sparse vectors."""
         collection_name = get_collection_name(embedder_model)
-
-        # Ensure collection exists
         await self.setup_collection(embedder_model)
 
-        # Prepare texts for embedding
         try:
             texts = [ds.to_searchable_text() for ds in datasets]
         except Exception as e:
             logger.error(f"Error preparing texts for embedding: {e}", exc_info=e)
             return
 
-        # Generate embeddings in batches using specified embedder
-        logger.debug(f"Generating embeddings for {len(texts)} texts...")
-        embeddings = await embed_batch(texts, embedder_model=embedder_model)
+        logger.debug(f"Generating hybrid embeddings for {len(texts)} texts...")
+        hybrid_vecs = await embed_batch_hybrid(
+            texts, embedder_model, sparse_dim, sparse_mode,
+        )
 
-        # Prepare points for Qdrant
         points = [
             PointStruct(
                 id=str(uuid.uuid4()),
-                vector=embedding.tolist(),
-                payload=dataset.to_payload(),
+                vector={
+                    DENSE_VECTOR_NAME: hv.dense.tolist(),
+                    SPARSE_VECTOR_NAME: QdrantSparseVector(
+                        indices=hv.sparse.indices, values=hv.sparse.values,
+                    ),
+                },
+                payload=ds.to_payload(),
             )
-            for dataset, embedding in zip(datasets, embeddings)
+            for ds, hv in zip(datasets, hybrid_vecs)
         ]
 
-        # Upload to Qdrant in batches for better performance
         total_points = len(points)
         for i in range(0, total_points, batch_size):
             batch = points[i : i + batch_size]
             await self.qdrant.upsert(
                 collection_name=collection_name,
                 points=batch,
-                wait=True,  # Ensure consistency
+                wait=True,
             )
 
         logger.debug(f"Indexed {len(datasets)} datasets to {collection_name}")
 
-    async def search(
+    # ------------------------------------------------------------------
+    # Search
+    # ------------------------------------------------------------------
+
+    def _build_filter(
+        self,
+        city_filter: Optional[str] = None,
+        state_filter: Optional[str] = None,
+        country_filter: Optional[str] = None,
+        year_from: Optional[int] = None,
+        year_to: Optional[int] = None,
+    ) -> Optional[Filter]:
+        conditions = []
+        if city_filter:
+            conditions.append(
+                FieldCondition(key="city", match=MatchValue(value=city_filter))
+            )
+        if state_filter:
+            conditions.append(
+                FieldCondition(key="state", match=MatchValue(value=state_filter))
+            )
+        if country_filter:
+            conditions.append(
+                FieldCondition(key="country", match=MatchValue(value=country_filter))
+            )
+        if year_from is not None or year_to is not None:
+            range_config = {}
+            if year_from is not None:
+                range_config["gte"] = year_from
+            if year_to is not None:
+                range_config["lte"] = year_to
+            conditions.append(
+                FieldCondition(key="year", range=Range(**range_config))
+            )
+        return Filter(must=conditions) if conditions else None
+
+    # --- Dense search (named "dense" vector) ---
+
+    async def search_dense(
         self,
         query_embedding: ndarray,
         embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
@@ -202,60 +270,109 @@ class VectorDB:
         year_to: Optional[int] = None,
         limit: int = 25,
     ) -> list[ScoredPoint]:
-        """Search for datasets using query_points method in specific embedder collection
-
-        Uses maximum accuracy settings: ef=256 for HNSW search
-        """
+        """Dense-only search on the named 'dense' vector."""
         collection_name = get_collection_name(embedder_model)
-
-        # Build filter conditions
-        filter_conditions = []
-        if city_filter:
-            filter_conditions.append(
-                FieldCondition(key="city", match=MatchValue(value=city_filter))
-            )
-        if state_filter:
-            filter_conditions.append(
-                FieldCondition(key="state", match=MatchValue(value=state_filter))
-            )
-        if country_filter:
-            filter_conditions.append(
-                FieldCondition(key="country", match=MatchValue(value=country_filter))
-            )
-
-        # Add year range filter if specified
-        if year_from is not None or year_to is not None:
-            range_config = {}
-            if year_from is not None:
-                range_config["gte"] = year_from
-            if year_to is not None:
-                range_config["lte"] = year_to
-
-            filter_conditions.append(
-                FieldCondition(key="year", range=Range(**range_config))
-            )
-
-        # Create filter if any conditions exist
-        search_filter = None
-        if filter_conditions:
-            search_filter = Filter(must=filter_conditions)
-
-        # Use query_points (works with both gRPC and HTTP)
-        # Use maximum accuracy: ef=256 for HNSW search
-        from qdrant_client.http.models import SearchParams
+        search_filter = self._build_filter(
+            city_filter, state_filter, country_filter, year_from, year_to,
+        )
 
         query_result = await self.qdrant.query_points(
             collection_name=collection_name,
             query=query_embedding.tolist(),
+            using=DENSE_VECTOR_NAME,
             query_filter=search_filter,
             limit=limit,
             with_payload=True,
             search_params=SearchParams(hnsw_ef=256),
         )
+        return query_result.points
 
-        # Extract points from the result
-        results = query_result.points
-        return results
+    # backward-compatible alias
+    search = search_dense
+
+    # --- Sparse search (named "lexical" vector) ---
+
+    async def search_sparse(
+        self,
+        query_sparse: SparseVector,
+        embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
+        city_filter: Optional[str] = None,
+        state_filter: Optional[str] = None,
+        country_filter: Optional[str] = None,
+        year_from: Optional[int] = None,
+        year_to: Optional[int] = None,
+        limit: int = 25,
+    ) -> list[ScoredPoint]:
+        """Sparse-only search on the named 'lexical' vector."""
+        collection_name = get_collection_name(embedder_model)
+        search_filter = self._build_filter(
+            city_filter, state_filter, country_filter, year_from, year_to,
+        )
+
+        qdrant_sparse = QdrantSparseVector(
+            indices=query_sparse.indices, values=query_sparse.values,
+        )
+
+        query_result = await self.qdrant.query_points(
+            collection_name=collection_name,
+            query=qdrant_sparse,
+            using=SPARSE_VECTOR_NAME,
+            query_filter=search_filter,
+            limit=limit,
+            with_payload=True,
+        )
+        return query_result.points
+
+    # --- Hybrid search (RRF fusion) ---
+
+    async def search_hybrid(
+        self,
+        query_hybrid: HybridEmbedding,
+        embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
+        city_filter: Optional[str] = None,
+        state_filter: Optional[str] = None,
+        country_filter: Optional[str] = None,
+        year_from: Optional[int] = None,
+        year_to: Optional[int] = None,
+        limit: int = 25,
+        prefetch_limit: int = 100,
+    ) -> list[ScoredPoint]:
+        """Hybrid search: dense + sparse with RRF fusion."""
+        collection_name = get_collection_name(embedder_model)
+        search_filter = self._build_filter(
+            city_filter, state_filter, country_filter, year_from, year_to,
+        )
+
+        qdrant_sparse = QdrantSparseVector(
+            indices=query_hybrid.sparse.indices,
+            values=query_hybrid.sparse.values,
+        )
+
+        query_result = await self.qdrant.query_points(
+            collection_name=collection_name,
+            prefetch=[
+                Prefetch(
+                    query=query_hybrid.dense.tolist(),
+                    using=DENSE_VECTOR_NAME,
+                    filter=search_filter,
+                    limit=prefetch_limit,
+                ),
+                Prefetch(
+                    query=qdrant_sparse,
+                    using=SPARSE_VECTOR_NAME,
+                    filter=search_filter,
+                    limit=prefetch_limit,
+                ),
+            ],
+            query=FusionQuery(fusion=Fusion.RRF),
+            limit=limit,
+            with_payload=True,
+        )
+        return query_result.points
+
+    # ------------------------------------------------------------------
+    # Batch search (dense)
+    # ------------------------------------------------------------------
 
     async def batch_search(
         self,
@@ -264,28 +381,28 @@ class VectorDB:
         city_filter: Optional[str] = None,
         limit: int = 5,
     ):
-        """Batch search - especially efficient with gRPC using specific embedder"""
+        """Batch dense search — efficient with gRPC."""
+        from src.vector_search.embedder import embed_batch
+
         collection_name = get_collection_name(embedder_model)
         logger.info(
             f"\nBatch searching for {len(queries)} queries in {collection_name}"
         )
 
-        # Generate embeddings for all queries concurrently using specified embedder
         query_embeddings = await embed_batch(queries, embedder_model=embedder_model)
 
-        # Build filter
         search_filter = None
         if city_filter:
             search_filter = Filter(
                 must=[FieldCondition(key="city", match=MatchValue(value=city_filter))]
             )
 
-        # Batch query - very efficient with gRPC
         batch_results = await self.qdrant.query_batch_points(
             collection_name=collection_name,
             requests=[
                 QueryRequest(
                     query=emb.tolist(),
+                    using=DENSE_VECTOR_NAME,
                     filter=search_filter,
                     limit=limit,
                     with_payload=True,
@@ -294,7 +411,6 @@ class VectorDB:
             ],
         )
 
-        # Process results
         all_results = []
         for i, (query, result) in enumerate(zip(queries, batch_results)):
             logger.info(f"\nQuery {i + 1}: '{query}'")
@@ -303,8 +419,11 @@ class VectorDB:
 
         return all_results
 
+    # ------------------------------------------------------------------
+    # Stats & management
+    # ------------------------------------------------------------------
+
     async def get_stats(self, embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL):
-        """Get collection statistics for specific embedder"""
         collection_name = get_collection_name(embedder_model)
         info = await self.qdrant.get_collection(collection_name)
         logger.info(f"\nCollection stats for {collection_name}:")
@@ -317,33 +436,16 @@ class VectorDB:
     async def remove_collection(
         self, embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL
     ) -> bool:
-        """
-        Remove a collection from Qdrant for specific embedder model.
-
-        Args:
-            embedder_model: Embedder model whose collection should be removed.
-                           Defaults to DEFAULT_EMBEDDER_MODEL.
-
-        Returns:
-            bool: True if collection was removed successfully, False otherwise.
-        """
         collection_name = get_collection_name(embedder_model)
         try:
-            # Check if collection exists
-            collections_response = await self.qdrant.get_collections()
-            collections = collections_response.collections
-
-            if not any(c.name == collection_name for c in collections):
+            if not await self._collection_exists(collection_name):
                 logger.warning(f"Collection '{collection_name}' does not exist")
                 return False
 
-            # Delete the collection
             logger.info(f"Removing collection '{collection_name}'...")
             await self.qdrant.delete_collection(collection_name=collection_name)
-
             logger.info(f"✅ Collection '{collection_name}' removed successfully")
             return True
-
         except Exception as e:
             logger.error(f"❌ Failed to remove collection '{collection_name}': {e}")
             raise
@@ -355,7 +457,6 @@ vector_db: VectorDB | None = None
 
 
 async def get_vector_db() -> VectorDB:
-    """Helper function to create and initialize the async Qdrant client"""
     global vector_db
     if vector_db is None:
         vector_db = VectorDB()
@@ -367,7 +468,6 @@ qdrant: AsyncQdrantClient | None = None
 
 
 async def init_qdrant(use_grpc: bool = True) -> AsyncQdrantClient:
-    # Initialize Qdrant client
     if use_grpc:
         logger.info(
             f"Connecting to Qdrant via gRPC at {QDRANT_HOST}:{QDRANT_GRPC_PORT}"
@@ -391,7 +491,6 @@ async def init_qdrant(use_grpc: bool = True) -> AsyncQdrantClient:
 
 
 async def get_qdrant(use_grpc: bool = True) -> AsyncQdrantClient:
-    """Helper function to create and initialize the async Qdrant client"""
     global qdrant
     if qdrant is None:
         qdrant = await init_qdrant(use_grpc)

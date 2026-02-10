@@ -13,11 +13,15 @@ from src.datasets_api.datasets_dto import (
     DatasetSearchResponse,
     DatasetResponse,
 )
-from src.infrastructure.config import EmbedderModel, DEFAULT_EMBEDDER_MODEL
+from src.infrastructure.config import (
+    EmbedderModel,
+    DEFAULT_EMBEDDER_MODEL,
+    SearchMode,
+)
 from src.infrastructure.logger import get_prefixed_logger
 from src.infrastructure.paths import PROJECT_ROOT
 from src.utils.datasets_utils import safe_delete
-from src.vector_search.embedder import embed
+from src.vector_search.embedder import embed, embed_single, SparseVector, HybridEmbedding
 from src.vector_search.vector_db import VectorDB, get_vector_db
 
 logger = get_prefixed_logger(__name__, "DATASET_SERVICE")
@@ -34,13 +38,11 @@ class DatasetService:
         self,
         request: DatasetSearchRequest,
         embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
+        search_mode: SearchMode = SearchMode.DENSE,
     ) -> DatasetSearchResponse:
-        """Search for datasets using specified embedder model"""
+        """Search for datasets using specified embedder model and search mode"""
 
-        # Generate query embedding with specified embedder
-        embedding = await embed(request.query, embedder_model=embedder_model)
-        datasets = await self.vector_db.search(
-            embedding,
+        filter_kwargs = dict(
             embedder_model=embedder_model,
             city_filter=request.city,
             state_filter=request.state,
@@ -49,6 +51,18 @@ class DatasetService:
             year_to=request.year_to,
             limit=request.limit,
         )
+
+        # embed_single returns the right type for the requested mode
+        query_vec = await embed_single(
+            request.query, embedder_model=embedder_model, mode=search_mode,
+        )
+
+        if search_mode == SearchMode.SPARSE:
+            datasets = await self.vector_db.search_sparse(query_vec, **filter_kwargs)
+        elif search_mode == SearchMode.HYBRID:
+            datasets = await self.vector_db.search_hybrid(query_vec, **filter_kwargs)
+        else:
+            datasets = await self.vector_db.search_dense(query_vec, **filter_kwargs)
 
         metadatas: list[DatasetResponse] = []
         for dataset in datasets:
@@ -89,8 +103,8 @@ class DatasetService:
         year_from: int = None,
         year_to: int = None,
     ) -> list[DatasetResponse]:
-        """Search for datasets using pre-computed embeddings and specified embedder model"""
-        datasets = await self.vector_db.search(
+        """Search for datasets using pre-computed dense embeddings"""
+        datasets = await self.vector_db.search_dense(
             embeddings,
             embedder_model=embedder_model,
             city_filter=city_filter,
@@ -127,6 +141,55 @@ class DatasetService:
 
         return results
 
+    async def search_datasets_with_vector(
+        self,
+        vector,  # ndarray | SparseVector | HybridEmbedding
+        search_mode: SearchMode = SearchMode.DENSE,
+        embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
+        city_filter: str = None,
+        state_filter: str = None,
+        country_filter: str = None,
+        year_from: int = None,
+        year_to: int = None,
+    ) -> list[DatasetResponse]:
+        """Search for datasets using a pre-computed vector (any mode)"""
+        filter_kwargs = dict(
+            embedder_model=embedder_model,
+            city_filter=city_filter,
+            state_filter=state_filter,
+            country_filter=country_filter,
+            year_from=year_from,
+            year_to=year_to,
+        )
+
+        if search_mode == SearchMode.SPARSE:
+            datasets = await self.vector_db.search_sparse(vector, **filter_kwargs)
+        elif search_mode == SearchMode.HYBRID:
+            datasets = await self.vector_db.search_hybrid(vector, **filter_kwargs)
+        else:
+            datasets = await self.vector_db.search_dense(vector, **filter_kwargs)
+
+        results = []
+        for dataset in datasets:
+            payload = dict(dataset.payload)
+            raw_fields = payload.pop("fields", {})
+            payload.pop("year", None)
+
+            if "embedder_model" in payload and isinstance(
+                payload["embedder_model"], str
+            ):
+                payload["embedder_model"] = EmbedderModel(payload["embedder_model"])
+
+            metadata = DatasetMetadataWithFields(
+                **payload,
+                fields={k: make_field(v) for k, v in raw_fields.items()},
+            )
+            results.append(
+                DatasetResponse(metadata=metadata, score=dataset.score)
+            )
+
+        return results
+
     async def bootstrap_datasets(
         self,
         clear_store: bool = True,
@@ -156,9 +219,10 @@ class DatasetService:
             return False
 
     async def index_existing_datasets(
-        self, embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL
+        self,
+        embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
     ) -> dict:
-        """Index existing datasets from filesystem into vector DB with specified embedder"""
+        """Index existing datasets from filesystem into vector DB (hybrid: dense + sparse)"""
         try:
             from src.utils.datasets_utils import load_metadata_from_file
 
@@ -214,7 +278,7 @@ class DatasetService:
             # Ensure collection exists for this embedder
             await self.vector_db.setup_collection(embedder_model)
 
-            # Index datasets in batches of 100
+            # Index datasets in batches of 10
             batch_size = 10
             total_batches = (total_datasets + batch_size - 1) // batch_size
 
@@ -226,9 +290,8 @@ class DatasetService:
                     f"Processing batch {batch_num}/{total_batches} ({len(batch)} datasets)..."
                 )
 
-                # Index this batch
                 await self.vector_db.index_datasets(
-                    batch, embedder_model=embedder_model
+                    batch, embedder_model=embedder_model,
                 )
 
                 logger.info(
@@ -263,19 +326,19 @@ class DatasetService:
                 await self.repository.delete_all()
                 logger.warning("Deleted all MONGO collections")
 
-            # Clear vector DB - remove collections for all embedder models
+            # Clear vector DB — one collection per embedder model
             if clear_vector_db:
                 for embedder_model in EmbedderModel:
                     try:
                         await self.vector_db.remove_collection(embedder_model)
-                        await self.vector_db.setup_collection(embedder_model)
-                        logger.warning(
-                            f"Cleared vector DB collection for {embedder_model.value}"
-                        )
                     except Exception as e:
                         logger.error(
                             f"Error clearing collection for {embedder_model.value}: {e}"
                         )
+                    await self.vector_db.setup_collection(embedder_model)
+                    logger.warning(
+                        f"Cleared vector DB collection for {embedder_model.value}"
+                    )
 
             if clear_fs:
                 safe_delete(PROJECT_ROOT / "src" / "datasets" / "dresden", logger)

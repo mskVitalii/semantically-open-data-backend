@@ -25,6 +25,18 @@ class EmbedderModel(str, Enum):
     SENTENCE_TRANSFORMERS_LABSE = "sentence-transformers-labse"
 
 
+class SearchMode(str, Enum):
+    """Vectorization / search mode"""
+    DENSE = "dense"
+    SPARSE = "sparse"
+    HYBRID = "hybrid"
+
+
+# Sparse vectorization defaults
+DEFAULT_SPARSE_DIM = 1_048_576
+DEFAULT_SPARSE_MODE = "tf"  # "binary" | "tf"
+
+
 # Embedding dimensions for each model
 EMBEDDING_DIMENSIONS = {
     EmbedderModel.BAAI_BGE_M3: 1024,
@@ -62,7 +74,10 @@ def get_embedder_url(model: EmbedderModel) -> str:
 
 
 def get_collection_name(embedder_model: EmbedderModel) -> str:
-    """Get collection name for specific embedder model"""
+    """Get collection name for specific embedder model.
+
+    All collections are hybrid (named dense + sparse vectors).
+    """
     return f"{QDRANT_COLLECTION_PREFIX}_{embedder_model.value}"
 
 

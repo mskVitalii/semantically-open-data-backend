@@ -8,7 +8,7 @@ from src.datasets.datasets_metadata import (
     DatasetMetadataWithFields,
     DatasetJSONEncoder,
 )
-from src.infrastructure.config import EmbedderModel, DEFAULT_EMBEDDER_MODEL
+from src.infrastructure.config import EmbedderModel, DEFAULT_EMBEDDER_MODEL, SearchMode
 
 
 class DatasetSearchRequest(BaseModel):
@@ -17,6 +17,10 @@ class DatasetSearchRequest(BaseModel):
     query: Optional[str] = Field(None, description="Search query")
     embedder_model: EmbedderModel = Field(
         DEFAULT_EMBEDDER_MODEL, description="Embedder model to use for search"
+    )
+    search_mode: SearchMode = Field(
+        SearchMode.DENSE,
+        description="Vectorization mode: dense, sparse, or hybrid (RRF fusion)",
     )
     tags: Optional[List[str]] = Field(None, description="List of tags for filtering")
     city: Optional[str] = Field(None, description="Filter by city")

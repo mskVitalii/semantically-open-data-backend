@@ -118,25 +118,15 @@ async def run_bulk_test(
     - filters=None, multiquery=False → only WITHOUT multiquery (2 variants)
     - filters=False, multiquery=False → only one variant (WITHOUT filters + WITHOUT multiquery)
 
+    Search modes are controlled globally via `search_modes`:
+    - null → all three modes (dense, sparse, hybrid)
+    - ["dense", "hybrid"] → only dense and hybrid
+
     Example test_configs:
     ```json
     [
-        {
-            "embedder_model": "jinaai-jina-embeddings-v3",
-            "limit": 25
-        },
-        {
-            "embedder_model": "baai-bge-m3",
-            "limit": 25
-        },
-        {
-            "embedder_model": "intfloat-multilingual-e5-base",
-            "limit": 25
-        },
-        {
-            "embedder_model": "sentence-transformers-labse",
-            "limit": 25
-        }
+        {"embedder_model": "jinaai-jina-embeddings-v3", "limit": 25},
+        {"embedder_model": "baai-bge-m3", "limit": 25}
     ]
     ```
 

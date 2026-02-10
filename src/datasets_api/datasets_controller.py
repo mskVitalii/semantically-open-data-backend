@@ -1,7 +1,6 @@
 import json
 import time
 
-import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, Query
 from starlette.responses import StreamingResponse
 
@@ -17,9 +16,14 @@ from ..domain.services.llm_service import (
     LLMService,
     get_llm_service_dep,
 )
-from ..infrastructure.config import IS_DOCKER, EmbedderModel, DEFAULT_EMBEDDER_MODEL
+from ..infrastructure.config import (
+    IS_DOCKER,
+    EmbedderModel,
+    DEFAULT_EMBEDDER_MODEL,
+    SearchMode,
+)
 from ..infrastructure.logger import get_prefixed_logger
-from ..vector_search.embedder import embed_batch_with_ids
+from ..vector_search.embedder import embed_multi
 
 logger = get_prefixed_logger("API /datasets")
 
@@ -48,7 +52,11 @@ async def search_datasets(
     - offset: pagination offset
     """
     try:
-        return await service.search_datasets(request, embedder_model=request.embedder_model)
+        return await service.search_datasets(
+            request,
+            embedder_model=request.embedder_model,
+            search_mode=request.search_mode,
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -111,19 +119,18 @@ async def index_datasets(
     service: DatasetService = Depends(get_dataset_service),
 ):
     """
-    Index existing datasets from MongoDB into vector DB with specified embedder model
+    Index existing datasets into vector DB with specified embedder model.
 
-    This endpoint takes datasets that are already stored in MongoDB and indexes them
-    into the vector database using the specified embedder model. Useful for:
-    - Re-indexing datasets with a different embedder model
-    - Creating indexes for new embedder models without re-downloading data
-    - Experimenting with different embedders on the same dataset
+    Always stores both dense and sparse vectors (hybrid).
+    Use search_mode in /search_datasets to choose the search strategy.
 
     Parameters:
     - embedder_model: The embedder model to use for generating embeddings and indexing
     """
     try:
-        result = await service.index_existing_datasets(embedder_model=embedder_model)
+        result = await service.index_existing_datasets(
+            embedder_model=embedder_model,
+        )
         if not result.get("ok"):
             raise HTTPException(status_code=500, detail=result.get("message"))
         return result
@@ -180,26 +187,23 @@ async def step_1_embeddings(
     step: int,
     research_questions: list[LLMQuestion],
     embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
+    search_mode: SearchMode = SearchMode.DENSE,
 ) -> list[LLMQuestionWithEmbeddings]:
-    logger.info(f"step: {step}. EMBEDDINGS start ({embedder_model.value})")
+    logger.info(
+        f"step: {step}. EMBEDDINGS start ({embedder_model.value}, mode={search_mode.value})"
+    )
     start_1 = time.perf_counter()
 
-    questions_list = [
-        {"text": q.question, "id": q.question_hash} for q in research_questions
-    ]
-    embeddings = await embed_batch_with_ids(questions_list, embedder_model=embedder_model)
-
-    embeddings_map: dict[str, np.ndarray] = {
-        str(e["id"]): e["embedding"] for e in embeddings
-    }
+    texts = [q.question for q in research_questions]
+    vectors = await embed_multi(texts, embedder_model=embedder_model, mode=search_mode)
 
     questions_with_embeddings: list[LLMQuestionWithEmbeddings] = [
         LLMQuestionWithEmbeddings(
             question=q.question,
             reason=q.reason,
-            embeddings=embeddings_map.get(q.question_hash),
+            embeddings=vec,
         )
-        for q in research_questions
+        for q, vec in zip(research_questions, vectors)
     ]
 
     elapsed_1 = time.perf_counter() - start_1
@@ -212,6 +216,7 @@ async def generate_events(
     datasets_service: DatasetService,
     llm_service: LLMService,
     embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
+    search_mode: SearchMode = SearchMode.DENSE,
     city: str = None,
     state: str = None,
     country: str = None,
@@ -235,7 +240,9 @@ async def generate_events(
                         for cq in cached_answer
                     ]
             if research_questions is None:
-                research_questions = await step_0_llm_questions(step, question, llm_service)
+                research_questions = await step_0_llm_questions(
+                    step, question, llm_service
+                )
 
             yield f"data: {
                 json.dumps(
@@ -244,7 +251,9 @@ async def generate_events(
                         'status': 'OK',
                         'data': {
                             'question': question,
-                            'research_questions': [q.to_dict() for q in research_questions],
+                            'research_questions': [
+                                q.to_dict() for q in research_questions
+                            ],
                         },
                     }
                 )
@@ -265,7 +274,9 @@ async def generate_events(
                         'status': 'OK',
                         'data': {
                             'question': question,
-                            'research_questions': [q.to_dict() for q in research_questions],
+                            'research_questions': [
+                                q.to_dict() for q in research_questions
+                            ],
                         },
                     }
                 )
@@ -274,12 +285,10 @@ async def generate_events(
         step += 1
         # endregion
 
-        # mb: make class Question & correct types
-        # mb, return many mini-steps for each query
-        # mb I should provide IDs within the full system to keep the order & do not mix questions embeddings
-
         # region 1. EMBEDDINGS
-        embeddings = await step_1_embeddings(step, research_questions, embedder_model)
+        embeddings = await step_1_embeddings(
+            step, research_questions, embedder_model, search_mode
+        )
         yield f"data: {
             json.dumps(
                 {
@@ -293,13 +302,16 @@ async def generate_events(
         # endregion
 
         # region 2. VECTOR SEARCH
-        logger.info(f"step: {step}. VECTOR SEARCH start ({embedder_model.value})")
+        logger.info(
+            f"step: {step}. VECTOR SEARCH start ({embedder_model.value}, mode={search_mode.value})"
+        )
         start_2 = time.perf_counter()
 
         result_questions_with_datasets: list[LLMQuestionWithDatasets] = []
         for i, embedding in enumerate(embeddings):
-            datasets = await datasets_service.search_datasets_with_embeddings(
+            datasets = await datasets_service.search_datasets_with_vector(
                 embedding.embeddings,
+                search_mode=search_mode,
                 embedder_model=embedder_model,
                 city_filter=city,
                 state_filter=state,
@@ -327,13 +339,10 @@ async def generate_events(
                     }
                 )
             }\n\n"
-        # logger.info(result_questions_with_datasets)
         elapsed_2 = time.perf_counter() - start_2
         logger.info(f"step: {step}. VECTOR SEARCH end (elapsed: {elapsed_2:.2f}s)")
         step += 1
         # endregion
-
-        # mb choose fields to reduce context and improve results
 
         # region 3. INTERPRETATION
         if use_llm_interpretation:
@@ -387,16 +396,24 @@ async def generate_events(
 @router.get("/qa")
 async def stream(
     question: str = Query(
-        "What is the color of grass in Germany?", description="Ask the system"
+        "Is there any e-cars in Chemnitz?", description="Ask the system"
     ),
     embedder_model: EmbedderModel = Query(
         DEFAULT_EMBEDDER_MODEL, description="Embedder model to use"
     ),
+    search_mode: SearchMode = Query(
+        SearchMode.DENSE,
+        description="Search mode: dense, sparse, or hybrid (RRF fusion)",
+    ),
     city: str = Query(None, description="Filter by city"),
     state: str = Query(None, description="Filter by state/region"),
     country: str = Query(None, description="Filter by country"),
-    year_from: int = Query(None, description="Filter datasets created from this year (inclusive)"),
-    year_to: int = Query(None, description="Filter datasets created until this year (inclusive)"),
+    year_from: int = Query(
+        None, description="Filter datasets created from this year (inclusive)"
+    ),
+    year_to: int = Query(
+        None, description="Filter datasets created until this year (inclusive)"
+    ),
     use_multi_query: bool = Query(
         True, description="Enable multi-query RAG (generate research questions)"
     ),
@@ -412,6 +429,7 @@ async def stream(
             datasets_service,
             llm_service,
             embedder_model,
+            search_mode,
             city,
             state,
             country,

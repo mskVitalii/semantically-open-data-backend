@@ -1,7 +1,7 @@
 import hashlib
 import json
 from dataclasses import dataclass, asdict
-from typing import ClassVar
+from typing import ClassVar, Any
 
 import numpy as np
 
@@ -39,25 +39,35 @@ class LLMQuestion:
 
 @dataclass
 class LLMQuestionWithEmbeddings(LLMQuestion):
-    embeddings: np.ndarray
+    embeddings: Any  # np.ndarray | SparseVector | HybridEmbedding
+
+    def _serialize_embeddings(self):
+        from src.vector_search.embedder import SparseVector, HybridEmbedding
+
+        if isinstance(self.embeddings, np.ndarray):
+            return self.embeddings.tolist()
+        elif isinstance(self.embeddings, SparseVector):
+            return {"indices": self.embeddings.indices, "values": self.embeddings.values}
+        elif isinstance(self.embeddings, HybridEmbedding):
+            return {
+                "dense": self.embeddings.dense.tolist(),
+                "sparse": {
+                    "indices": self.embeddings.sparse.indices,
+                    "values": self.embeddings.sparse.values,
+                },
+            }
+        return self.embeddings
 
     def to_json(self) -> str:
-        data = asdict(self)
-        data["question_hash"] = self.question_hash
-        if isinstance(self.embeddings, np.ndarray):
-            data["embeddings"] = self.embeddings.tolist()
-        else:
-            data["embeddings"] = self.embeddings
-        return json.dumps(data)
+        return json.dumps(self.to_dict())
 
     def to_dict(self) -> dict:
-        data = asdict(self)
-        data["question_hash"] = self.question_hash
-        if isinstance(self.embeddings, np.ndarray):
-            data["embeddings"] = self.embeddings.tolist()
-        else:
-            data["embeddings"] = self.embeddings
-        return data
+        return {
+            "question": self.question,
+            "reason": self.reason,
+            "question_hash": self.question_hash,
+            "embeddings": self._serialize_embeddings(),
+        }
 
 
 @dataclass

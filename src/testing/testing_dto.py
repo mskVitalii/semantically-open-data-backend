@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional, List, Dict
 from pydantic import BaseModel, Field
 
-from src.infrastructure.config import EmbedderModel, DEFAULT_EMBEDDER_MODEL
+from src.infrastructure.config import EmbedderModel, DEFAULT_EMBEDDER_MODEL, SearchMode
 
 
 class DatasetResultItem(BaseModel):
@@ -91,6 +91,9 @@ class TestResult(BaseModel):
     used_multi_query: bool = Field(
         False, description="Whether multi-query RAG was used for this test"
     )
+    applied_search_mode: SearchMode = Field(
+        SearchMode.DENSE, description="Search mode that was used for this test"
+    )
 
 
 class BulkTestRequest(BaseModel):
@@ -110,6 +113,10 @@ class BulkTestRequest(BaseModel):
     multiquery: Optional[bool] = Field(
         None,
         description="None = both variants (with/without multiquery), True = only WITH multiquery, False = only WITHOUT multiquery",
+    )
+    search_modes: Optional[List[SearchMode]] = Field(
+        None,
+        description="Search modes to test. None = all three (dense, sparse, hybrid). Specify list to run only selected modes.",
     )
     language: str = Field(
         "en",
