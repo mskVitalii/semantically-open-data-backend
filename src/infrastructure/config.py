@@ -19,6 +19,7 @@ EMBEDDING_DIM = 1024  # Deprecated: use get_embedding_dim() instead
 
 class EmbedderModel(str, Enum):
     """Available embedder models"""
+
     BAAI_BGE_M3 = "baai-bge-m3"
     INTFLOAT_MULTILINGUAL_E5_BASE = "intfloat-multilingual-e5-base"
     JINAAI_JINA_EMBEDDINGS_V3 = "jinaai-jina-embeddings-v3"
@@ -27,6 +28,7 @@ class EmbedderModel(str, Enum):
 
 class SearchMode(str, Enum):
     """Vectorization / search mode"""
+
     DENSE = "dense"
     SPARSE = "sparse"
     HYBRID = "hybrid"
@@ -85,6 +87,7 @@ def get_embedding_dim(embedder_model: EmbedderModel) -> int:
     """Get embedding dimension for specific embedder model"""
     return EMBEDDING_DIMENSIONS[embedder_model]
 
+
 MONGO_INITDB_DATABASE = os.getenv("MONGO_INITDB_DATABASE", "db")
 MONGO_PORT = int(os.getenv("MONGO_PORT", 27017))
 MONGO_USER = os.getenv("MONGO_USER", "appuser")
@@ -93,6 +96,10 @@ MONGODB_URI = os.getenv(
     "MONGODB_URI",
     f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@mongodb:{MONGO_PORT}/{MONGO_INITDB_DATABASE}?authSource={MONGO_INITDB_DATABASE}",
 )
+
+RERANKER_HOST = os.getenv("RERANKER_HOST", "localhost")
+RERANKER_PORT = int(os.getenv("RERANKER_PORT", 8084))
+RERANKER_URL = f"http://{RERANKER_HOST}:{RERANKER_PORT}"
 
 LLM_HOST = os.getenv("LLM_HOST", "localhost")
 LLM_PORT = int(os.getenv("LLM_PORT", 11434))

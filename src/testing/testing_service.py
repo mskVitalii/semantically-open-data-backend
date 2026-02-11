@@ -305,6 +305,8 @@ class TestingService:
         config: TestConfig,
         search_mode: SearchMode,
         use_multi_query: bool,
+        use_reranker: bool = False,
+        reranker_candidates: int | None = None,
         city_filter: Optional[str] = None,
         state_filter: Optional[str] = None,
         country_filter: Optional[str] = None,
@@ -338,10 +340,10 @@ class TestingService:
                 mode=search_mode,
             )
 
-            # Step 3: Search for each research question using specified embedder and mode
-            # Note: search uses maximum accuracy settings (ef=256) automatically
+            # Step 3: Search + rerank per research question, then merge
+            search_limit = reranker_candidates if use_reranker and reranker_candidates else config.limit
             all_datasets = []
-            for vec in vectors:
+            for vec, rq in zip(vectors, research_questions_objs):
                 datasets = await self.dataset_service.search_datasets_with_vector(
                     vec,
                     search_mode=search_mode,
@@ -351,7 +353,14 @@ class TestingService:
                     country_filter=country_filter,
                     year_from=year_from,
                     year_to=year_to,
+                    limit=search_limit,
                 )
+                if use_reranker and datasets:
+                    datasets = await self.dataset_service.rerank_results(
+                        query=rq.question,
+                        datasets=datasets,
+                        top_n=config.limit,
+                    )
                 all_datasets.extend(datasets[: config.limit])
 
             # Remove duplicates by dataset ID
@@ -363,7 +372,6 @@ class TestingService:
                     seen_ids.add(ds_id)
                     unique_datasets.append(ds)
 
-            # Limit to config.limit
             datasets_found = unique_datasets[: config.limit]
 
             execution_time = time.perf_counter() - start_time
@@ -403,6 +411,7 @@ class TestingService:
                 applied_year_to=year_to,
                 used_multi_query=use_multi_query,
                 applied_search_mode=search_mode,
+                used_reranker=use_reranker,
             )
 
         except Exception as e:
@@ -424,6 +433,7 @@ class TestingService:
                 applied_year_to=year_to,
                 used_multi_query=use_multi_query,
                 applied_search_mode=search_mode,
+                used_reranker=use_reranker,
             )
 
     async def run_bulk_test(self, request: BulkTestRequest) -> TestReport:
@@ -442,32 +452,32 @@ class TestingService:
         else:
             questions_to_test = all_questions
 
-        # Determine which variants to run based on filters and multiquery parameters
-        variants_to_run = []
+        # Determine which variants to run based on filters, multiquery, and reranker parameters
+        # Each variant is a tuple: (use_filters, use_multiquery, use_reranker)
+        filter_values = []
+        if request.filters is None or request.filters is True:
+            filter_values.append(True)
+        if request.filters is None or request.filters is False:
+            filter_values.append(False)
 
-        # Variant 1: WITH filters + WITH multiquery
-        if (request.filters is None or request.filters is True) and (
-            request.multiquery is None or request.multiquery is True
-        ):
-            variants_to_run.append((True, True))
+        multiquery_values = []
+        if request.multiquery is None or request.multiquery is True:
+            multiquery_values.append(True)
+        if request.multiquery is None or request.multiquery is False:
+            multiquery_values.append(False)
 
-        # Variant 2: WITH filters + WITHOUT multiquery
-        if (request.filters is None or request.filters is True) and (
-            request.multiquery is None or request.multiquery is False
-        ):
-            variants_to_run.append((True, False))
+        reranker_values = []
+        if request.reranker is None or request.reranker is True:
+            reranker_values.append(True)
+        if request.reranker is None or request.reranker is False:
+            reranker_values.append(False)
 
-        # Variant 3: WITHOUT filters + WITH multiquery
-        if (request.filters is None or request.filters is False) and (
-            request.multiquery is None or request.multiquery is True
-        ):
-            variants_to_run.append((False, True))
-
-        # Variant 4: WITHOUT filters + WITHOUT multiquery
-        if (request.filters is None or request.filters is False) and (
-            request.multiquery is None or request.multiquery is False
-        ):
-            variants_to_run.append((False, False))
+        variants_to_run = [
+            (f, mq, rr)
+            for f in filter_values
+            for mq in multiquery_values
+            for rr in reranker_values
+        ]
 
         # Determine which search modes to test
         if request.search_modes is not None:
@@ -475,9 +485,8 @@ class TestingService:
         else:
             search_modes_to_run = list(SearchMode)
 
-        # Language to test
-        lang_code = request.language
-        lang_attr = f"question_{lang_code}"
+        # Languages to test
+        langs_to_run = request.languages
 
         enabled_variants = len(variants_to_run)
         total_tests = (
@@ -485,12 +494,13 @@ class TestingService:
             * len(request.test_configs)
             * enabled_variants
             * len(search_modes_to_run)
+            * len(langs_to_run)
         )
 
         logger.info(
             f"Testing {len(questions_to_test)} questions with {len(request.test_configs)} configurations "
-            f"x {enabled_variants} filter/mq variants x {len(search_modes_to_run)} search modes "
-            f"(lang={lang_code}) = {total_tests} total tests"
+            f"x {enabled_variants} filter/mq/reranker variants x {len(search_modes_to_run)} search modes "
+            f"x {len(langs_to_run)} languages ({langs_to_run}) = {total_tests} total tests"
         )
 
         # Run all tests in parallel with semaphore
@@ -506,8 +516,11 @@ class TestingService:
             s_mode: SearchMode,
             use_filters: bool,
             use_multiquery: bool,
+            use_reranker: bool,
+            lang_code: str,
         ) -> TestResult:
             nonlocal completed_count
+            lang_attr = f"question_{lang_code}"
             question_text = getattr(question, lang_attr)
             async with semaphore:
                 result = await self.run_single_test(
@@ -515,6 +528,8 @@ class TestingService:
                     config,
                     search_mode=s_mode,
                     use_multi_query=use_multiquery,
+                    use_reranker=use_reranker,
+                    reranker_candidates=request.reranker_candidates,
                     city_filter=question.city if use_filters else None,
                     state_filter=question.state if use_filters else None,
                     country_filter=question.country if use_filters else None,
@@ -532,20 +547,24 @@ class TestingService:
                     multiquery_desc = (
                         "WITH multi-query" if use_multiquery else "WITHOUT multi-query"
                     )
+                    reranker_desc = (
+                        "WITH reranker" if use_reranker else "WITHOUT reranker"
+                    )
                     logger.info(
                         f"Completed test {completed_count}/{total_tests} "
-                        f"({filters_desc} + {multiquery_desc} + {s_mode.value} + lang={lang_code})"
+                        f"({filters_desc} + {multiquery_desc} + {reranker_desc} + {s_mode.value} + lang={lang_code})"
                     )
 
                 return result
 
         # Create all tasks
         tasks = [
-            run_with_semaphore(question, config, s_mode, use_filters, use_multiquery)
+            run_with_semaphore(question, config, s_mode, use_filters, use_multiquery, use_reranker, lang_code)
             for question in questions_to_test
             for config in request.test_configs
             for s_mode in search_modes_to_run
-            for use_filters, use_multiquery in variants_to_run
+            for use_filters, use_multiquery, use_reranker in variants_to_run
+            for lang_code in langs_to_run
         ]
 
         # Run all tasks concurrently (semaphore limits to 10 at a time)
@@ -814,6 +833,7 @@ class TestingService:
                     config.limit,
                     result.used_multi_query,  # Use actual multi-query flag from result
                     has_location_filters,  # Flag instead of specific values
+                    result.used_reranker,
                 )
 
                 if config_key not in configs_seen:
@@ -834,6 +854,10 @@ class TestingService:
                     else:
                         exp_name += "_no_filters"
 
+                    # Add reranker indicator
+                    if result.used_reranker:
+                        exp_name += "_reranked"
+
                     # Store as dict for easy comparison
                     config_dict = {
                         "embedder_model": config.embedder_model.value,
@@ -841,6 +865,7 @@ class TestingService:
                         "limit": config.limit,
                         "used_multi_query": result.used_multi_query,
                         "has_location_filters": has_location_filters,
+                        "used_reranker": result.used_reranker,
                     }
 
                     experiments.append((exp_name, report, config_dict))
@@ -872,6 +897,8 @@ class TestingService:
                             == config_dict["used_multi_query"]
                             and result_has_filters
                             == config_dict["has_location_filters"]
+                            and result.used_reranker
+                            == config_dict["used_reranker"]
                         ):
                             question_result = result
                             break
@@ -935,6 +962,8 @@ class TestingService:
                             == config_dict["used_multi_query"]
                             and result_has_filters
                             == config_dict["has_location_filters"]
+                            and result.used_reranker
+                            == config_dict["used_reranker"]
                         ):
                             question_result = result
                             break
@@ -982,6 +1011,8 @@ class TestingService:
                             == config_dict["used_multi_query"]
                             and result_has_filters
                             == config_dict["has_location_filters"]
+                            and result.used_reranker
+                            == config_dict["used_reranker"]
                         ):
                             # Collect all scores from this result
                             all_scores_for_exp.extend(
@@ -1025,6 +1056,8 @@ class TestingService:
                             == config_dict["used_multi_query"]
                             and result_has_filters
                             == config_dict["has_location_filters"]
+                            and result.used_reranker
+                            == config_dict["used_reranker"]
                         ):
                             question_result = result
                             break
@@ -1092,6 +1125,8 @@ class TestingService:
                             == config_dict["used_multi_query"]
                             and result_has_filters
                             == config_dict["has_location_filters"]
+                            and result.used_reranker
+                            == config_dict["used_reranker"]
                         ):
                             question_result = result
                             break
@@ -1159,6 +1194,8 @@ class TestingService:
                             == config_dict["used_multi_query"]
                             and result_has_filters
                             == config_dict["has_location_filters"]
+                            and result.used_reranker
+                            == config_dict["used_reranker"]
                         ):
                             question_result = result
                             break
@@ -1217,6 +1254,8 @@ class TestingService:
                             == config_dict["used_multi_query"]
                             and result_has_filters
                             == config_dict["has_location_filters"]
+                            and result.used_reranker
+                            == config_dict["used_reranker"]
                         ):
                             question_result = result
                             break

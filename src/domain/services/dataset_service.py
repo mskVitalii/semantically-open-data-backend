@@ -22,6 +22,7 @@ from src.infrastructure.logger import get_prefixed_logger
 from src.infrastructure.paths import PROJECT_ROOT
 from src.utils.datasets_utils import safe_delete
 from src.vector_search.embedder import embed, embed_single, SparseVector, HybridEmbedding
+from src.vector_search.reranker import rerank
 from src.vector_search.vector_db import VectorDB, get_vector_db
 
 logger = get_prefixed_logger(__name__, "DATASET_SERVICE")
@@ -151,6 +152,7 @@ class DatasetService:
         country_filter: str = None,
         year_from: int = None,
         year_to: int = None,
+        limit: int = 25,
     ) -> list[DatasetResponse]:
         """Search for datasets using a pre-computed vector (any mode)"""
         filter_kwargs = dict(
@@ -160,6 +162,7 @@ class DatasetService:
             country_filter=country_filter,
             year_from=year_from,
             year_to=year_to,
+            limit=limit,
         )
 
         if search_mode == SearchMode.SPARSE:
@@ -189,6 +192,34 @@ class DatasetService:
             )
 
         return results
+
+    async def rerank_results(
+        self,
+        query: str,
+        datasets: list[DatasetResponse],
+        top_n: int | None = None,
+    ) -> list[DatasetResponse]:
+        """Rerank dataset results using the reranker service"""
+        if not datasets:
+            return datasets
+
+        documents = [
+            f"{ds.metadata.title}. {ds.metadata.description}"
+            for ds in datasets
+        ]
+
+        ranked = await rerank(query=query, documents=documents, top_n=top_n)
+
+        reranked = []
+        for r in ranked:
+            ds = datasets[r["index"]]
+            reranked.append(
+                DatasetResponse(
+                    metadata=ds.metadata,
+                    score=r["relevance_score"],
+                )
+            )
+        return reranked
 
     async def bootstrap_datasets(
         self,

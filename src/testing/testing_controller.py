@@ -96,27 +96,25 @@ async def run_bulk_test(
     and returns a comprehensive report.
 
     Location filters (city, state, country) are stored in questions themselves.
-    By default, each configuration is tested in 4 variants:
-    1. WITH location filters + WITH multi-query
-    2. WITH location filters + WITHOUT multi-query
-    3. WITHOUT location filters + WITH multi-query
-    4. WITHOUT location filters + WITHOUT multi-query
+    By default, each configuration is tested in up to 8 variants:
+    {WITH/WITHOUT location filters} x {WITH/WITHOUT multi-query} x {WITH/WITHOUT reranker}
 
     You can control which variants to run using:
     - filters: None (both), True (only with filters), False (only without filters)
     - multiquery: None (both), True (only with multiquery), False (only without multiquery)
+    - reranker: None (both), True (only with reranker), False (only without reranker)
 
     Parameters:
     - question_indices: Optional list of question indices to test (None = all questions)
     - test_configs: List of test configurations to apply
     - filters: Control filter variants (default: None = both)
     - multiquery: Control multi-query variants (default: None = both)
+    - reranker: Control reranker variants (default: None = both)
 
     Examples:
-    - filters=None, multiquery=None → all 4 variants (default)
-    - filters=True, multiquery=None → only WITH filters (2 variants)
-    - filters=None, multiquery=False → only WITHOUT multiquery (2 variants)
-    - filters=False, multiquery=False → only one variant (WITHOUT filters + WITHOUT multiquery)
+    - filters=None, multiquery=None, reranker=None → all 8 variants (default)
+    - filters=True, multiquery=None, reranker=False → 2 variants (WITH filters, WITHOUT reranker)
+    - reranker=True → only WITH reranker variants
 
     Search modes are controlled globally via `search_modes`:
     - null → all three modes (dense, sparse, hybrid)
@@ -126,7 +124,9 @@ async def run_bulk_test(
     ```json
     [
         {"embedder_model": "jinaai-jina-embeddings-v3", "limit": 25},
-        {"embedder_model": "baai-bge-m3", "limit": 25}
+        {"embedder_model": "baai-bge-m3", "limit": 25},
+        {"embedder_model": "intfloat-multilingual-e5-base", "limit": 25},
+        {"embedder_model": "sentence-transformers-labse", "limit": 25}
     ]
     ```
 

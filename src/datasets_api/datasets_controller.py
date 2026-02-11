@@ -52,11 +52,26 @@ async def search_datasets(
     - offset: pagination offset
     """
     try:
-        return await service.search_datasets(
+        original_limit = request.limit
+        if request.use_reranker:
+            request.limit = request.reranker_candidates or min(request.limit * 3, 100)
+
+        result = await service.search_datasets(
             request,
             embedder_model=request.embedder_model,
             search_mode=request.search_mode,
         )
+
+        if request.use_reranker and result.datasets:
+            result.datasets = await service.rerank_results(
+                query=request.query,
+                datasets=result.datasets,
+                top_n=original_limit,
+            )
+            result.total = len(result.datasets)
+            result.limit = original_limit
+
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -224,6 +239,8 @@ async def generate_events(
     year_to: int = None,
     use_multi_query: bool = True,
     use_llm_interpretation: bool = True,
+    use_reranker: bool = False,
+    reranker_candidates: int | None = None,
 ):
     step = 0
     try:
@@ -309,6 +326,8 @@ async def generate_events(
 
         result_questions_with_datasets: list[LLMQuestionWithDatasets] = []
         for i, embedding in enumerate(embeddings):
+            default_limit = 25
+            search_limit = reranker_candidates if use_reranker and reranker_candidates else default_limit
             datasets = await datasets_service.search_datasets_with_vector(
                 embedding.embeddings,
                 search_mode=search_mode,
@@ -318,7 +337,14 @@ async def generate_events(
                 country_filter=country,
                 year_from=year_from,
                 year_to=year_to,
+                limit=search_limit,
             )
+            if use_reranker and datasets:
+                datasets = await datasets_service.rerank_results(
+                    query=embedding.question,
+                    datasets=datasets,
+                    top_n=default_limit,
+                )
             result_questions_with_datasets.append(
                 LLMQuestionWithDatasets(
                     question=embedding.question,
@@ -420,6 +446,13 @@ async def stream(
     use_llm_interpretation: bool = Query(
         True, description="Enable LLM interpretation of results"
     ),
+    use_reranker: bool = Query(
+        False, description="Rerank results using cross-encoder reranker"
+    ),
+    reranker_candidates: int = Query(
+        None, ge=10, le=200,
+        description="How many candidates to fetch before reranking (default: limit * 3)",
+    ),
     datasets_service: DatasetService = Depends(get_dataset_service),
     llm_service: LLMService = Depends(get_llm_service_dep),
 ):
@@ -437,6 +470,8 @@ async def stream(
             year_to,
             use_multi_query,
             use_llm_interpretation,
+            use_reranker,
+            reranker_candidates,
         ),
         media_type="text/event-stream",
     )

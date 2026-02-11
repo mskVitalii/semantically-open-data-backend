@@ -43,11 +43,8 @@ class TestQuestion(BaseModel):
 class TestConfig(BaseModel):
     """Configuration for a single test run
 
-    Each configuration will be automatically tested in 4 variants:
-    1. WITH location filters + WITH multi-query
-    2. WITH location filters + WITHOUT multi-query
-    3. WITHOUT location filters + WITH multi-query
-    4. WITHOUT location filters + WITHOUT multi-query
+    Each configuration will be automatically tested in up to 8 variants:
+    {WITH/WITHOUT location filters} x {WITH/WITHOUT multi-query} x {WITH/WITHOUT reranker}
     """
 
     embedder_model: EmbedderModel = Field(
@@ -94,6 +91,9 @@ class TestResult(BaseModel):
     applied_search_mode: SearchMode = Field(
         SearchMode.DENSE, description="Search mode that was used for this test"
     )
+    used_reranker: bool = Field(
+        False, description="Whether reranker was used for this test"
+    )
 
 
 class BulkTestRequest(BaseModel):
@@ -114,13 +114,21 @@ class BulkTestRequest(BaseModel):
         None,
         description="None = both variants (with/without multiquery), True = only WITH multiquery, False = only WITHOUT multiquery",
     )
+    reranker: Optional[bool] = Field(
+        None,
+        description="None = both variants (with/without reranker), True = only WITH reranker, False = only WITHOUT reranker",
+    )
+    reranker_candidates: Optional[int] = Field(
+        None, ge=10, le=200,
+        description="How many candidates to fetch before reranking (default: limit * 3)",
+    )
     search_modes: Optional[List[SearchMode]] = Field(
         None,
         description="Search modes to test. None = all three (dense, sparse, hybrid). Specify list to run only selected modes.",
     )
-    language: str = Field(
-        "en",
-        description="Language to test: 'en', 'de', or 'ru'",
+    languages: List[str] = Field(
+        ["en"],
+        description="Languages to test: ['en', 'de', 'ru']. Each language runs as a separate test variant.",
     )
 
 
