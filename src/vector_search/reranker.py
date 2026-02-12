@@ -8,7 +8,7 @@ from src.infrastructure.logger import get_prefixed_logger
 logger = get_prefixed_logger(__name__, "RERANKER")
 
 # Reranker processes requests sequentially — high concurrency only increases queue wait time
-_semaphore = asyncio.Semaphore(2)
+_semaphore = asyncio.Semaphore(1)
 
 MAX_RETRIES = 2
 RETRY_BASE_DELAY = 1.0
