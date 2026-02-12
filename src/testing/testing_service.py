@@ -755,6 +755,65 @@ class TestingService:
             )
             return False
 
+    def refresh_relevance_ratings(self, report_id: str) -> dict:
+        """
+        Refresh null relevance ratings in a report using current expected_datasets from questions.json.
+
+        Only updates datasets with relevance_rating=None. Existing ratings are preserved.
+
+        Returns dict with counts: updated, remaining_null.
+        """
+        report = self.get_report(report_id)
+        if report is None:
+            raise ValueError(f"Report {report_id} not found")
+
+        # Build mapping: question_text (all languages) -> expected_datasets
+        questions = self.get_all_questions()
+        question_to_expected: dict[str, dict[str, float]] = {}
+        for q in questions:
+            if q.expected_datasets:
+                question_to_expected[q.question_en] = q.expected_datasets
+                question_to_expected[q.question_de] = q.expected_datasets
+                question_to_expected[q.question_ru] = q.expected_datasets
+
+        updated_count = 0
+        remaining_null = 0
+
+        for result in report.results:
+            expected = question_to_expected.get(result.question)
+            if not expected:
+                # No expected_datasets for this question — count all nulls
+                remaining_null += sum(
+                    1 for d in result.datasets if d.relevance_rating is None
+                )
+                continue
+
+            for dataset in result.datasets:
+                if dataset.relevance_rating is None:
+                    new_rating = expected.get(dataset.dataset_id)
+                    if new_rating is not None:
+                        dataset.relevance_rating = new_rating
+                        updated_count += 1
+                    else:
+                        remaining_null += 1
+
+        if updated_count > 0:
+            self._save_report(report)
+            logger.info(
+                f"Refreshed relevance ratings for report {report_id}: "
+                f"{updated_count} updated, {remaining_null} still null"
+            )
+        else:
+            logger.info(
+                f"No ratings to refresh for report {report_id}: {remaining_null} null ratings without matches"
+            )
+
+        return {
+            "report_id": report_id,
+            "updated": updated_count,
+            "remaining_null": remaining_null,
+        }
+
     # endregion
 
     # region Excel Export

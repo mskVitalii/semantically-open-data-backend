@@ -237,6 +237,29 @@ async def update_relevance_rating(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/reports/{report_id}/refresh-relevance")
+async def refresh_relevance_ratings(
+    report_id: str,
+    dataset_service: DatasetService = Depends(get_dataset_service),
+    llm_service: LLMService = Depends(get_llm_service_dep),
+):
+    """
+    Refresh null relevance ratings in a report using current expected_datasets from questions.json.
+
+    Only updates datasets with relevance_rating=null. Existing ratings are not overwritten.
+    Use this to backfill old reports after rating new datasets.
+    """
+    try:
+        testing_service = get_testing_service(dataset_service, llm_service)
+        result = testing_service.refresh_relevance_ratings(report_id)
+        return {"ok": True, **result}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Failed to refresh relevance ratings: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/reports/{report_id}/collect-candidates")
 async def collect_unrated_candidates(
     report_id: str,
