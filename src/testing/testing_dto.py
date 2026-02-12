@@ -51,7 +51,7 @@ class TestConfig(BaseModel):
         DEFAULT_EMBEDDER_MODEL, description="Embedder model to use"
     )
     limit: Optional[int] = Field(
-        25, ge=1, le=25, description="Number of results per query"
+        10, ge=1, le=25, description="Number of results per query"
     )
 
 
@@ -59,7 +59,9 @@ class TestResult(BaseModel):
     """Result of a single test execution"""
 
     question: str
-    question_language: str = Field("en", description="Language of the question (en/de/ru)")
+    question_language: str = Field(
+        "en", description="Language of the question (en/de/ru)"
+    )
     config: TestConfig
     datasets_found: int
     datasets: List[DatasetResultItem] = Field(
@@ -119,15 +121,17 @@ class BulkTestRequest(BaseModel):
         description="None = both variants (with/without reranker), True = only WITH reranker, False = only WITHOUT reranker",
     )
     reranker_candidates: Optional[int] = Field(
-        None, ge=10, le=200,
+        30,
+        ge=10,
+        le=200,
         description="How many candidates to fetch before reranking (default: limit * 3)",
     )
     search_modes: Optional[List[SearchMode]] = Field(
-        None,
+        [SearchMode.DENSE, SearchMode.SPARSE, SearchMode.HYBRID],
         description="Search modes to test. None = all three (dense, sparse, hybrid). Specify list to run only selected modes.",
     )
     languages: List[str] = Field(
-        ["en"],
+        ["en", "de", "ru"],
         description="Languages to test: ['en', 'de', 'ru']. Each language runs as a separate test variant.",
     )
 

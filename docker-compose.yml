@@ -131,12 +131,10 @@ services:
       - app_network
 
   reranker:
-    image: mskkote/reranker-nvidia-llama-nemotron-rerank-vl-1b-v2:latest
+    image: mskkote/reranker-jinaai-jina-reranker-v3:latest
     container_name: reranker
     ports:
       - "8084:8000"
-    environment:
-      - MODEL_NAME=nvidia/llama-nemotron-rerank-vl-1b-v2
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -146,7 +144,7 @@ services:
 #    deploy:
 #      resources:
 #        limits:
-#          memory: 14G
+#          memory: 15G
     restart: unless-stopped
     networks:
       - app_network

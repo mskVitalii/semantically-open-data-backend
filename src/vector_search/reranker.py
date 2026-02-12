@@ -7,18 +7,18 @@ from src.infrastructure.logger import get_prefixed_logger
 
 logger = get_prefixed_logger(__name__, "RERANKER")
 
-# Limit concurrent reranker requests (cross-encoder is heavy)
+# Reranker processes requests sequentially — high concurrency only increases queue wait time
 _semaphore = asyncio.Semaphore(2)
 
-MAX_RETRIES = 3
-RETRY_DELAY = 5.0
+MAX_RETRIES = 2
+RETRY_BASE_DELAY = 1.0
 
 
 async def rerank(
     query: str,
     documents: list[str],
     top_n: int | None = None,
-    timeout: float = 120.0,
+    timeout: float = 180.0,
 ) -> list[dict]:
     """
     Rerank documents by relevance to the query.
@@ -51,11 +51,12 @@ async def rerank(
                 return results
             except (httpx.ReadTimeout, httpx.RemoteProtocolError) as e:
                 if attempt < MAX_RETRIES:
+                    delay = RETRY_BASE_DELAY * (2 ** (attempt - 1))
                     logger.warning(
                         f"reranker attempt {attempt}/{MAX_RETRIES} failed ({type(e).__name__}), "
-                        f"retrying in {RETRY_DELAY}s..."
+                        f"retrying in {delay}s..."
                     )
-                    await asyncio.sleep(RETRY_DELAY)
+                    await asyncio.sleep(delay)
                 else:
                     logger.error(f"reranker failed after {MAX_RETRIES} attempts")
                     raise

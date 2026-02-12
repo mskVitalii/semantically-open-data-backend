@@ -1262,7 +1262,7 @@ class TestingService:
 
                 if question_result and question_result.datasets:
                     datasets = question_result.datasets
-                    k_values = [5, 10, 25]
+                    k_values = [5, 10]
 
                     row = {
                         "Question": question[:80] + "..."
