@@ -15,9 +15,9 @@ def analyze_metadata_fields():
     """
     # Find all metadata.json files
     current_dir = Path(__file__).parent
-    metadata_files = list(current_dir.rglob("*/metadata.json"))
+    metadata_files = list(current_dir.rglob("*/_metadata.json"))
 
-    print(f"Found {len(metadata_files)} metadata.json files\n")
+    print(f"Found {len(metadata_files)} _metadata.json files\n")
 
     # Collect all field names
     all_field_names = []
@@ -91,7 +91,7 @@ def analyze_metadata_fields():
     # Save to file
     output_file = Path(__file__).parent / "datasets_fields_analysis_report.txt"
     with open(output_file, "w", encoding="utf-8") as f:
-        f.write(f"Found {len(metadata_files)} metadata.json files\n\n")
+        f.write(f"Found {len(metadata_files)} _metadata.json files\n\n")
         f.write("\n".join(output_lines))
 
     print(f"\n{'=' * 80}")
@@ -154,7 +154,7 @@ def plot_field_frequency(stats, top_n=30):
 
     # Main title
     fig.suptitle(
-        f"Field analysis from {stats['total_fields']} fields in metadata.json files\n"
+        f"Field analysis from {stats['total_fields']} fields in _metadata.json files\n"
         f"Unique fields: {stats['unique_fields']}, Duplicates: {stats['duplicate_count']}",
         fontsize=16,
         fontweight="bold",
@@ -194,11 +194,7 @@ def export_fields_to_csv(stats):
 
         # Write non-duplicate fields (sorted alphabetically)
         non_duplicates = sorted(
-            [
-                field
-                for field, count in stats["field_counter"].items()
-                if count == 1
-            ]
+            [field for field, count in stats["field_counter"].items() if count == 1]
         )
         for field_name in non_duplicates:
             writer.writerow([field_name, 1, "Unique"])

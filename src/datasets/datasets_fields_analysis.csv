@@ -1,72 +1,110 @@
 Field Name,Occurrence Count,Type
-id,281,Duplicate
-name,174,Duplicate
-jahr,172,Duplicate
-wert,170,Duplicate
-periode,170,Duplicate
-kategorie_Nr,170,Duplicate
-rubrik_Nr,170,Duplicate
-jahr_Nr,170,Duplicate
-uri,170,Duplicate
-einheit,170,Duplicate
-kategorie,170,Duplicate
-rubrik,170,Duplicate
-merkmal_1,124,Duplicate
-merkmal_2,124,Duplicate
-merkmal_3,124,Duplicate
-merkmal_4,124,Duplicate
-type,98,Duplicate
-geometry.type,96,Duplicate
-geometry.coordinates,96,Duplicate
-Unnamed: 1,95,Duplicate
-Unnamed: 2,80,Duplicate
-properties.OBJECTID,76,Duplicate
+Jahr,353,Duplicate
+Stadtraum,222,Duplicate
+Stadtbezirk mit zugeordneten Ortschaften,216,Duplicate
+Anzahl Einwohner,188,Duplicate
+Stadtteil zus.,138,Duplicate
+Kennziffer,131,Duplicate
+2022,127,Duplicate
+Merkmal_1,124,Duplicate
+Merkmal_2,124,Duplicate
+Merkmal_3,124,Duplicate
+Merkmal_4,124,Duplicate
+Einheit,124,Duplicate
+2019,121,Duplicate
+2021,119,Duplicate
+2017,118,Duplicate
+2015,115,Duplicate
+2018,114,Duplicate
+2020,114,Duplicate
+2023,114,Duplicate
+Geschlecht,110,Duplicate
+2016,109,Duplicate
+2013,104,Duplicate
+2011,100,Duplicate
+2014,100,Duplicate
+2010,98,Duplicate
+2012,97,Duplicate
+2024,90,Duplicate
+2009,85,Duplicate
+2005,83,Duplicate
+2008,83,Duplicate
+2006,78,Duplicate
+2007,78,Duplicate
+Unnamed: 1,77,Duplicate
+attributes.OBJECTID,76,Duplicate
+Unnamed: 2,74,Duplicate
+2003,72,Duplicate
+2004,71,Duplicate
+2002,68,Duplicate
+2001,67,Duplicate
+geometry.x,56,Duplicate
+geometry.y,56,Duplicate
 Unnamed: 3,55,Duplicate
-Unnamed: 4,53,Duplicate
-properties.ID,51,Duplicate
-ortsteil,48,Duplicate
-stadtbezirk,46,Duplicate
-Unnamed: 5,38,Duplicate
-Unnamed: 6,37,Duplicate
-properties.Stichtag,37,Duplicate
-Unnamed: 7,34,Duplicate
-Jahr,33,Duplicate
-properties.SHAPE__Length,33,Duplicate
-properties.BRW,32,Duplicate
-properties.SHAPE__Area,32,Duplicate
-Titel,31,Duplicate
-Kapitel,30,Duplicate
-Funktion,28,Duplicate
-properties.Jahr,28,Duplicate
-Unnamed: 0,26,Duplicate
-datum,24,Duplicate
-wahl,24,Duplicate
-gebiet-name,24,Duplicate
-Unnamed: 8,23,Duplicate
-ags,22,Duplicate
-Datum,22,Duplicate
-gebiet-nr,21,Duplicate
-max-schnellmeldungen,21,Duplicate
-anz-schnellmeldungen,21,Duplicate
-A1,21,Duplicate
-A2,21,Duplicate
-A3,21,Duplicate
-A,21,Duplicate
-B,21,Duplicate
-B1,21,Duplicate
-C,21,Duplicate
-D,21,Duplicate
-2022,21,Duplicate
-properties.PLZ,20,Duplicate
-properties.ORT,20,Duplicate
-Ortsteil,19,Duplicate
-properties.FID,19,Duplicate
-properties.STRASSE,19,Duplicate
-Anzahl,18,Duplicate
-Unnamed: 9,18,Duplicate
-properties.BEZEICHNUNG,18,Duplicate
-properties.TELEFON,18,Duplicate
-E,17,Duplicate
+Unnamed: 4,52,Duplicate
+attributes.ID,51,Duplicate
+Gebiet,50,Duplicate
+Anzahl Haushalte,47,Duplicate
+Sachmerkmal,46,Duplicate
+Staatsangehörigkeit-1 Deutsche / Ausländer,38,Duplicate
+Unnamed: 5,37,Duplicate
+attributes.Stichtag,37,Duplicate
+2000,36,Duplicate
+Unnamed: 6,35,Duplicate
+attributes.SHAPE__Length,33,Duplicate
+geometry.rings,33,Duplicate
+attributes.BRW,32,Duplicate
+attributes.SHAPE__Area,32,Duplicate
+id,31,Duplicate
+Titel,30,Duplicate
+Unnamed: 7,29,Duplicate
+Kapitel,29,Duplicate
+Wanderungsgebiet,28,Duplicate
+Stadtbezirk/Ortschaft,28,Duplicate
+attributes.Jahr,28,Duplicate
+Fortzug / Zuzug,27,Duplicate
+Wanderungstyp,27,Duplicate
+Funktion,27,Duplicate
+Geborene,25,Duplicate
+Migrationshintergrund M2 (aggregiert),24,Duplicate
+Datum,24,Duplicate
+Anzahl,23,Duplicate
+Kinderanzahl im Haushalt in Klassen (4),23,Duplicate
+Kinderanzahl im Haushalt (sum),23,Duplicate
+Quartal,22,Duplicate
+datum,22,Duplicate
+wahl,22,Duplicate
+gebiet-name,22,Duplicate
+Ortsteil,21,Duplicate
+ags,20,Duplicate
+2025,20,Duplicate
+attributes.PLZ,20,Duplicate
+attributes.ORT,20,Duplicate
+gebiet-nr,19,Duplicate
+max-schnellmeldungen,19,Duplicate
+anz-schnellmeldungen,19,Duplicate
+A1,19,Duplicate
+A2,19,Duplicate
+A3,19,Duplicate
+A,19,Duplicate
+B,19,Duplicate
+B1,19,Duplicate
+C,19,Duplicate
+D,19,Duplicate
+Wahl,19,Duplicate
+attributes.STRASSE,19,Duplicate
+AltK_03A__-17-64-,18,Duplicate
+type,18,Duplicate
+1.Qu. 2021,18,Duplicate
+2.Qu. 2021,18,Duplicate
+3.Qu. 2021,18,Duplicate
+4.Qu. 2021,18,Duplicate
+1.Qu. 2022,18,Duplicate
+2.Qu. 2022,18,Duplicate
+3.Qu. 2022,18,Duplicate
+Unnamed: 8,18,Duplicate
+attributes.BEZEICHNUNG,18,Duplicate
+attributes.TELEFON,18,Duplicate
 D1,17,Duplicate
 D2,17,Duplicate
 D3,17,Duplicate
@@ -85,22 +123,109 @@ D15,17,Duplicate
 D16,17,Duplicate
 D17,17,Duplicate
 D18,17,Duplicate
-2024,16,Duplicate
-Beschreibung,16,Duplicate
-Unnamed: 10,16,Duplicate
-Unnamed: 11,16,Duplicate
-Unnamed: 12,16,Duplicate
-Unnamed: 13,16,Duplicate
-properties.WGFZ,16,Duplicate
-Datensatztitel,15,Duplicate
-Datenstand,15,Duplicate
-Bereich,15,Duplicate
-Titelbezeichnung,15,Duplicate
+1.Qu. 2016,17,Duplicate
+2.Qu. 2016,17,Duplicate
+3.Qu. 2016,17,Duplicate
+4.Qu. 2016,17,Duplicate
+1.Qu. 2017,17,Duplicate
+2.Qu. 2017,17,Duplicate
+3.Qu. 2017,17,Duplicate
+4.Qu. 2017,17,Duplicate
+1.Qu. 2018,17,Duplicate
+2.Qu. 2018,17,Duplicate
+3.Qu. 2018,17,Duplicate
+4.Qu. 2018,17,Duplicate
+1.Qu. 2019,17,Duplicate
+2.Qu. 2019,17,Duplicate
+3.Qu. 2019,17,Duplicate
+4.Qu. 2019,17,Duplicate
+2.Qu. 2020,17,Duplicate
+3.Qu. 2020,17,Duplicate
+4.Qu. 2020,17,Duplicate
+4.Qu. 2022,17,Duplicate
+1.Qu. 2023,17,Duplicate
+2.Qu. 2023,17,Duplicate
+3.Qu. 2023,17,Duplicate
+4.Qu. 2023,17,Duplicate
+1.Qu. 2024,17,Duplicate
+2.Qu. 2024,17,Duplicate
+3.Qu. 2024,17,Duplicate
+4.Qu. 2024,17,Duplicate
+1.Qu. 2025,17,Duplicate
+2.Qu. 2025,17,Duplicate
+anzahl,17,Duplicate
+vorname,17,Duplicate
+geschlecht,17,Duplicate
+1.Qu. 2020,16,Duplicate
+attributes.FID,16,Duplicate
+attributes.WGFZ,16,Duplicate
+E,15,Duplicate
+Partei_ID_StatAmtLE,15,Duplicate
+Parteiname_harmonisiert_v1_0,15,Duplicate
+objectid,15,Duplicate
+1.Qu. 2007,15,Duplicate
+2.Qu. 2007,15,Duplicate
+3.Qu. 2007,15,Duplicate
+4.Qu. 2007,15,Duplicate
+1.Qu. 2008,15,Duplicate
+2.Qu. 2008,15,Duplicate
+3.Qu. 2008,15,Duplicate
+4.Qu. 2008,15,Duplicate
+1.Qu. 2009,15,Duplicate
+2.Qu. 2009,15,Duplicate
+3.Qu. 2009,15,Duplicate
+4.Qu. 2009,15,Duplicate
+1.Qu. 2010,15,Duplicate
+2.Qu. 2010,15,Duplicate
+3.Qu. 2010,15,Duplicate
+4.Qu. 2010,15,Duplicate
+1.Qu. 2011,15,Duplicate
+2.Qu. 2011,15,Duplicate
+3.Qu. 2011,15,Duplicate
+4.Qu. 2011,15,Duplicate
+1.Qu. 2012,15,Duplicate
+2.Qu. 2012,15,Duplicate
+3.Qu. 2012,15,Duplicate
+4.Qu. 2012,15,Duplicate
+1.Qu. 2013,15,Duplicate
+2.Qu. 2013,15,Duplicate
+3.Qu. 2013,15,Duplicate
+4.Qu. 2013,15,Duplicate
+1.Qu. 2014,15,Duplicate
+2.Qu. 2014,15,Duplicate
+3.Qu. 2014,15,Duplicate
+4.Qu. 2014,15,Duplicate
+1.Qu. 2015,15,Duplicate
+2.Qu. 2015,15,Duplicate
+3.Qu. 2015,15,Duplicate
+4.Qu. 2015,15,Duplicate
+Beschreibung,15,Duplicate
 Haushaltsjahr,15,Duplicate
-objectid,14,Duplicate
+Wahlbezirk,14,Duplicate
 PLZ,14,Duplicate
-Typ,14,Duplicate
-Einzelplan,14,Duplicate
+Alter in Jahren bis 85 (über 85-Jährige werden Jahrgang 85 zugeordnet),14,Duplicate
+AltK_13IRB-2-5-9-14-17-24-29-44-59-64-74-84-,14,Duplicate
+1.Qu. 2003,14,Duplicate
+2.Qu. 2003,14,Duplicate
+3.Qu. 2003,14,Duplicate
+4.Qu. 2003,14,Duplicate
+1.Qu. 2004,14,Duplicate
+2.Qu. 2004,14,Duplicate
+3.Qu. 2004,14,Duplicate
+4.Qu. 2004,14,Duplicate
+1.Qu. 2005,14,Duplicate
+2.Qu. 2005,14,Duplicate
+3.Qu. 2005,14,Duplicate
+4.Qu. 2005,14,Duplicate
+1.Qu. 2006,14,Duplicate
+2.Qu. 2006,14,Duplicate
+3.Qu. 2006,14,Duplicate
+4.Qu. 2006,14,Duplicate
+Datensatztitel,14,Duplicate
+Datenstand,14,Duplicate
+Unnamed: 9,14,Duplicate
+Bereich,14,Duplicate
+Titelbezeichnung,14,Duplicate
 Bkz,14,Duplicate
 Unterkonto,14,Duplicate
 Kennbuchstabe,14,Duplicate
@@ -112,8 +237,12 @@ Anordnungssoll,14,Duplicate
 Festlegung,14,Duplicate
 Gebildete Reste,14,Duplicate
 Ist,14,Duplicate
-properties.TRAEGER,14,Duplicate
-properties.EMAIL,14,Duplicate
+attributes.TRAEGER,14,Duplicate
+attributes.EMAIL,14,Duplicate
+Haushalt-Größe-5,13,Duplicate
+Gestorbene,13,Duplicate
+Wohndauer in 6 Klassen,13,Duplicate
+Wohndauer in Monaten,13,Duplicate
 F,13,Duplicate
 F1,13,Duplicate
 F2,13,Duplicate
@@ -141,58 +270,76 @@ D23,13,Duplicate
 D24,13,Duplicate
 D25,13,Duplicate
 D26,13,Duplicate
-FID,13,Duplicate
+name,13,Duplicate
+Typ,13,Duplicate
 Tabellenüberschrift,13,Duplicate
 Nummer und Erklärung Fußnote,13,Duplicate
-Unnamed: 14,13,Duplicate
-Titelart,13,Duplicate
+Einzelplan,13,Duplicate
 Zähler,13,Duplicate
 Verfügungsbeschränkung,13,Duplicate
 Verfügbares Soll,13,Duplicate
 Verfügbare Mittel,13,Duplicate
-properties.KURZBEZEICHNUNG,13,Duplicate
+attributes.KURZBEZEICHNUNG,13,Duplicate
+Monat,12,Duplicate
+Bezugsland (M03-MigraPro)-IRB_Zus-fassung 2020ff.,12,Duplicate
+AltK_05D__-24-44-59-64-,12,Duplicate
+Stimme,12,Duplicate
+fme_tstamp,12,Duplicate
+FID,12,Duplicate
+Schulart,12,Duplicate
+position,12,Duplicate
 Bezirk,12,Duplicate
-Unnamed: 15,12,Duplicate
-Unnamed: 16,12,Duplicate
-Bezeichnung,12,Duplicate
-Bereichsbezeichnung,12,Duplicate
-Einzelplanbezeichnung,12,Duplicate
-Kapitelbezeichnung,12,Duplicate
-Hauptgruppe,12,Duplicate
-Hauptgruppenbezeichnung,12,Duplicate
-Obergruppe,12,Duplicate
-Obergruppenbezeichnung,12,Duplicate
-Gruppe,12,Duplicate
-Gruppenbezeichnung,12,Duplicate
-Hauptfunktion,12,Duplicate
-Hauptfunktionsbezeichnung,12,Duplicate
-Oberfunktion,12,Duplicate
-Oberfunktionsbezeichnung,12,Duplicate
-properties.LEISTUNGEN,12,Duplicate
-properties.Nutzungsart,12,Duplicate
-properties.Geschossigkeit,12,Duplicate
-properties.Flaeche,12,Duplicate
-properties.Grundstueckstiefe,12,Duplicate
-properties.Bauweise,12,Duplicate
-properties.Satzung,12,Duplicate
-fme_tstamp,11,Duplicate
+Unnamed: 12,12,Duplicate
+Titelart,12,Duplicate
+attributes.LEISTUNGEN,12,Duplicate
+attributes.Nutzungsart,12,Duplicate
+attributes.Geschossigkeit,12,Duplicate
+attributes.Flaeche,12,Duplicate
+attributes.Grundstueckstiefe,12,Duplicate
+attributes.Bauweise,12,Duplicate
+attributes.Satzung,12,Duplicate
 geom,11,Duplicate
-Funktionsbezeichnung,11,Duplicate
-properties.FAX,11,Duplicate
-Wahl,10,Duplicate
+Unnamed: 0,11,Duplicate
+Unnamed: 10,11,Duplicate
+Unnamed: 11,11,Duplicate
+Unnamed: 13,11,Duplicate
+Bezeichnung,11,Duplicate
+Bereichsbezeichnung,11,Duplicate
+Einzelplanbezeichnung,11,Duplicate
+Kapitelbezeichnung,11,Duplicate
+Hauptgruppe,11,Duplicate
+Hauptgruppenbezeichnung,11,Duplicate
+Obergruppe,11,Duplicate
+Obergruppenbezeichnung,11,Duplicate
+Gruppe,11,Duplicate
+Gruppenbezeichnung,11,Duplicate
+Hauptfunktion,11,Duplicate
+Hauptfunktionsbezeichnung,11,Duplicate
+Oberfunktion,11,Duplicate
+Oberfunktionsbezeichnung,11,Duplicate
+oparlVersion,11,Duplicate
+license,11,Duplicate
+body,11,Duplicate
+contactName,11,Duplicate
+contactEmail,11,Duplicate
+website,11,Duplicate
+vendor,11,Duplicate
+product,11,Duplicate
+attributes.FAX,11,Duplicate
+Familienstand,10,Duplicate
+Altersgruppe,10,Duplicate
+Geburtsjahr,10,Duplicate
 Aggregationsebene,10,Duplicate
 Wahlkreis,10,Duplicate
 Wahlkreis_Name,10,Duplicate
 Ortsteil_Name,10,Duplicate
-Stimme,10,Duplicate
 Stimme_partei,10,Duplicate
 Stimme_text,10,Duplicate
-Partei_ID_StatAmtLE,10,Duplicate
-Parteiname_harmonisiert_v1_0,10,Duplicate
-Geschlecht,10,Duplicate
+3.Qu. 2025,10,Duplicate
 -,10,Duplicate
-Bezeichnung Registerkarte,10,Duplicate
-properties.Typ,10,Duplicate
+Adresse,10,Duplicate
+Funktionsbezeichnung,10,Duplicate
+Insgesamt,9,Duplicate
 F19,9,Duplicate
 F20,9,Duplicate
 F21,9,Duplicate
@@ -201,79 +348,189 @@ F23,9,Duplicate
 F24,9,Duplicate
 F25,9,Duplicate
 F26,9,Duplicate
+Ort,9,Duplicate
 Kennzahl,9,Duplicate
-2023,9,Duplicate
 D27,9,Duplicate
-Adresse,9,Duplicate
-properties.SATZUNG,9,Duplicate
-properties.FLAECHE,9,Duplicate
-properties.Wert,9,Duplicate
-properties.Baujahr,9,Duplicate
-properties.Marktrichtwert,9,Duplicate
-properties.Teilmarkt,9,Duplicate
+Bezeichnung Registerkarte,9,Duplicate
+Unnamed: 14,9,Duplicate
+attributes.SATZUNG,9,Duplicate
+attributes.FLAECHE,9,Duplicate
+attributes.Wert,9,Duplicate
+attributes.Typ,9,Duplicate
+attributes.Baujahr,9,Duplicate
+attributes.Marktrichtwert,9,Duplicate
+attributes.Teilmarkt,9,Duplicate
+Anzahl Betriebe,8,Duplicate
+Anzahl Niederlassungen,8,Duplicate
 Merkmal,8,Duplicate
-Wahlbezirk,8,Duplicate
-Name,8,Duplicate
+2010/11,8,Duplicate
+2011/12,8,Duplicate
+2012/13,8,Duplicate
+2013/14,8,Duplicate
+2014/15,8,Duplicate
+2015/16,8,Duplicate
+2016/17,8,Duplicate
+2017/18,8,Duplicate
+2019/20,8,Duplicate
+2020/21,8,Duplicate
+2021/22,8,Duplicate
+2022/23,8,Duplicate
+lat,8,Duplicate
+plz,8,Duplicate
 Vorname,8,Duplicate
+strname,8,Duplicate
 Hausnummer,8,Duplicate
-Ort,8,Duplicate
-Kennziffer,7,Duplicate
-plz,7,Duplicate
-Rang,7,Duplicate
-strname,7,Duplicate
-2012,7,Duplicate
-Straße,7,Duplicate
-Schulart,7,Duplicate
+Unnamed: 15,8,Duplicate
+Unnamed: 16,8,Duplicate
+Straßenname,7,Duplicate
+geometry.type,7,Duplicate
+geometry.coordinates,7,Duplicate
+2009/10,7,Duplicate
+2018/19,7,Duplicate
 ID,7,Duplicate
-Betrag,7,Duplicate
-properties.STATUS,7,Duplicate
-properties.STICHTAG,7,Duplicate
-Rang.1,6,Duplicate
-Anzahl.1,6,Duplicate
-Vorname.1,6,Duplicate
-Geschlecht.1,6,Duplicate
-lat,6,Duplicate
-pflanzjahr,6,Duplicate
-bezirk,6,Duplicate
-Straßenname,6,Duplicate
-2013,6,Duplicate
-Stunde,6,Duplicate
-Jahresprofil 2024,6,Duplicate
-Energiemenge 2024,6,Duplicate
-BetragTyp,6,Duplicate
-Unnamed: 17,6,Duplicate
-Unnamed: 18,6,Duplicate
-Unnamed: 19,6,Duplicate
-Unnamed: 20,6,Duplicate
-Unnamed: 21,6,Duplicate
-properties.STRSCHL,6,Duplicate
-properties.TYP,6,Duplicate
+Rang,7,Duplicate
+pflanzjahr,7,Duplicate
+bezirk,7,Duplicate
+,7,Duplicate
+attributes.STATUS,7,Duplicate
+attributes.STICHTAG,7,Duplicate
+Wahl-Form,6,Duplicate
+Wahlberechtigte,6,Duplicate
+Wahlberechtigte mit WS,6,Duplicate
+Wähler,6,Duplicate
+Wähler mit WS,6,Duplicate
+Stimmen gültig,6,Duplicate
+Stimmen CDU,6,Duplicate
+Stimmen SPD,6,Duplicate
+Stimmen Die Linke,6,Duplicate
+Stimmen Grüne,6,Duplicate
+Stimmen FDP,6,Duplicate
+Stimmen Rechte Parteien,6,Duplicate
+Stimmen AfD,6,Duplicate
+Stimmen Piraten,6,Duplicate
+Stimmen sonstiger Parteien,6,Duplicate
+Stimmen ungültig,6,Duplicate
+Brutto-Entgelte (in 1000 EUR),6,Duplicate
+Gesamtumsatz (in 1000 EUR),6,Duplicate
+Beschäftigtengrößenklassen_4,6,Duplicate
+AltK_12A__-2-5-9-14-17-24-29-44-59-64-74-,6,Duplicate
+WZ-Abteilung 2008 (2 Ziffern),6,Duplicate
+Name,6,Duplicate
+2004/05,6,Duplicate
+2005/06,6,Duplicate
+2006/07,6,Duplicate
+2007/08,6,Duplicate
+2008/09,6,Duplicate
+GmlId,6,Duplicate
+Shape,6,Duplicate
+lng,6,Duplicate
+null,6,Duplicate
+attributes.STRSCHL,6,Duplicate
+attributes.TYP,6,Duplicate
+Straßenschlüssel,5,Duplicate
+SV-pflichtig Beschäftigte,5,Duplicate
+Anmerkung,5,Duplicate
+2023/24,5,Duplicate
+Partei,5,Duplicate
+Stimmenanteil,5,Duplicate
 Standort,5,Duplicate
 F27,5,Duplicate
-GmlId,5,Duplicate
-Shape,5,Duplicate
-lng,5,Duplicate
-2014,5,Duplicate
-2015,5,Duplicate
-2016,5,Duplicate
-2017,5,Duplicate
-2018,5,Duplicate
-2019,5,Duplicate
-2020,5,Duplicate
-2021,5,Duplicate
+Name der Schule,5,Duplicate
+artdtsch,5,Duplicate
+artbot,5,Duplicate
+gattungdeutsch,5,Duplicate
+standalter,5,Duplicate
+standortnr,5,Duplicate
+wassermenge,5,Duplicate
+wassersumme,5,Duplicate
+anzahlg,5,Duplicate
+adresse,5,Duplicate
 Nr.,5,Duplicate
-anschrift,5,Duplicate
+Bemerkungen,5,Duplicate
+Einrichtung,5,Duplicate
 internet,5,Duplicate
 Schulname,5,Duplicate
-Unnamed: 22,5,Duplicate
+BetragTyp,5,Duplicate
+Betrag,5,Duplicate
 Registerkarte,5,Duplicate
-Einrichtung,5,Duplicate
-properties.VNR,5,Duplicate
-properties.TITEL_VERFAHREN,5,Duplicate
-properties.RECHTSKRAFT,5,Duplicate
-properties.PLANZEICHNUNG,5,Duplicate
-properties.BEGRUENDUNG,5,Duplicate
-properties.URL,5,Duplicate
+attributes.VNR,5,Duplicate
+attributes.TITEL_VERFAHREN,5,Duplicate
+attributes.RECHTSKRAFT,5,Duplicate
+attributes.PLANZEICHNUNG,5,Duplicate
+attributes.BEGRUENDUNG,5,Duplicate
+attributes.URL,5,Duplicate
+Statistischer Bezirk,4,Duplicate
+Bundestagswahlkreis,4,Duplicate
+Anteil in %,4,Duplicate
+Geleistete Arbeitsstunden (gesamt in 1000h),4,Duplicate
+Tourismus_Ankünfte,4,Duplicate
+Tourismus_Übernachtungen,4,Duplicate
+Alter,4,Duplicate
+Brutto-Entgelte je tätiger Person,4,Duplicate
+Umsatzanteil Ausland am Gesamtumsatz (absolut; in 1000 EUR),4,Duplicate
+Gesamtumsatz je tätiger Person,4,Duplicate
+Wahlbeteiligung_skaliert,4,Duplicate
+2001/02,4,Duplicate
+2002/03,4,Duplicate
+2003/04,4,Duplicate
+2024/25,4,Duplicate
+31.12.2009,4,Duplicate
+31.03.2013,4,Duplicate
+30.06.2013,4,Duplicate
+30.09.2013,4,Duplicate
+31.12.2013,4,Duplicate
+31.03.2014,4,Duplicate
+30.06.2014,4,Duplicate
+30.09.2014,4,Duplicate
+31.12.2014,4,Duplicate
+31.03.2015,4,Duplicate
+30.06.2015,4,Duplicate
+30.09.2015,4,Duplicate
+31.12.2015,4,Duplicate
+31.03.2016,4,Duplicate
+30.06.2016,4,Duplicate
+30.09.2016,4,Duplicate
+31.12.2016,4,Duplicate
+31.03.2017,4,Duplicate
+30.06.2017,4,Duplicate
+30.09.2017,4,Duplicate
+31.12.2017,4,Duplicate
+31.03.2018,4,Duplicate
+30.06.2018,4,Duplicate
+30.09.2018,4,Duplicate
+31.12.2018,4,Duplicate
+31.03.2019,4,Duplicate
+30.06.2019,4,Duplicate
+30.09.2019,4,Duplicate
+31.12.2019,4,Duplicate
+31.03.2020,4,Duplicate
+30.06.2020,4,Duplicate
+30.09.2020,4,Duplicate
+31.12.2020,4,Duplicate
+31.03.2021,4,Duplicate
+30.06.2021,4,Duplicate
+30.09.2021,4,Duplicate
+31.12.2021,4,Duplicate
+31.03.2022,4,Duplicate
+30.06.2022,4,Duplicate
+30.09.2022,4,Duplicate
+31.12.2022,4,Duplicate
+31.03.2023,4,Duplicate
+30.06.2023,4,Duplicate
+30.09.2023,4,Duplicate
+31.12.2023,4,Duplicate
+31.03.2024,4,Duplicate
+30.06.2024,4,Duplicate
+30.09.2024,4,Duplicate
+31.12.2024,4,Duplicate
+31.03.2025,4,Duplicate
+12.06.1994,4,Duplicate
+13.06.1999,4,Duplicate
+13.06.2004,4,Duplicate
+07.06.2009,4,Duplicate
+25.05.2014,4,Duplicate
+26.05.2019,4,Duplicate
+09.06.2024,4,Duplicate
 Haltestelle,4,Duplicate
 D28,4,Duplicate
 D29,4,Duplicate
@@ -282,116 +539,10 @@ D31,4,Duplicate
 D32,4,Duplicate
 D33,4,Duplicate
 D34,4,Duplicate
-anzahl,4,Duplicate
-vorname,4,Duplicate
-geschlecht,4,Duplicate
-position,4,Duplicate
-artdtsch,4,Duplicate
-artbot,4,Duplicate
-gattungdeutsch,4,Duplicate
-standalter,4,Duplicate
-standortnr,4,Duplicate
-wassermenge,4,Duplicate
-wassersumme,4,Duplicate
-anzahlg,4,Duplicate
-Straßenschlüssel,4,Duplicate
-adresse,4,Duplicate
-B2,4,Duplicate
-E1,4,Duplicate
-E1_1,4,Duplicate
-E1_2,4,Duplicate
-E1_3,4,Duplicate
-E1_4,4,Duplicate
-E1_5,4,Duplicate
-E1_6,4,Duplicate
-E1_7,4,Duplicate
-E1_8,4,Duplicate
-E1_9,4,Duplicate
-E1_10,4,Duplicate
-E1_11,4,Duplicate
-E2,4,Duplicate
-E2_1,4,Duplicate
-E2_2,4,Duplicate
-E2_3,4,Duplicate
-E2_4,4,Duplicate
-E2_5,4,Duplicate
-E2_6,4,Duplicate
-E2_7,4,Duplicate
-E2_8,4,Duplicate
-E2_9,4,Duplicate
-E2_10,4,Duplicate
-E2_11,4,Duplicate
-E3,4,Duplicate
-E3_1,4,Duplicate
-E3_2,4,Duplicate
-E3_3,4,Duplicate
-E3_4,4,Duplicate
-E3_5,4,Duplicate
-E3_6,4,Duplicate
-E3_7,4,Duplicate
-E3_8,4,Duplicate
-E3_9,4,Duplicate
-E3_10,4,Duplicate
-E3_11,4,Duplicate
-E4,4,Duplicate
-E4_1,4,Duplicate
-E4_2,4,Duplicate
-E4_3,4,Duplicate
-E4_4,4,Duplicate
-E4_5,4,Duplicate
-E4_6,4,Duplicate
-E4_7,4,Duplicate
-E4_8,4,Duplicate
-E4_9,4,Duplicate
-E4_10,4,Duplicate
-E4_11,4,Duplicate
-E5,4,Duplicate
-E5_1,4,Duplicate
-E5_2,4,Duplicate
-E5_3,4,Duplicate
-E5_4,4,Duplicate
-E5_5,4,Duplicate
-E5_6,4,Duplicate
-E5_7,4,Duplicate
-E5_8,4,Duplicate
-E5_9,4,Duplicate
-E5_10,4,Duplicate
-E5_11,4,Duplicate
-E6,4,Duplicate
-E6_1,4,Duplicate
-E6_2,4,Duplicate
-E6_3,4,Duplicate
-E6_4,4,Duplicate
-E6_5,4,Duplicate
-E6_6,4,Duplicate
-E6_7,4,Duplicate
-E6_8,4,Duplicate
-E6_9,4,Duplicate
-E6_10,4,Duplicate
-E6_11,4,Duplicate
-E7,4,Duplicate
-E7_1,4,Duplicate
-E7_2,4,Duplicate
-E8,4,Duplicate
-E8_1,4,Duplicate
-E9,4,Duplicate
-E9_1,4,Duplicate
-E10,4,Duplicate
-E10_1,4,Duplicate
-E10_2,4,Duplicate
-E11,4,Duplicate
-E11_1,4,Duplicate
-E12,4,Duplicate
-E12_1,4,Duplicate
-E13,4,Duplicate
-E13_1,4,Duplicate
-E13_2,4,Duplicate
-E13_3,4,Duplicate
-E14,4,Duplicate
-E14_1,4,Duplicate
-E15,4,Duplicate
-E15_1,4,Duplicate
+Schul_Id,4,Duplicate
+Stala_Id,4,Duplicate
 Strasse,4,Duplicate
+Straße,4,Duplicate
 unternehmen,4,Duplicate
 nominalkapital,4,Duplicate
 anteil,4,Duplicate
@@ -402,12 +553,11 @@ jahresergebnis,4,Duplicate
 zufuehrungen,4,Duplicate
 investitionen,4,Duplicate
 beschaeftigte,4,Duplicate
+anschrift,4,Duplicate
 logo,4,Duplicate
 geschaeftsfuehrung,4,Duplicate
 kontrollgremienvorsitz,4,Duplicate
-Bemerkungen,4,Duplicate
 Schüler (w/m/d),4,Duplicate
-Unnamed: 25,4,Duplicate
 GESIx_2013,4,Duplicate
 GESIx_2022,4,Duplicate
 ESIx_2013,4,Duplicate
@@ -418,24 +568,92 @@ DII_2013,4,Duplicate
 DII_2022,4,Duplicate
 DIII_2013,4,Duplicate
 DIII_2022,4,Duplicate
-Uhrzeit,4,Duplicate
-"SEP-Einspeiser
-[kWh]",4,Duplicate
-properties.KATEGORIE,4,Duplicate
-properties.ART,4,Duplicate
-properties.ENTWURF_AUSLEGUNG,4,Duplicate
-properties.AUFSTELLUNG,4,Duplicate
-properties.HAUSBEZ,4,Duplicate
-properties.NUTZUNGSART,4,Duplicate
-properties.GESCHOSSIGKEIT,4,Duplicate
-properties.GRUNDSTUECKSTIEFE,4,Duplicate
-properties.BAUWEISE,4,Duplicate
-properties.JAHR,4,Duplicate
+attributes.KATEGORIE,4,Duplicate
+attributes.ART,4,Duplicate
+attributes.ENTWURF_AUSLEGUNG,4,Duplicate
+attributes.AUFSTELLUNG,4,Duplicate
+attributes.HAUSBEZ,4,Duplicate
+attributes.NUTZUNGSART,4,Duplicate
+attributes.GESCHOSSIGKEIT,4,Duplicate
+attributes.GRUNDSTUECKSTIEFE,4,Duplicate
+attributes.BAUWEISE,4,Duplicate
+attributes.JAHR,4,Duplicate
+Landtagswahlkreis,3,Duplicate
+Steuereinnahmen (netto),3,Duplicate
+Steuereinnahmen (brutto),3,Duplicate
+Grundsteuer A und B,3,Duplicate
+Gewerbesteuer (brutto),3,Duplicate
+Sonstige Gemeindesteuern,3,Duplicate
+Spielautomatensteuer,3,Duplicate
+Hundesteuer,3,Duplicate
+Zweitwohnungssteuer,3,Duplicate
+Beherbergungssteuer,3,Duplicate
+Gemeindeanteil an der Einkommenssteuer,3,Duplicate
+Gewerbesteuerumlage,3,Duplicate
+Gemeindeanteil Umsatzsteuer,3,Duplicate
+Auftragseingang insgesamt (in 1000 EUR),3,Duplicate
+Betriebsart,3,Duplicate
+Jahr-Prognose,3,Duplicate
+Wirtschaftszweig 2-Steller,3,Duplicate
+Männer,3,Duplicate
+Frauen,3,Duplicate
+Deutsche,3,Duplicate
+Ausländer,3,Duplicate
+Anzahl unter 25 Jahre,3,Duplicate
+Anzahl 25 bis 34 Jahre,3,Duplicate
+Anzahl 35 bis 44 Jahre,3,Duplicate
+Anzahl 45 bis 54 Jahre,3,Duplicate
+Anzahl über 55 Jahre,3,Duplicate
+ohne Berufsausbildung,3,Duplicate
+mit Berufsausbildung,3,Duplicate
+mit akademischer Ausbildung,3,Duplicate
+Hauptgruppen (WZ 08),3,Duplicate
+Grundmiete,3,Duplicate
+Grundmiete - Whg mit Bad und IWC,3,Duplicate
+Betriebskosten - kalt,3,Duplicate
+Betriebskosten - warm,3,Duplicate
 Item,3,Duplicate
-Anmerkung,3,Duplicate
+Wahlbeteiligung,3,Duplicate
+Anteil_Briefwähler,3,Duplicate
 Briefwbz,3,Duplicate
+properties.FID,3,Duplicate
+stationname,3,Duplicate
+count,3,Duplicate
+31.03.2005,3,Duplicate
+30.06.2005,3,Duplicate
+30.09.2005,3,Duplicate
+31.12.2005,3,Duplicate
+31.03.2006,3,Duplicate
+30.06.2006,3,Duplicate
+30.09.2006,3,Duplicate
+31.12.2006,3,Duplicate
+31.03.2007,3,Duplicate
+30.06.2007,3,Duplicate
+30.09.2007,3,Duplicate
+31.12.2007,3,Duplicate
+31.03.2008,3,Duplicate
+30.06.2008,3,Duplicate
+30.09.2008,3,Duplicate
+31.12.2008,3,Duplicate
+31.03.2009,3,Duplicate
+30.06.2009,3,Duplicate
+30.09.2009,3,Duplicate
+31.03.2010,3,Duplicate
+30.06.2010,3,Duplicate
+30.09.2010,3,Duplicate
+31.12.2010,3,Duplicate
+31.03.2011,3,Duplicate
+30.06.2011,3,Duplicate
+30.09.2011,3,Duplicate
+31.12.2011,3,Duplicate
+31.03.2012,3,Duplicate
+30.06.2012,3,Duplicate
+30.09.2012,3,Duplicate
+31.12.2012,3,Duplicate
+30.06.2025,3,Duplicate
 Anzahl n,3,Duplicate
-Gebiet,3,Duplicate
+Betreiber,3,Duplicate
+Wahlgang,3,Duplicate
 wnum,3,Duplicate
 gesl,3,Duplicate
 gena,3,Duplicate
@@ -484,78 +702,155 @@ verf_e,3,Duplicate
 genu,3,Duplicate
 ywert,3,Duplicate
 xwert,3,Duplicate
-Montag,3,Duplicate
-Dienstag,3,Duplicate
-Mittwoch,3,Duplicate
-Donnerstag,3,Duplicate
-Freitag,3,Duplicate
+Schultraeger,3,Duplicate
 Einwohnerregister 2018,3,Duplicate
 Einwohnerregister 2022,3,Duplicate
 Hauptvariante 2022,3,Duplicate
 parkingfacilityname,3,Duplicate
 dynamicdatasource,3,Duplicate
-2007,3,Duplicate
-2008,3,Duplicate
-2009,3,Duplicate
-2010,3,Duplicate
-2011,3,Duplicate
+ort,3,Duplicate
+strasse,3,Duplicate
 ungerade Hausnr. von,3,Duplicate
 ungerade Hausnr. bis,3,Duplicate
 /,3,Duplicate
 gerade Hausnr. von,3,Duplicate
--.1,3,Duplicate
 gerade Hausnr. bis,3,Duplicate
-Träger,3,Duplicate
-Unnamed: 26,3,Duplicate
-Unnamed: 27,3,Duplicate
-Unnamed: 28,3,Duplicate
-Unnamed: 30,3,Duplicate
-Unnamed: 31,3,Duplicate
-Unnamed: 32,3,Duplicate
-Unnamed: 33,3,Duplicate
-Unnamed: 34,3,Duplicate
 Adresse Straße,3,Duplicate
 Adresse PLZ,3,Duplicate
 Wärmeversorgung,3,Duplicate
 Wärmeverbrauch witterungsbereinigt,3,Duplicate
 Stromverbrauch,3,Duplicate
+Träger,3,Duplicate
+Unnamed: 17,3,Duplicate
 Telefonnummer,3,Duplicate
-Unnamed: 23,3,Duplicate
-Unnamed: 24,3,Duplicate
-Postleitzahl,3,Duplicate
-properties.VONDATUM,3,Duplicate
-properties.BEMERKUNG,3,Duplicate
-properties.MARKTRICHTWERT,3,Duplicate
-properties.TEILMARKT,3,Duplicate
-properties.BAUJAHR,3,Duplicate
-properties.WERT,3,Duplicate
-properties.NUMMER,3,Duplicate
-properties.NAME,3,Duplicate
-properties.GEBIETSART,3,Duplicate
-properties.DIGIT_DATUM,3,Duplicate
-properties.DIGIT_BASIS,3,Duplicate
-properties.BESCHLUSSNR,3,Duplicate
-properties.INKRAFTDAT,3,Duplicate
+attributes.VONDATUM,3,Duplicate
+attributes.BEMERKUNG,3,Duplicate
+attributes.MARKTRICHTWERT,3,Duplicate
+attributes.TEILMARKT,3,Duplicate
+attributes.BAUJAHR,3,Duplicate
+attributes.WERT,3,Duplicate
+attributes.NUMMER,3,Duplicate
+attributes.NAME,3,Duplicate
+attributes.GEBIETSART,3,Duplicate
+attributes.DIGIT_DATUM,3,Duplicate
+attributes.DIGIT_BASIS,3,Duplicate
+attributes.BESCHLUSSNR,3,Duplicate
+attributes.INKRAFTDAT,3,Duplicate
+Kirchenmitglieder,2,Duplicate
+Taufen,2,Duplicate
+Austritte,2,Duplicate
+Bautätigkeit - Art,2,Duplicate
+Anzahl Gebäude,2,Duplicate
+Wohnungen gesamt,2,Duplicate
+Kommunalwahlkreis,2,Duplicate
+Stadtbezirk,2,Duplicate
+Eigentümer des Gebäudes,2,Duplicate
+Betriebe,2,Duplicate
+Beschäftigte,2,Duplicate
+Tourismus_Betriebe,2,Duplicate
+Tourismus_Betten,2,Duplicate
+Jahresquartal,2,Duplicate
+männlich,2,Duplicate
+weiblich,2,Duplicate
+Auftragseingang Ausland (in 1000 EUR),2,Duplicate
+Auftragseingang Eurozone (in 1000 EUR),2,Duplicate
+Umsatz insgesamt aus Auftragseingang (in 1000 EUR),2,Duplicate
+Umsatz Ausland aus Auftragseingang (in 1000 EUR),2,Duplicate
+Umsatz Eurozone aus Auftragseingang (in 1000 EUR),2,Duplicate
+Tätige Personen,2,Duplicate
+Exportquote (in Prozent),2,Duplicate
+nach SGB II,2,Duplicate
+nach SGB III,2,Duplicate
+BedarfsGem. -insgesamt,2,Duplicate
+BedarfsGem. -1 Person-,2,Duplicate
+BedarfsGem. -2 Personen-,2,Duplicate
+BedarfsGem. -3 u.mehr Personen-,2,Duplicate
+Single-BG,2,Duplicate
+Alleinerziehenden-BG,2,Duplicate
+Partner-BG ohne Kinder,2,Duplicate
+Partner-BG mit Kindern,2,Duplicate
+BG mit Zahlungsanspruch Gesamtregelleistung,2,Duplicate
+BG mit Zahlungsanspruch KdU,2,Duplicate
+Personen in BG - insgesamt,2,Duplicate
+Kinder in BG - insgesamt,2,Duplicate
+Leistungsberechtigte (LB) - insgesamt,2,Duplicate
+Nicht Leistungsberechtigte (NLB) - insgesamt,2,Duplicate
+Regelleistungsberechtigte (RLB) - insgesamt,2,Duplicate
+Erwerbsfähige Leistungsberechtigte (ELB) - insgesamt,2,Duplicate
+Erwerbsfähige Leistungsberechtigte (ELB) - Männer,2,Duplicate
+Erwerbsfähige Leistungsberechtigte (ELB) - Frauen,2,Duplicate
+Erwerbsfähige Leistungsberechtigte (ELB) - Deutsche,2,Duplicate
+Erwerbsfähige Leistungsberechtigte (ELB) - Ausländer,2,Duplicate
+Erwerbsfähige Leistungsberechtigte (ELB) - unter 25 Jahre,2,Duplicate
+Erwerbsfähige Leistungsberechtigte (ELB) - 25 bis unter 35 Jahre,2,Duplicate
+Erwerbsfähige Leistungsberechtigte (ELB) - 35 bis unter 45 Jahre,2,Duplicate
+Erwerbsfähige Leistungsberechtigte (ELB) - 45 bis unter 55 Jahre,2,Duplicate
+Erwerbsfähige Leistungsberechtigte (ELB) - über 55 Jahre,2,Duplicate
+Erwerbsfähige Leistungsberechtigte (ELB) - alleinerziehend,2,Duplicate
+Erwerbsfähige Leistungsberechtigte (ELB) - erwerbstätig,2,Duplicate
+Nichterwerbsfähige Leistungsberechtigte (NEF) - insgesamt ,2,Duplicate
+Sonstige Leistungsberechtigte (SLB) - insgesamt,2,Duplicate
+Tag,2,Duplicate
+"Anteil Benotung ""gut""",2,Duplicate
+"Anteil Benotung ""teils/teils""",2,Duplicate
+"Anteil Benotung ""schlecht""",2,Duplicate
+Eröffnete Verfahren,2,Duplicate
+Mangels Masse abgewiesene Verfahren,2,Duplicate
+Abhängig Beschäftigte,2,Duplicate
+Herkunftsland_24Auspr,2,Duplicate
+Herkunftsland_05Auspr,2,Duplicate
+Herkunftsland_D/A,2,Duplicate
+Beschäftigtengrößenklassen_abh_Besch_4,2,Duplicate
+Land des Erwerbs der HZB,2,Duplicate
+Tätige Personen (absolut),2,Duplicate
+Tätige Personen (Anteil an Gesamtbeschäftigten; in Prozent),2,Duplicate
+Geleistete Arbeitsstunden je tätiger Person,2,Duplicate
+Umsatzanteil Eurozone am Gesamtumsatz (absolut; in 1000 EUR),2,Duplicate
+Umsatzanteil (Anteil an Gesamtsumme des Verarb. Gewerbes; in Prozent),2,Duplicate
+Umsatz aus eigenen Erzeugnissen gesamt (in 1000 EUR),2,Duplicate
+Umsatz aus eigenen Erzeugnissen Ausland (in 1000 EUR),2,Duplicate
+Umsatz aus eigenen Erzeugnissen je tätiger Person,2,Duplicate
+Anzahl Wohnungen,2,Duplicate
+Einwohner,2,Duplicate
+Einwohnerbewegung,2,Duplicate
+Staatsangehörigkeit,2,Duplicate
 Frage_ID,2,Duplicate
 Frage,2,Duplicate
 Basis,2,Duplicate
 Antwort,2,Duplicate
 Anzahl_Anteil,2,Duplicate
-ÿþJ a h r ,2,Duplicate
 properties.Name,2,Duplicate
 E_(utm33_x),2,Duplicate
 N_(UTM33_y),2,Duplicate
 X_(ETRS89_lon),2,Duplicate
 Y_(ETRS89_lat),2,Duplicate
-Jahr 2021,2,Duplicate
+counttime,2,Duplicate
+30.09.2025,2,Duplicate
+31.12.2025,2,Duplicate
+4.Qu. 2025,2,Duplicate
 Leistungsart,2,Duplicate
 Vergabestelle,2,Duplicate
 stimmzettelposition,2,Duplicate
 stimmen,2,Duplicate
 gewaehlt,2,Duplicate
+Oeffnungszeiten,2,Duplicate
+long,2,Duplicate
+Kandidat,2,Duplicate
 Woche,2,Duplicate
+Montag,2,Duplicate
+Dienstag,2,Duplicate
+Mittwoch,2,Duplicate
+Donnerstag,2,Duplicate
+Freitag,2,Duplicate
 wahlberechtigte,2,Duplicate
 waehler-gesamt,2,Duplicate
+11.09.1994,2,Duplicate
+19.09.1999,2,Duplicate
+19.09.2004,2,Duplicate
+30.08.2009,2,Duplicate
+31.08.2014,2,Duplicate
+01.09.2019,2,Duplicate
+01.09.2024,2,Duplicate
 Anzahl Befragte,2,Duplicate
 Wahl_text,2,Duplicate
 parkingfacilityoccupancy,2,Duplicate
@@ -566,15 +861,6 @@ totalnumvacantparkingspaces,2,Duplicate
 totalparkingcapacityoverride,2,Duplicate
 publicationtime,2,Duplicate
 updateintervalmin,2,Duplicate
-stationname,2,Duplicate
-counttime,2,Duplicate
-count,2,Duplicate
-Einwohnerregister 2019,2,Duplicate
-Einwohnerregister 2020,2,Duplicate
-Einwohnerregister 2021,2,Duplicate
-Hauptvariante 2018,2,Duplicate
-Hauptvariante 2019,2,Duplicate
-Hauptvariante 2021,2,Duplicate
 Einwohner_insgesamt,2,Duplicate
 Einwohner_Ukrainer,2,Duplicate
 Einwohner_Ukrainer_männlich,2,Duplicate
@@ -582,11 +868,21 @@ Einwohner_Ukrainer_weiblich,2,Duplicate
 Einwohner_Ukrainer-nach-24022022-zugezogen,2,Duplicate
 Einwohner_Ukrainer-nach-24022022-zugezogen_männlich,2,Duplicate
 Einwohner_Ukrainer-nach-24022022-zugezogen_weiblich,2,Duplicate
+Einwohnerregister 2019,2,Duplicate
+Einwohnerregister 2020,2,Duplicate
+Einwohnerregister 2021,2,Duplicate
+Hauptvariante 2018,2,Duplicate
+Hauptvariante 2019,2,Duplicate
+Hauptvariante 2021,2,Duplicate
+SJ21/22,2,Duplicate
+SJ22/23,2,Duplicate
+SJ23/24,2,Duplicate
+SJ24/25,2,Duplicate
 kivan_id,2,Duplicate
 name_einr,2,Duplicate
 hnr_alles,2,Duplicate
-ort,2,Duplicate
 sbz,2,Duplicate
+ortsteil,2,Duplicate
 gesamtkap,2,Duplicate
 art_einr,2,Duplicate
 platz_kat,2,Duplicate
@@ -603,8 +899,15 @@ ap_email,2,Duplicate
 link,2,Duplicate
 foto,2,Duplicate
 gebiet,2,Duplicate
-strasse,2,Duplicate
 ot,2,Duplicate
+31.03.2003,2,Duplicate
+30.06.2003,2,Duplicate
+30.09.2003,2,Duplicate
+31.12.2003,2,Duplicate
+31.03.2004,2,Duplicate
+30.06.2004,2,Duplicate
+30.09.2004,2,Duplicate
+31.12.2004,2,Duplicate
 stadtbzrk,2,Duplicate
 beginn,2,Duplicate
 ende,2,Duplicate
@@ -612,28 +915,158 @@ neu,2,Duplicate
 sparte,2,Duplicate
 sperrart,2,Duplicate
 meldung,2,Duplicate
-Bundestagswahlkreis,2,Duplicate
+16.10.1994,2,Duplicate
+27.09.1998,2,Duplicate
+22.09.2002,2,Duplicate
+18.09.2005,2,Duplicate
+27.09.2009,2,Duplicate
+22.09.2013,2,Duplicate
+24.09.2017,2,Duplicate
+26.09.2021,2,Duplicate
+23.02.2025,2,Duplicate
+2026,2,Duplicate
+2027,2,Duplicate
+2028,2,Duplicate
+2029,2,Duplicate
+2030,2,Duplicate
+2031,2,Duplicate
+2032,2,Duplicate
+2033,2,Duplicate
+2034,2,Duplicate
+2035,2,Duplicate
+2036,2,Duplicate
+2037,2,Duplicate
+2038,2,Duplicate
+2039,2,Duplicate
+2040,2,Duplicate
+datum;wahl;ags;gebiet-nr;gebiet-name;max-schnellmeldungen;anz-schnellmeldungen;A1;A2;A3;A;B;B1;B2;C;D;E;E1;E1_1;E1_2;E1_3;E1_4;E1_5;E1_6;E1_7;E1_8;E1_9;E1_10;E1_11;E2;E2_1;E2_2;E2_3;E2_4;E2_5;E2_6;E2_7;E2_8;E2_9;E2_10;E2_11;E3;E3_1;E3_2;E3_3;E3_4;E3_5;E3_6;E3_7;E3_8;E3_9;E3_10;E3_11;E4;E4_1;E4_2;E4_3;E4_4;E4_5;E4_6;E4_7;E4_8;E4_9;E4_10;E4_11;E5;E5_1;E5_2;E5_3;E5_4;E5_5;E5_6;E5_7;E5_8;E5_9;E5_10;E5_11;E6;E6_1;E6_2;E6_3;E6_4;E6_5;E6_6;E6_7;E6_8;E6_9;E6_10;E6_11;E7;E7_1;E7_2;E8;E8_1;E9;E9_1;E10;E10_1;E10_2;E11;E11_1;E12;E12_1;E13;E13_1;E13_2;E13_3;E14;E14_1;E15;E15_1,2,Duplicate
+data,2,Duplicate
+pagination.totalElements,2,Duplicate
+pagination.elementsPerPage,2,Duplicate
+pagination.currentPage,2,Duplicate
+pagination.totalPages,2,Duplicate
+links.self,2,Duplicate
+links.last,2,Duplicate
+links.next,2,Duplicate
+typ,2,Duplicate
+Staat,2,Duplicate
+Wohndauer,2,Duplicate
 Barrierefreiheit,2,Duplicate
 Vorhaben,2,Duplicate
-Kategorie,2,Duplicate
-Telefon,2,Duplicate
+B2,2,Duplicate
+E1,2,Duplicate
+E1_1,2,Duplicate
+E1_2,2,Duplicate
+E1_3,2,Duplicate
+E1_4,2,Duplicate
+E1_5,2,Duplicate
+E1_6,2,Duplicate
+E1_7,2,Duplicate
+E1_8,2,Duplicate
+E1_9,2,Duplicate
+E1_10,2,Duplicate
+E1_11,2,Duplicate
+E2,2,Duplicate
+E2_1,2,Duplicate
+E2_2,2,Duplicate
+E2_3,2,Duplicate
+E2_4,2,Duplicate
+E2_5,2,Duplicate
+E2_6,2,Duplicate
+E2_7,2,Duplicate
+E2_8,2,Duplicate
+E2_9,2,Duplicate
+E2_10,2,Duplicate
+E2_11,2,Duplicate
+E3,2,Duplicate
+E3_1,2,Duplicate
+E3_2,2,Duplicate
+E3_3,2,Duplicate
+E3_4,2,Duplicate
+E3_5,2,Duplicate
+E3_6,2,Duplicate
+E3_7,2,Duplicate
+E3_8,2,Duplicate
+E3_9,2,Duplicate
+E3_10,2,Duplicate
+E3_11,2,Duplicate
+E4,2,Duplicate
+E4_1,2,Duplicate
+E4_2,2,Duplicate
+E4_3,2,Duplicate
+E4_4,2,Duplicate
+E4_5,2,Duplicate
+E4_6,2,Duplicate
+E4_7,2,Duplicate
+E4_8,2,Duplicate
+E4_9,2,Duplicate
+E4_10,2,Duplicate
+E4_11,2,Duplicate
+E5,2,Duplicate
+E5_1,2,Duplicate
+E5_2,2,Duplicate
+E5_3,2,Duplicate
+E5_4,2,Duplicate
+E5_5,2,Duplicate
+E5_6,2,Duplicate
+E5_7,2,Duplicate
+E5_8,2,Duplicate
+E5_9,2,Duplicate
+E5_10,2,Duplicate
+E5_11,2,Duplicate
+E6,2,Duplicate
+E6_1,2,Duplicate
+E6_2,2,Duplicate
+E6_3,2,Duplicate
+E6_4,2,Duplicate
+E6_5,2,Duplicate
+E6_6,2,Duplicate
+E6_7,2,Duplicate
+E6_8,2,Duplicate
+E6_9,2,Duplicate
+E6_10,2,Duplicate
+E6_11,2,Duplicate
+E7,2,Duplicate
+E7_1,2,Duplicate
+E7_2,2,Duplicate
+E8,2,Duplicate
+E8_1,2,Duplicate
+E9,2,Duplicate
+E9_1,2,Duplicate
+E10,2,Duplicate
+E10_1,2,Duplicate
+E10_2,2,Duplicate
+E11,2,Duplicate
+E11_1,2,Duplicate
+E12,2,Duplicate
+E12_1,2,Duplicate
+E13,2,Duplicate
+E13_1,2,Duplicate
+E13_2,2,Duplicate
+E13_3,2,Duplicate
+E14,2,Duplicate
+E14_1,2,Duplicate
+E15,2,Duplicate
+E15_1,2,Duplicate
 Breitengrad,2,Duplicate
 Längengrad,2,Duplicate
-Betreiber,2,Duplicate
 Bezirkshaushaltsplan Tempelhof-Schöneberg 2016/2017,2,Duplicate
-"1 Mitglieder der Fraktionen des Berliner Abgeordnetenhauses (Parlament) nach den Wahlen 2006, 2011, 2016 und 2021(1)(Quelle: Wahlstatistik; eigene Berechnungen)",2,Duplicate
-"1 Mitglieder der Fraktionen des Berliner Abgeordnetenhauses (Parlament) nach den Wahlen 2006, 2011, 2016 und 2023(1)(Quelle: Wahlstatistik; eigene Berechnungen)",2,Duplicate
 bezeichnung_des_vorhabens,2,Duplicate
 zusammenfassung_des_vorhabens,2,Duplicate
 postleitzahl,2,Duplicate
 land,2,Duplicate
-Website,2,Duplicate
  statistik  Berlin Brandenburg,2,Duplicate
 1 Verdienste (Bruttostundenverdienste) von Frauen und Männern im Jahr 2022 in Berlin in den unterschiedlichen Altersgruppen (Quelle: Verdiensterhebung Referenzmonat April 2022),2,Duplicate
 Schulzweig,2,Duplicate
 Schülergruppe,2,Duplicate
 Unterrichtsform,2,Duplicate
 Institution,2,Duplicate
+Unnamed: 18,2,Duplicate
+Unnamed: 19,2,Duplicate
+Unnamed: 20,2,Duplicate
+Unnamed: 21,2,Duplicate
+Unnamed: 22,2,Duplicate
+Unnamed: 25,2,Duplicate
 Schulnummer,2,Duplicate
 Steuerart,2,Duplicate
 Ertragshoheit,2,Duplicate
@@ -641,109 +1074,52 @@ Ertragshoheit,2,Duplicate
 Nr.",2,Duplicate
 Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2019,2,Duplicate
 Baumaßnahme,2,Duplicate
+version,2,Duplicate
+channel.title,2,Duplicate
+channel.link,2,Duplicate
+channel.description,2,Duplicate
+channel.managingEditor,2,Duplicate
+channel.language,2,Duplicate
+channel.items,2,Duplicate
 Messe,2,Duplicate
 Ansprechpartner,2,Duplicate
+Bruttoendenergieverbrauch nach Bereichen in Terajoule (Stand 4.6.18),2,Duplicate
+X-Koordinate,2,Duplicate
+Y-Koordinate,2,Duplicate
 Ansatz 2016 in €,2,Duplicate
 Ansatz 2017 in €,2,Duplicate
 "1 Bevölkerung in Berlin 2020 nach Quelle des überwiegenden Lebensunterhalts, Altersgruppen und Geschlecht(1) (Quelle: Mikrozensus)",2,Duplicate
 Erläuterungen zu den Tabellen,2,Duplicate
-Samstag,2,Duplicate
-Sonntag,2,Duplicate
-Tabellenkopf,2,Duplicate
-Nummer Fußnote,2,Duplicate
+Postleitzahl,2,Duplicate
+telefon,2,Duplicate
+angebote,2,Duplicate
+bild,2,Duplicate
 Nr,2,Duplicate
-Unnamed: 29,2,Duplicate
-Unnamed: 35,2,Duplicate
-Unnamed: 36,2,Duplicate
-Unnamed: 37,2,Duplicate
-Unnamed: 38,2,Duplicate
-Unnamed: 39,2,Duplicate
-Unnamed: 40,2,Duplicate
-Unnamed: 41,2,Duplicate
-Unnamed: 42,2,Duplicate
-Unnamed: 43,2,Duplicate
-Unnamed: 44,2,Duplicate
-Unnamed: 45,2,Duplicate
-Unnamed: 46,2,Duplicate
-Unnamed: 47,2,Duplicate
-Unnamed: 48,2,Duplicate
-Unnamed: 49,2,Duplicate
-Unnamed: 50,2,Duplicate
-Unnamed: 51,2,Duplicate
-Unnamed: 52,2,Duplicate
-Unnamed: 53,2,Duplicate
-Unnamed: 54,2,Duplicate
-Unnamed: 55,2,Duplicate
-Unnamed: 56,2,Duplicate
-Unnamed: 57,2,Duplicate
-Unnamed: 58,2,Duplicate
-Unnamed: 59,2,Duplicate
-Unnamed: 60,2,Duplicate
-Unnamed: 61,2,Duplicate
-Unnamed: 62,2,Duplicate
-Unnamed: 63,2,Duplicate
-Unnamed: 64,2,Duplicate
-Unnamed: 65,2,Duplicate
-properties.OBJEKTBEZEICHNUNG,2,Duplicate
-properties.OBJEKTNUMMER,2,Duplicate
-properties.ID1,2,Duplicate
-properties.BARRIEREARM,2,Duplicate
-properties.AKTDATUM,2,Duplicate
-properties.BISDATUM,2,Duplicate
-geometry,2,Duplicate
-properties.NAME_AMTL,2,Duplicate
-properties.NAME_ABKZ,2,Duplicate
-properties.LAGE,2,Duplicate
-properties.KAPAZITAET,2,Duplicate
-properties.KOSTEN,2,Duplicate
-properties.PROFIL1,2,Duplicate
-properties.PROFIL2,2,Duplicate
-properties.STADTTS,2,Duplicate
-properties.STADTTNAME,2,Duplicate
-properties.ADRESSE,2,Duplicate
-properties.OBJEKTART,2,Duplicate
-properties.UMFANG,2,Duplicate
-properties.STADTTEIL,2,Duplicate
-properties.NSONR,2,Duplicate
-properties.BEHOERDE,2,Duplicate
-properties.SG_NR,2,Duplicate
-properties.RVO_DATUM,2,Duplicate
-properties.RVO_1,2,Duplicate
-properties.RVO_2,2,Duplicate
- A n z a h l ,1,Unique
- A n z a h l   B e f r a g t e ,1,Unique
- A n z a h l   d e r   G ä s t e b e t t e n   z u m   3 1 . 0 7 .   d e s   J a h r e s ,1,Unique
- A u s l a s t u n g   d e r   G ä s t e b e t t e n   i n   P r o z e n t ,1,Unique
- B a u j a h r   1 9 1 9   b i s   1 9 4 5 ,1,Unique
- B a u j a h r   1 9 4 6   b i s   1 9 6 0 ,1,Unique
- B a u j a h r   1 9 6 1   b i s   1 9 9 0   P l a t t e n b a u ,1,Unique
- B a u j a h r   1 9 6 1   b i s   1 9 9 0   k e i n   P l a t t e n b a u ,1,Unique
- B a u j a h r   1 9 9 1   b i s   2 0 0 4 ,1,Unique
- B a u j a h r   a b   2 0 1 5 ,1,Unique
- B a u j a h r   v o r   1 9 1 9 ,1,Unique
- G ä s t e a n k ü n f t e   2 0 2 1 ,1,Unique
- V e r ä n d e r u n g   v o n   2 0 2 0   z u   2 0 2 1   i n   P r o z e n t ,1,Unique
- i n s g e s a m t ,1,Unique
- j a ,1,Unique
- j a   A r b e i t s p l a t z v e r l u s t ,1,Unique
- j a   A r b e i t s p l a t z v e r l u s t   d u r c h   I n s o l v e n z   d e s   A r b e i t g e b e r s ,1,Unique
- j a   A r b e i t s p l a t z v e r l u s t   d u r c h   S t e l l e n a b b a u   b e i m   A r b e i t g e b e r ,1,Unique
- j a   K u r z a r b e i t ,1,Unique
- j a   W e g f a l l   g e p l a n t e r   A r b e i t s g e l e g e n h e i t e n ,1,Unique
- j a   W e g f a l l   g e p l a n t e r   b e f r i s t e t e r   o d e r   u n b e f r i s t e t e r   A r b e i t s g e l e g e n h e i t e n ,1,Unique
- j a   m e h r   A r b e i t s s t u n d e n   a l s   g e w ö h n l i c h ,1,Unique
- j a   v o n   K u r z a r b e i t   b i s   3   M o n a t e ,1,Unique
- j a   v o n   K u r z a r b e i t   l ä n g e r   a l s   3   M o n a t e ,1,Unique
- j a   v o n   m e h r   A r b e i t s s t u n d e n   a l s   i c h   f ü r   g e w ö h n l i c h   l e i s t e ,1,Unique
- j a   v o n   w e n i g e r   A r b e i t s s t u n d e n   a l s   i c h   f ü r   g e w ö h n l i c h   l e i s t e ,1,Unique
- j a   w e n i g e r   A r b e i t s s t u n d e n   a l s   g e w ö h n l i c h ,1,Unique
- m ä n n l i c h ,1,Unique
- n e i n ,1,Unique
- n e i n   h a b e   a u c h   k e i n   I n t e r e s s e ,1,Unique
- n e i n   h a e t t e   a b e r   I n t e r e s s e ,1,Unique
- n e i n   i c h   w a r   v o n   k e i n e r   d e r   g e n a n n t e n   Ä n d e r u n g e n   b e t r o f f e n ,1,Unique
- w e i b l i c h ,1,Unique
-	MaStR-Nr. des Anlagenbetreibers,1,Unique
+attributes.OBJEKTBEZEICHNUNG,2,Duplicate
+attributes.OBJEKTNUMMER,2,Duplicate
+attributes.ID1,2,Duplicate
+attributes.BARRIEREARM,2,Duplicate
+attributes.AKTDATUM,2,Duplicate
+attributes.BISDATUM,2,Duplicate
+attributes.NAME_AMTL,2,Duplicate
+attributes.NAME_ABKZ,2,Duplicate
+attributes.LAGE,2,Duplicate
+attributes.KAPAZITAET,2,Duplicate
+attributes.KOSTEN,2,Duplicate
+attributes.PROFIL1,2,Duplicate
+attributes.PROFIL2,2,Duplicate
+attributes.STADTTS,2,Duplicate
+attributes.STADTTNAME,2,Duplicate
+attributes.ADRESSE,2,Duplicate
+attributes.OBJEKTART,2,Duplicate
+attributes.UMFANG,2,Duplicate
+attributes.STADTTEIL,2,Duplicate
+attributes.NSONR,2,Duplicate
+attributes.BEHOERDE,2,Duplicate
+attributes.SG_NR,2,Duplicate
+attributes.RVO_DATUM,2,Duplicate
+attributes.RVO_1,2,Duplicate
+attributes.RVO_2,2,Duplicate
 "
 Institution",1,Unique
    Pädagogisches Personal und Verwaltungspersonal - Wochenarbeitsstunden - 25 bis unter 32,1,Unique
@@ -753,18 +1129,27 @@ Institution",1,Unique
   Pädagogisches Personal und Verwaltungspersonal - berufliche Stellung -  Angestellte befristet,1,Unique
 " ""2023 Virtuelle Besucher""",1,Unique
  Bezirk-ID,1,Unique
+ Bruttostromverbrauch) in Prozent (Stand 4.6.18),1,Unique
  Einnahmen Januar 2024 (T EUR),1,Unique
  Einnahmen Januar 2025 (T EUR),1,Unique
+ Endenergieintensität (Stand 4.6.18),1,Unique
+ Endenergieproduktivität,1,Unique
  Energiebilanz Baden-Württemberg 1990,1,Unique
  Hauptvariante 2020,1,Unique
  Jahr 2022,1,Unique
+ Primärenergieintensität,1,Unique
+ Primärenergieverbrauch je Einwohner,1,Unique
+ Stromerzeugung,1,Unique
  Virtueller-Stein,1,Unique
  an dem ich mich beteiligen möchte,1,Unique
+ temperaturbereinigt,1,Unique
 """Haltestelle"",""Standort"",""Uhrzeit"",""Januar"",""Februar"",""MÃ¤rz"",""April"",""Mai"",""Juni""",1,Unique
 (Alle),1,Unique
 010 Wedding,1,Unique
+02.12.1990,1,Unique
 032 Grunewald,1,Unique
 042 Neukölln,1,Unique
+06.05.1990,1,Unique
 077 Buch,1,Unique
 085 Friedrichshagen,1,Unique
 1  Aus Berliner Krankenhäusern entlassene vollstationäre Behandlungsfälle(1) 2020 mit Wohnsitz in Berlin nach Diagnosekapiteln und Geschlecht (Quelle: Krankenhausstatistik),1,Unique
@@ -803,9 +1188,10 @@ Institution",1,Unique
 1 Vollzeit- und Teilzeiterwerbstätige in Berlin 2021 nach Altersgruppen und Geschlecht(1) (Quelle: Mikrozensus),1,Unique
 1 Vollzeit- und Teilzeiterwerbstätige in Berlin 2022 nach Altersgruppen und Geschlecht(1) (Quelle: Mikrozensus),1,Unique
 1 Vollzeit- und Teilzeiterwerbstätige in Berlin 2023 nach Altersgruppen und Geschlecht(1) (Quelle: Mikrozensus),1,Unique
+1. Quartal,1,Unique
 117 Schildhornstraße,1,Unique
-12/2013,1,Unique
 124 Mariendorfer Damm,1,Unique
+14.10.1990,1,Unique
 144 Silbersteinstraße,1,Unique
 1455466600,1,Unique
 1597492200,1,Unique
@@ -813,8 +1199,7 @@ Institution",1,Unique
 171 Mitte,1,Unique
 174 Frankfurter Allee,1,Unique
 190 Leipziger Straße,1,Unique
-2005,1,Unique
-2006,1,Unique
+2. Quartal,1,Unique
 2013-04 pi,1,Unique
 2013-04 pv,1,Unique
 2013-05 pi,1,Unique
@@ -956,35 +1341,52 @@ Institution",1,Unique
 2022 Besucher,1,Unique
 2022 Entleihungen,1,Unique
 2022 Virtuelle Besucher,1,Unique
-2022-12-31,1,Unique
 2023 Besucher,1,Unique
 2023 Entleihungen,1,Unique
-2023-12-31,1,Unique
-2024-12-31,1,Unique
-2025,1,Unique
 221 Karl-Marx-Straße,1,Unique
 24 h/7 Tage,1,Unique
+3. Quartal,1,Unique
+30.06.2000,1,Unique
+30.06.2001,1,Unique
+30.06.2002,1,Unique
+30.09.2000,1,Unique
+30.09.2001,1,Unique
+30.09.2002,1,Unique
+31.03.2000,1,Unique
+31.03.2001,1,Unique
+31.03.2002,1,Unique
+31.12.2000,1,Unique
+31.12.2001,1,Unique
+31.12.2002,1,Unique
+4. Quartal,1,Unique
 914504004.4401011,1,Unique
+<?xml,1,Unique
 A - Erwerb von Haus-/Wohneigentum/Bauland oder Erbschaft einer Immobilie; Angaben in Prozent,1,Unique
 A-Woche_Abfahrt_(Uhrzeit),1,Unique
 A-Woche_Ankunft_(Uhrzeit),1,Unique
-ABBAUDATUM,1,Unique
 ABO**,1,Unique
+ALO-Quote: alle abh. ziv. EP - gesamt,1,Unique
+ALO-Quote: alle ziv. EP - 15- bis unter 25-Jahre,1,Unique
+ALO-Quote: alle ziv. EP - 55- bis unter 65-Jahre,1,Unique
+ALO-Quote: alle ziv. EP - Ausländer,1,Unique
+ALO-Quote: alle ziv. EP - Frauen,1,Unique
+ALO-Quote: alle ziv. EP - Männer,1,Unique
+ALO-Quote: alle ziv. EP - gesamt,1,Unique
 AMR_Anträge,1,Unique
 AMR_Ersteinreisen,1,Unique
 AMR_Titel,1,Unique
-ANG,1,Unique
 ANGELEGT_AM,1,Unique
 ART_DES_FAHRRADS,1,Unique
 Abt,1,Unique
 Abwasser_Temperatur,1,Unique
 Abwasser_pH,1,Unique
-Adresse_Begegnungsstätte,1,Unique
+"Aktiengesellschaften, KGaA",1,Unique
 Algen,1,Unique
-Alter,1,Unique
 Alter_in_Jahren,1,Unique
-Altersgruppe,1,Unique
 Altersklasse,1,Unique
+Amtliche Einwohnerzahl des statistischen Landesamtes Sachsen,1,Unique
+Angezeigte Kurzarbeit - Beschäftigte,1,Unique
+Angezeigte Kurzarbeit - geprüfte Anzeigen,1,Unique
 Anmerkungen,1,Unique
 "Ansatz 2010
  (in Tsd. EUR)",1,Unique
@@ -1001,38 +1403,92 @@ Ansatz 2018 in ,1,Unique
 Ansatz 2019 in ,1,Unique
 Ansatz 2020 in €,1,Unique
 Ansatz 2021 in €,1,Unique
-Anschrift,1,Unique
+"Anteil Benotung ""nicht beurteilt""",1,Unique
+"Anteil Benotung ""sehr gut""",1,Unique
+"Anteil Benotung ""sehr schlecht""",1,Unique
+Anteil Erneuerbarer Energieträger (Primärenergieverbrauch,1,Unique
+Anteil Haushalte mit mittlerem Einkommen,1,Unique
+Anteil Haushalte mit relativ geringem Einkommen - arm,1,Unique
+Anteil Haushalte mit relativ hohem Einkommen - reich,1,Unique
+Anteil MGH 21/22 in Prozent,1,Unique
+Anteil MGH 22/23 in Prozent,1,Unique
+Anteil MGH 23/24 in Prozent,1,Unique
+Anteil MGH 24/25 in Prozent,1,Unique
 Anteil Verfahren in Prozent,1,Unique
 Anteil Vergabesumme in Prozent,1,Unique
+Anteil Weg als Pkw-Mitfahrer,1,Unique
+Anteil Weg als Pkw-Selbstfahrer,1,Unique
+Anteil Weg mit Bus (Regionalverk.),1,Unique
+Anteil Weg mit Bus (Stadtverk.),1,Unique
+Anteil Weg mit Fahrrad,1,Unique
+Anteil Weg mit Motorrad etc.,1,Unique
+Anteil Weg mit S-Bahn/Bahn AG,1,Unique
+Anteil Weg mit Straßenbahn,1,Unique
+Anteil Weg mit sonstigem Verkehrsmittel,1,Unique
+Anteil Weg nur zu Fuß,1,Unique
+Anteil Wohnungen mit Bad,1,Unique
+Anteil Wohnungen mit Balkon o.ä.,1,Unique
+Anteil Wohnungen mit IWC,1,Unique
+Anteil der Strom-/Wärmeerzeugung aus KWK an der Strom-/Wärmeerzeugung und Bruttostromverbrauch in % (Stand 4.6.18),1,Unique
+Anteil erneuerbarer Energieträger am Bruttoendenergieverbrauch in Prozent (Stand 4.6.18),1,Unique
 Antragsart,1,Unique
 Antragsteller,1,Unique
+Antragsteller/Antragsstellerin,1,Unique
 Anzahl Anträge,1,Unique
-"Anzahl verkaufte ""3 € Tickets"" Berliner Bühnen",1,Unique
+Anzahl Arbeitslose - 15- bis unter 25 Jahre,1,Unique
+Anzahl Arbeitslose - 55- und älter,1,Unique
+Anzahl Arbeitslose - Ausländer,1,Unique
+Anzahl Arbeitslose - Frauen,1,Unique
+Anzahl Arbeitslose - Schwerbehinderte,1,Unique
+Anzahl Arbeitslose - gesamt,1,Unique
+Anzahl Arbeitslose- Langzeitarbeitslose,1,Unique
+Anzahl SuS 21/22,1,Unique
+Anzahl SuS 22/23,1,Unique
+Anzahl SuS 23/24,1,Unique
+Anzahl SuS 24/25,1,Unique
+Anzahl SuS mit MGH 21/22,1,Unique
+Anzahl SuS mit MGH 22/23,1,Unique
+Anzahl SuS mit MGH 23/24,1,Unique
+Anzahl SuS mit MGH 24/25,1,Unique
+Anzahl leerstehende Wohnungen,1,Unique
 Anzahl1,1,Unique
 Anzahl_Anfragen,1,Unique
 Anzahl_SBB_Anträge,1,Unique
 Anzahl_eingereichte_Antraege,1,Unique
-Anzeige-Name der Einheit,1,Unique
 Anzeigen,1,Unique
 Arbeitslose,1,Unique
+Arbeitslosenanteil - Ausländer,1,Unique
+Arbeitslosenanteil - Frauen,1,Unique
+Arbeitslosenanteil - Langzeitarbeitslose,1,Unique
 Arbeitsplatznummer,1,Unique
-Art,1,Unique
 Art der Anmeldung,1,Unique
+Art der Wärmeversorgung,1,Unique
 Ateliers,1,Unique
+Aufnahme (in Euro),1,Unique
+"Aufnahmen, Über-, Rücktritte",1,Unique
+Auftragseingang Hochbau insgesamt (in 1000 EUR),1,Unique
+Auftragseingang Tiefbau insgesamt (in 1000 EUR),1,Unique
+Auftragseingang Wohnungsbau (in 1000 EUR),1,Unique
+Auftragseingang gewerblicher und industrieller Hochbau (in 1000 EUR),1,Unique
+Auftragseingang gewerblicher und industrieller Tiefbau (in 1000 EUR),1,Unique
+Auftragseingang öffentlicher Hochbau (in 1000 EUR),1,Unique
+Ausbildungsquote (in %),1,Unique
 Ausland,1,Unique
 Ausleihtyp,1,Unique
 Ausländische Staatsbürger,1,Unique
 Ausserplanmäßige Ausgaben,1,Unique
 Ausserplanmäßige VE,1,Unique
+Ausstattung,1,Unique
 Auszubildende,1,Unique
+Auszubildende und Studierende gesamt,1,Unique
 Autor:in,1,Unique
 B - berufliche Gründe bzw. Aufnahme eines Studiums einer Ausbildung; Angaben in Prozent,1,Unique
 B-Woche_Abfahrt_(Uhrzeit),1,Unique
 B-Woche_Ankunft_(Uhrzeit),1,Unique
-BREITE (WGS84),1,Unique
 BSL,1,Unique
 BadName,1,Unique
 BadestelleLink,1,Unique
+Baujahr,1,Unique
 Baujahr 1919 bis 1945,1,Unique
 Baujahr 1946 bis 1960,1,Unique
 Baujahr 1961 bis 1990 Plattenbau,1,Unique
@@ -1040,8 +1496,16 @@ Baujahr 1961 bis 1990 kein Plattenbau,1,Unique
 Baujahr 1991 bis 2004,1,Unique
 Baujahr ab 2015,1,Unique
 Baujahr vor 1919,1,Unique
-Begegnungsstätten (BGST),1,Unique
-Beginn des Angebotes,1,Unique
+Baujahrgr-18-45-69-90-,1,Unique
+Bauwerk Name,1,Unique
+Bauwerkselement Exportnummer,1,Unique
+Bauwerkselement Name,1,Unique
+Bauwerkselement Niveau,1,Unique
+Bauwerkselement Nummer,1,Unique
+Bauwerkselement Typ,1,Unique
+Bauwerksreferenzort Nummer,1,Unique
+Befindlichkeitsart,1,Unique
+Beginn,1,Unique
 Behinderte,1,Unique
 Bemerkung,1,Unique
 "Bemerkungen
@@ -1052,52 +1516,79 @@ Bemerkung,1,Unique
 ",1,Unique
 Benutzergruppe,1,Unique
 Beratungsmöglichkeiten,1,Unique
+"Berichtigungen, sonstige Zu- und Abgänge (in Euro)",1,Unique
+Berichtsjahr,1,Unique
 Berichtszeitraum,1,Unique
-Berlin Breitbandatlas Verfügbarkeiten Mitte 2017,1,Unique
+Berlin gemeinsam gestalten. ,1,Unique
 "Berlin-
 pass***",1,Unique
 Berliner Schulnummer,1,Unique
+Beschaeftigte ANG (Vollzeitaequivalente),1,Unique
+Beschaeftigte BEA (Vollzeitaequivalente),1,Unique
+Beschaeftigte gesamt (Koepfe),1,Unique
+Beschaeftigte gesamt (Vollzeitaequivalente),1,Unique
+Beschaeftigte in Teilzeit (Koepfe),1,Unique
+Beschaeftigte in Vollzeit (Koepfe),1,Unique
+Beschaeftigte maennlich (Koepfe),1,Unique
+Beschaeftigte weiblich (Koepfe),1,Unique
 Beschlussnummer,1,Unique
 Beschränkte Ausschreibung,1,Unique
+Bestand offene Arbeitsstellen,1,Unique
+Besuche,1,Unique
 "Besuche 
 insgesamt",1,Unique
 "Besuche außerhalb
 Berlins bei
 Gastspielen oder Wanderaus-
 stellungen",1,Unique
+Besucher,1,Unique
 Besucher ,1,Unique
+Besucher pro Leinwand,1,Unique
+Besucher pro Sitzplatz,1,Unique
 "Besucherinnen
 
 ",1,Unique
 Betrag in EUR,1,Unique
 Betrieb,1,Unique
-Betriebs-Status,1,Unique
-Betriebsart,1,Unique
 Bezirk Mitte: Energieverbrauchsübersicht bezirklicher Liegenschaften 2017,1,Unique
 Bezirk Steglitz-Zehlendorf: Energieverbrauchsübersicht bezirklicher Liegenschaften 2017-2018-2019-2020-2021-2022-2023,1,Unique
+Bezirk Tempelhof-Schneberg:    Energieverbrauchsbericht fr 2018-2022,1,Unique
 Bezirk Tempelhof-Schöneberg: Energieverbrauchsübersicht bezirklicher Gebäude für 2010-2019,1,Unique
+Bibliotheksausweise,1,Unique
 Branche,1,Unique
 Braunkohlen,1,Unique
-Bruttoleistung der Einheit,1,Unique
+Bruttoinlandsprodukt zu Marktpreisen (in Mill. Euro),1,Unique
+Bruttoinlandsprodukt zu Marktpreisen je Einwohner (in Euro/Person),1,Unique
+Bruttoinlandsprodukt zu Marktpreisen je Erwerbstätigen (in Euro/Person),1,Unique
+Bruttoumsatz in Euro,1,Unique
+Bruttowertschöpfung - gesamt (in Mill. Euro),1,Unique
+Bundesautobahnen (gesamt),1,Unique
 "Bundesfrei-
 willigendienst-
 leistende",1,Unique
 Bundesland,1,Unique
+Bundesstraßen,1,Unique
+Bundesstraßen (Baulast der Stadt),1,Unique
 C - familiäre Gründe (z.B. Haushaltsgründung/Scheidung); Angaben in Prozent,1,Unique
+C Verarbeitendes Gewerbe,1,Unique
+CO2-Emissionen (Gesamt) 2019 [t/a],1,Unique
+CO2-Emissionen (Gesamt) 2020 [t/a],1,Unique
+CO2-Emissionen (Gesamt) 2021 [t/a],1,Unique
+CO2-Emissionen (Gesamt) 2022 [t/a],1,Unique
+CO2-Emissionen (Gesamt) 2023 [t/a],1,Unique
 Cluster,1,Unique
-Coworking Space,1,Unique
 D - Überschreiten der Miet-Obergrenze für ALG-II- und Sozialhilfeempfänger; Angaben in Prozent,1,Unique
-DEINSTALLIERT,1,Unique
 DELIKT,1,Unique
-DET_ID15,1,Unique
-DET_NAME_ALT,1,Unique
-DET_NAME_NEU,1,Unique
 Das weiß ich noch nicht; Angaben in Prozent,1,Unique
 Dat,1,Unique
 Dat_predict,1,Unique
+Denkmalliste Berlin ,1,Unique
 Deutsche Staatsbürger,1,Unique
 Diplomaten-kennzeichen,1,Unique
 Durchfluss,1,Unique
+Durchschnittsalter Beschaeftigte gesamt,1,Unique
+Durchschnittsalter Beschaeftigte maennlich,1,Unique
+Durchschnittsalter Beschaeftigte weiblich,1,Unique
 E - allgemein zu hohe Miete bzw. Betriebskosten; Angaben in Prozent,1,Unique
 E-Mail,1,Unique
 E-Mailadresse,1,Unique
@@ -1111,23 +1602,36 @@ E_(Rechtswert_Gauß-Krüger),1,Unique
 Eco,1,Unique
 "Ehrenamtskarte
 [mehr Infos durch anklicken]",1,Unique
+Eigenmessen - Anzahl,1,Unique
+Eigenmessen - Aussteller,1,Unique
+Eigenmessen - Besucher,1,Unique
 Eigentumsgarten/Hausgarten,1,Unique
+Einkommen-Haushalt (Äquivalenz-),1,Unique
 Einnahmen bis Januar 2024 (T EUR),1,Unique
 Einnahmen bis Januar 2025 (T EUR),1,Unique
-Einrichtung_Größe,1,Unique
-Einrichtung_Max. Personen,1,Unique
-Einrichtung_Öffnungszeiten,1,Unique
 Einrichtungen,1,Unique
 Eintrag,1,Unique
+Einweisung Krankenhaus,1,Unique
+Einweisung Krankenhaus (kumuliert),1,Unique
+Einwohner (Promille),1,Unique
 Einwohner mit Hauptwohnsitz,1,Unique
+Einwohner pro Leinwand,1,Unique
 Einwohner_insgesamt_männlich,1,Unique
 Einwohner_insgesamt_weiblich,1,Unique
-Email,1,Unique
+Einzelhandelskaufkraft (Index),1,Unique
+Einzelhandelskaufkraft (in Mio EUR),1,Unique
+Einzelhandelskaufkraft (in Promille),1,Unique
+Einzelhandelskaufkraft pro Einwohner (in EUR),1,Unique
+Einzelhandelsumsatz (Index),1,Unique
+Einzelhandelsumsatz (in Mio EUR),1,Unique
+Einzelhandelsumsatz (in Promille),1,Unique
+Einzelhandelsumsatz pro Einwohner (in EUR),1,Unique
+Einzelhandelszentralität,1,Unique
+Einzelunternehmen,1,Unique
+Einzugsdatum,1,Unique
 Ende,1,Unique
 Energetischer Sanierungsfahrplan Bezirk Lichtenberg,1,Unique
 Energetischer Sanierungsfahrplan Bezirk Tempelhof-Schöneberg,1,Unique
-Energetischer Sanierungsfahrplan Bezirk Treptow-Köpenick,1,Unique
-Energieträger,1,Unique
 Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2018,1,Unique
 Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2020,1,Unique
 Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2021,1,Unique
@@ -1135,70 +1639,122 @@ Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2022,1,Unique
 Energieverbrauchsdaten der bezirklichen Abnahmestellen im Jahr 2023,1,Unique
 Ente,1,Unique
 Entfernung,1,Unique
+Entgelt,1,Unique
+Entleihungen,1,Unique
 Erneuerbare Energieträger,1,Unique
 Erreger,1,Unique
+Erverstaendnis_Veroeffentl.,1,Unique
 Evaluation Winterspiel- und Bewegungsangebote Berlin-Mitte Saison 2023/2024: Allgemeine Angaben,1,Unique
 Ewo - Einwohner 31.12.2018,1,Unique
 Ewo - Einwohner 31.12.2022,1,Unique
 F - anderes Wohnviertel ist attraktiver; Angaben in Prozent,1,Unique
+F Baugewerbe,1,Unique
 FKZ,1,Unique
 Faelle in denen Menschen leicht verletzt wurden,1,Unique
 Faelle in denen Menschen schwer verletzt wurden,1,Unique
 Faelle in denen ausschliesslich andere Hunde verletzt wurden,1,Unique
+Fahrzeugart,1,Unique
 Familienzentrum,1,Unique
 Farb_ID,1,Unique
 Farbe,1,Unique
+Fertigstellungsjahr,1,Unique
+Finanzamtsbereich,1,Unique
+Fluggäste - Gew. Verkehr - Aufkommen Ausland,1,Unique
+Fluggäste - Gew. Verkehr - Aufkommen Inland,1,Unique
+Fluggäste - Gew. Verkehr - Lokalaufkommen,1,Unique
+"Fluggäste - Gew. Verkehr - Lokalaufkommen, dav. Aussteiger",1,Unique
+"Fluggäste - Gew. Verkehr - Lokalaufkommen, dav. Einsteiger",1,Unique
+Fluggäste - Gew. Verkehr - Transitaufkommen,1,Unique
+Fluggäste - Gew. Verkehr - gesamt,1,Unique
+Fluggäste - Nichtgew. Verkehr - gesamt,1,Unique
+Fluggäste - gesamt,1,Unique
+Flugzeugbewegungen - Gew. Verkehr - Fracht und Postflüge,1,Unique
+Flugzeugbewegungen - Gew. Verkehr - Landungen,1,Unique
+Flugzeugbewegungen - Gew. Verkehr - MTOW (in t),1,Unique
+Flugzeugbewegungen - Gew. Verkehr - Passagierflüge,1,Unique
+"Flugzeugbewegungen - Gew. Verkehr - Passagierflüge, dar. Linie/Touristik",1,Unique
+Flugzeugbewegungen - Gew. Verkehr - Starts,1,Unique
+Flugzeugbewegungen - Gew. Verkehr - gesamt,1,Unique
+Flugzeugbewegungen - Gew. Verkehr - Übriger gewerblicher Verkehr (bis einschl. 2013),1,Unique
+Flugzeugbewegungen - Nichtgew. Verkehr - Werkverkehr,1,Unique
+Flugzeugbewegungen - Nichtgew. Verkehr - gesamt,1,Unique
+Flugzeugbewegungen - Nichtgew. Verkehr - Übriger nichtgewerbl. Verkehr,1,Unique
+Flugzeugbewegungen - gesamt,1,Unique
 Fläche in m²,1,Unique
 Freihändige Vergabe,1,Unique
 Fuktionsbezeichnung,1,Unique
 Fächerstatistik,1,Unique
 Fächerstatistik2,1,Unique
+Fälle aufgeklärt,1,Unique
+Fälle erfasst (Tatortprinzip),1,Unique
 Förderbereich,1,Unique
 Fördermaßnahme,1,Unique
 Förderprojekte,1,Unique
+Fördersumme in €,1,Unique
 G - Wohnung ist zu klein; Angaben in Prozent,1,Unique
-GT_AM|TATZ,1,Unique
+G Handel; Instandhaltung und Reparatur von Kfz,1,Unique
 Gaeste_Anzahl,1,Unique
 Garten am Haus,1,Unique
 Garten in Kleingartensparte,1,Unique
 Gase,1,Unique
+Gastmessen - Anzahl,1,Unique
+Gastmessen - Aussteller,1,Unique
+Gastmessen - Besucher,1,Unique
 Gebaute bzw. geplante Schulplätze,1,Unique
-Geber,1,Unique
 Geburten,1,Unique
-Geburtsjahr,1,Unique
+Gebäudeanzahl,1,Unique
+Gebäudeart,1,Unique
+Gehwege (selbstständige),1,Unique
+Gemarkung,1,Unique
+Gemeindepfarrer,1,Unique
+Gemeindestraßen,1,Unique
+"Gemeinsamer Schulbezirk (nur Grundschulen, falls zutreffend)",1,Unique
 Gemeinschaftsgartenprojekt,1,Unique
-Geo_X_Koor,1,Unique
-Geo_Y_Koor,1,Unique
+Genehmigungsjahr,1,Unique
+Genesene (geschätzt),1,Unique
+"Genesene (geschätzt, kumuliert)",1,Unique
+Gerade Hausnummer bis,1,Unique
+Gerade Hausnummer von,1,Unique
+Geringfügig Beschäftigte,1,Unique
+Geringfügig entlohnt Beschäftigte,1,Unique
 Gesamt,1,Unique
 Gesamtanzahl,1,Unique
+Gesamtausgaben in Euro,1,Unique
 Gesamtkosten in Euro,1,Unique
 Geschlecht1,1,Unique
+Gesellschaften mbH,1,Unique
+Getötete,1,Unique
+Grundmiete in €/qm-Klassen,1,Unique
 GruppeA,1,Unique
 GruppeB,1,Unique
 Gruppen ****,1,Unique
 Grünau,1,Unique
-H,1,Unique
 H - Wohnung ist zu groß; Angaben in Prozent,1,Unique
+H Verkehr und Lagerei,1,Unique
+Hallenkapazität in qm,1,Unique
 HaltestelleLat,1,Unique
 HaltestelleLon,1,Unique
 Hauptvariante,1,Unique
 Hauptvariante - Einwohner 31.12.2022,1,Unique
 Hauptvariante 2020,1,Unique
 Hauptvariante 2023,1,Unique
+Haushalte,1,Unique
+Haushalte (Promille),1,Unique
 Haushaltsjahr 2014,1,Unique
 Hauswirtschaftliches und technisches Personal,1,Unique
+Heizenergie,1,Unique
+Heizungsart,1,Unique
+Herkunftsland_37Auspr,1,Unique
 Hnr,1,Unique
+Hochschulart,1,Unique
 Hunderassen,1,Unique
 I - Wohnung/Gebäude ist in schlechtem Zustand bzw. mit Mängeln behaftet; Angaben in Prozent,1,Unique
+I Gastgewerbe,1,Unique
 I/A,1,Unique
-INBETRIEBNAHME,1,Unique
-INDRING,1,Unique
-IT_,1,Unique
-IT_.1,1,Unique
-IT_ANFANG_DATUM|TATZ,1,Unique
-IT_ANFANG_STUND,1,Unique
-Inbetriebnahmedatum der Einheit,1,Unique
+ID;Typ;Bezeichnung;Bereich;Bereichsbezeichnung;Einzelplan;Einzelplanbezeichnung;Kapitel;Kapitelbezeichnung;Hauptgruppe;Hauptgruppenbezeichnung;Obergruppe;Obergruppenbezeichnung;Gruppe;Gruppenbezeichnung;Hauptfunktion;Hauptfunktionsbezeichnung;Oberfunktion;Oberfunktionsbezeichnung;Funktion;Funktionsbezeichnung;Titelart;Titel;Titelbezeichnung;Jahr;BetragTyp;Betrag,1,Unique
+Ident,1,Unique
 Innenstadtrand,1,Unique
+Insolvenzverfahren (insgesamt),1,Unique
 Internet,1,Unique
 Inventarisierungsdatum,1,Unique
 Ist 2012 T€,1,Unique
@@ -1208,16 +1764,26 @@ IstPKW,1,Unique
 IstRad,1,Unique
 IstSonstig,1,Unique
 IstStrasse,1,Unique
-Jahr 2020,1,Unique
-Jahr 2022,1,Unique
-Jahr 2023,1,Unique
+J Information und Kommunikation,1,Unique
+Jahr (Stichtag 31.12.),1,Unique
+Jahr 2021,1,Unique
 Jury,1,Unique
 K - Wohnviertel ist zu laut bzw. zu dicht bebaut; Angaben in Prozent,1,Unique
+K Erbringung von Finanz- und Versicherungsdienstleistungen,1,Unique
 KB,1,Unique
-KOMMENTAR,1,Unique
 Kapazität nach Baumaßnahme,1,Unique
-Kennzahlen,1,Unique
+Kategorie,1,Unique
+Kaufkraft (Promille),1,Unique
+Kaufkraft (in Mio EUR),1,Unique
+Kaufkraft pro Einwohner (Index),1,Unique
+Kaufkraft pro Einwohner (in EUR),1,Unique
+Kaufkraft pro Einwohner Index (Europa),1,Unique
+Kaufkraft pro Haushalt (Index),1,Unique
+Kaufkraft pro Haushalt (in EUR),1,Unique
+Kaufkraft pro Haushalt Index (Europa),1,Unique
 "Kennzeichen, Juli 2012",1,Unique
+Kfz-Anhänger,1,Unique
+Kfz-Insgesamt,1,Unique
 Kinder - Entwicklung 2021 zu 2022 in Prozent,1,Unique
 Kinder - Jungen,1,Unique
 Kinder - Mädchen,1,Unique
@@ -1226,44 +1792,70 @@ Kinder gesamt,1,Unique
 Jugendliche",1,Unique
 Kindergartenkinder,1,Unique
 Kinderkrippenkinder,1,Unique
+Kinobesuche pro Einwohner,1,Unique
+Kirchengemeinden,1,Unique
 Kitaliste Nov 2025,1,Unique
 Kleingarten in einem Kleingartenverein,1,Unique
 Klärwerk,1,Unique
 Kohorte,1,Unique
 Kommentare,1,Unique
-Kontakt_Telefon,1,Unique
 Kontaktperson,1,Unique
+Konzerte - Anzahl,1,Unique
+Konzerte - Aussteller,1,Unique
+Konzerte - Besucher,1,Unique
 Koordinaten,1,Unique
 Kosten,1,Unique
 Kosten in Euro ,1,Unique
+Kraftfahrzeuganhänger insgesamt,1,Unique
+Kraftfahrzeuge insgesamt,1,Unique
+Krafträder,1,Unique
+Kraftstoff_Energiequelle,1,Unique
+Kraftstoffart,1,Unique
+Krankenhausapotheken,1,Unique
+Kreisstraßen,1,Unique
+Kreisstraßen (Baulast der Stadt),1,Unique
 Kurzbezeichnung,1,Unique
 Kurzbericht über die Entwicklung des Kulturetats der Hauptverwaltung [in EUR],1,Unique
-L,1,Unique
 L - zu wenig öffentliches Grün im Wohnviertel; Angaben in Prozent,1,Unique
-LIKT|,1,Unique
+L Grundstücks- und Wohnungswesen,1,Unique
 LOR,1,Unique
+Laborbestätigte Fälle (Meldedatum),1,Unique
+Laborbestätigte Fälle (kumuliert),1,Unique
+Laborbestätigte Fälle (übermittelt),1,Unique
 Land,1,Unique
-Landtagswahlkreis,1,Unique
+Land Berlin und sonstige Einrichtungen,1,Unique
 Lat,1,Unique
 Latitude,1,Unique
+Leichtverletzte,1,Unique
+Leinwände,1,Unique
 Leipzig,1,Unique
 Leipzig. Frauen,1,Unique
 Leipzig. Männer,1,Unique
 Leipziger Bevölkerungsvorausschätzung 2019 Hauptvariante,1,Unique
 Leipziger Bevölkerungsvorausschätzung 2019 Oberes Szenario,1,Unique
 Leipziger Bevölkerungsvorausschätzung 2019 Unteres Szenario,1,Unique
-Letzte Aktualisierung,1,Unique
 Lfd. Nr.,1,Unique
 Lfd.-Nr.,1,Unique
-Link,1,Unique
+Liegenschaft,1,Unique
 Lon,1,Unique
 Longitude,1,Unique
-LÄNGE (WGS84),1,Unique
+Luftfracht - Durchgang (Transit) (in t),1,Unique
+Luftfracht - Umschlag (an + ab) (in t),1,Unique
+"Luftfracht - Umschlag (an + ab), dav. Ausladungen (in t)",1,Unique
+"Luftfracht - Umschlag (an + ab), dav. Einladungen (in t)",1,Unique
+Luftfracht - gesamt (in t),1,Unique
+Luftfracht/Luftpost - gesamt (in t) (ab 2016),1,Unique
+Luftpost - gesamt (in t) (ab 2008),1,Unique
+Lärm durch Anwohner,1,Unique
+Lärm durch Eisenbahnverkehr,1,Unique
+Lärm durch Flugverkehr,1,Unique
+Lärm durch Straßenverkehr,1,Unique
+Lärm von Baustellen,1,Unique
+Lärm von Gewerbe/Industrie,1,Unique
 M - gesundheitliche Gründe (Wohnung ist nicht alten- bzw. behindertengerecht); Angaben in Prozent,1,Unique
-MQ_ID15,1,Unique
-MQ_KURZNAME,1,Unique
-MaStR-Nr. der Einheit,1,Unique
+"M Erbringung von freiberuflichen, wissenschaftlichen und technischen Dienstleistungen",1,Unique
 Mail,1,Unique
+Medienbestand,1,Unique
 Mediennummer,1,Unique
 Medientypcode,1,Unique
 Messwert,1,Unique
@@ -1272,32 +1864,29 @@ Mig. Hinter-grund,1,Unique
 Mig. Hintergrund,1,Unique
 Mig.Hinter-grund,1,Unique
 Mineralöle und Mineralölprodukte ,1,Unique
+Minimum der Lufttemperatur am Erdboden in 5cm Höhe,1,Unique
+Mitmacher_gesucht,1,Unique
 Modelltyp,1,Unique
-Monat,1,Unique
 N - Entmietung Sanierung Abriss des Gebäudes; Angaben in Prozent,1,Unique
-ND,1,Unique
-ND.1,1,Unique
-NSHO,1,Unique
+N Erbringung von sonstigen wirtschaftlichen Dienstleistungen,1,Unique
+NRF Summe Gebäude,1,Unique
 N_(Hochwert_Gauß-Krüger),1,Unique
 N_(Lat_Dezimalgrad),1,Unique
-N_IN_KFZ|,1,Unique
 Nachname,1,Unique
 Name ,1,Unique
-Name des Anlagenbetreibers (nur Org.),1,Unique
-Nettonennleistung der Einheit,1,Unique
 "Nettospiel-
 fläche m² (netto)",1,Unique
 Nichtoffenes Verfahren,1,Unique
+Niederschlagsform,1,Unique
+Note für Stadt,1,Unique
+Note für Wohngegend,1,Unique
+Note für Wohnung,1,Unique
+Nummer Fußnote,1,Unique
+Nutzfahrzeuge,1,Unique
 Nutzungsentgelt ,1,Unique
 Nutzungsübergabe,1,Unique
 O - Kündigung durch den Vermieter; Angaben in Prozent,1,Unique
 OBJECTID,1,Unique
-OE_DI,1,Unique
-OE_DO,1,Unique
-OE_FR,1,Unique
-OE_MI,1,Unique
-OE_MO,1,Unique
-OE_SA,1,Unique
 Obere Variante - Einwohner 31.12.2022,1,Unique
 Obere_Variante,1,Unique
 Objekt/Straße,1,Unique
@@ -1305,8 +1894,8 @@ Objekt_Zusatz,1,Unique
 Objektadresse,1,Unique
 Objektname,1,Unique
 Objektnummer,1,Unique
-Oeffnungszeiten,1,Unique
 Offenes Verfahren,1,Unique
+Organisatoren_Teilnehmer,1,Unique
 Ort/Termin,1,Unique
 Ortschaften,1,Unique
 Ortschaftsgebiet,1,Unique
@@ -1318,24 +1907,34 @@ Ortsteilnummer,1,Unique
 Ostdeutschland ohne Sachsen,1,Unique
 P - vermehrte Arbeit im Homeoffice; Angaben in Prozent,1,Unique
 PDFLink,1,Unique
-POSITION,1,Unique
-POS_DETAIL,1,Unique
 Pachtgarten nicht in einem Kleingartenverein,1,Unique
+Parkplatzkapazität (Kfz),1,Unique
 Partei_ID,1,Unique
 Partei_Name,1,Unique
 Patenbesuch,1,Unique
 Personal insgesamt,1,Unique
+Personalkosten Beschaeftigte gesamt in Mio EUR,1,Unique
 Personen 20 m²/ Pers.,1,Unique
-Politikbereich,1,Unique
+Personengesellschaften,1,Unique
+Pfarreien,1,Unique
+Pfarrseelsorger,1,Unique
+Pkw_gewerblich,1,Unique
+Pkw_privat,1,Unique
+Pos.-Nr. der ICD-10,1,Unique
 "Preise 
 (von/bis)",1,Unique
+Primärenergieproduktivität,1,Unique
 Prio,1,Unique
+Private Company Limited by Shares (Ltd),1,Unique
 Probennummer,1,Unique
-Produkt - Vergleichsbericht,1,Unique
 Produkte/Sektoren,1,Unique
 Profil,1,Unique
 ProfilLink,1,Unique
 PrognoseLink,1,Unique
+Projektbeschreibung,1,Unique
+Projektgebiet,1,Unique
+Projektjahr,1,Unique
+Projettitel,1,Unique
 Pädagogisches Personal und Verwaltungspersonal,1,Unique
 Pädagogisches Personal und Verwaltungspersonal - Alter - 25 bis unter 40 Jahre ,1,Unique
 Pädagogisches Personal und Verwaltungspersonal - Alter - 40 bis unter 54 Jahre,1,Unique
@@ -1348,63 +1947,103 @@ Pädagogisches Personal und Verwaltungspersonal - berufliche Stellung - Angestel
 Pädagogisches Personal und Verwaltungspersonal - berufliche Stellung - Personen im freiwilligen sozialen Jahr/ BFD,1,Unique
 Pädagogisches Personal und Verwaltungspersonal - berufliche Stellung - Sonstige,1,Unique
 Q - anderer Grund (bitte nennen); Angaben in Prozent,1,Unique
-RICHTUNG,1,Unique
-RLANGT,1,Unique
+Q Gesundheits- und Sozialwesen,1,Unique
+Qualitätsniveau der nachfolgenden Spalten (QN_3),1,Unique
+Qualitätsniveau der nachfolgenden Spalten (QN_4),1,Unique
+"R Kunst, Unterhaltung und Erholung",1,Unique
 RSS_Name,1,Unique
-RSUCH|D,1,Unique
+Radwege-kombinierte Rad-Gehwege,1,Unique
 Rang1,1,Unique
-Registrierungsdatum der Einheit,1,Unique
+Raumanzahl (durchschnittliche),1,Unique
+Realisierte Kurzarbeit - Beschäftigte in Kurzarbeit,1,Unique
+Realisierte Kurzarbeit - Betriebe,1,Unique
+Region,1,Unique
+Registrierungssdatum,1,Unique
+Reinigungsgebiet,1,Unique
 Rentner,1,Unique
+Rückbau-Art,1,Unique
+Rückbaugebiete,1,Unique
+S Erbringung von sonstigen Dienstleistungen,1,Unique
 SBB,1,Unique
 SBB_Anzahl,1,Unique
 SCHADENSHOEHE,1,Unique
-SPUR,1,Unique
-STRASSE,1,Unique
+SJ 21/22,1,Unique
+SJ 22/23,1,Unique
+SJ 23/24,1,Unique
+SJ 24/25,1,Unique
 SUBahn,1,Unique
 SUEntfernung,1,Unique
-S_GUT,1,Unique
 Sachgruppe,1,Unique
 Sachsen ohne Umlandkreise,1,Unique
+Samstag,1,Unique
+Schadstoffgruppe für Kraftfahrzeuge (Umwelt-Plakette) nach Feinstaubverordnung,1,Unique
 Schlagworte,1,Unique
 Schul-Nr.,1,Unique
 Schulbausanierung Maßnahme,1,Unique
+Schuldenstand am Ende des Berichtsquartals (in Euro),1,Unique
+Schuldnerart - Verbraucher,1,Unique
+Schuldnerart - ehemals selbstständig Tätige mit Regelinsolvenzverfahren,1,Unique
+Schuldnerart - ehemals selbstständig Tätige mit Verbraucherinsolvenzverfahren,1,Unique
+"Schuldnerart - natürrliche Personen als Gesellschafter u.Ä., Nachlässe u. Gesamtgut",1,Unique
 Schulnr.,1,Unique
 Schulplätze,1,Unique
+Schwerbehindertenquote  (in %),1,Unique
+Schwerverletzte,1,Unique
 Schüler,1,Unique
 "Senatsverwaltung für Mobilität, Verkehr, Klimaschutz und Umwelt",1,Unique
+Servicenummer,1,Unique
 Sicht,1,Unique
 Sigel ausführende Bibliothek,1,Unique
 Sigel besitzende Bibliothek,1,Unique
+Sitzplätze,1,Unique
 Sitzung_stattgefunden,1,Unique
 Sitzungsart,1,Unique
 Sitzungsdauer_in_Minuten,1,Unique
 Sonderthemen,1,Unique
-Sonstige Informationen,1,Unique
+Sonntag,1,Unique
+Sonstige Veranstaltungen - Anzahl,1,Unique
+Sonstige Veranstaltungen - Aussteller,1,Unique
+Sonstige Veranstaltungen - Besucher,1,Unique
 Sonstiges,1,Unique
 Sozialversicherungspflichtig Beschäftigte,1,Unique
+Spielstätten,1,Unique
 Sprachen,1,Unique
 StaLa Sachsen 2020 7. regionalisierte Prog. V1,1,Unique
 StaLa Sachsen 2020 7. regionalisierte Prog. V2,1,Unique
-Staat,1,Unique
-Stadt,1,Unique
+Staatsstraßen,1,Unique
+Staatsstraßen (Baulast der Stadt),1,Unique
 Stadt bzw. Landkreis,1,Unique
-Stadtbezirk,1,Unique
 Stadtbezirksbeirat,1,Unique
 Stadtratswahkreis,1,Unique
 Stadtteil,1,Unique
-Stand,1,Unique
+Stadtteil (Kriminalität),1,Unique
+Stadtteil zus. (Kriminalität),1,Unique
 Start,1,Unique
 Station,1,Unique
-Statistischer Bezirk,1,Unique
+Stationsidentifikationsnummer,1,Unique
 "Status 
 (grün=offen, gelb: Öffnung steht bevor, rot: noch geschlossen)",1,Unique
 Steinkohlen,1,Unique
+Sterbefälle,1,Unique
+Sterbefälle (kumuliert),1,Unique
 Steuereinnahmen Berlins im Monat Januar 2014,1,Unique
+Stichtag,1,Unique
+"Strasse, Haus-Nr.",1,Unique
 Strassenschluessel,1,Unique
 Straße + Hausnummer,1,Unique
+Straßen des überörtlichen Verkehrs (gesamt),1,Unique
+Straßenbrücken (Anzahl),1,Unique
+Straßentunnel (Anzahl),1,Unique
+Strom 2019 [kWh/a],1,Unique
+Strom 2020 [kWh/a],1,Unique
+Strom 2021 [kWh/a],1,Unique
+Strom 2022 [kWh/a],1,Unique
+Strom 2023 [kWh/a],1,Unique
 Strom und andere Energieträger,1,Unique
 Stromverbrauch [kWh],1,Unique
 Studenten,1,Unique
+Studienanfänger im Berichtsjahr gesamt,1,Unique
+Studierende,1,Unique
 Summe in TEUR,1,Unique
 Symbol,1,Unique
 TATZEIT_ANFANG_DATUM,1,Unique
@@ -1412,22 +2051,53 @@ TATZEIT_ANFANG_STUNDE,1,Unique
 TATZEIT_ENDE_DATUM,1,Unique
 TATZEIT_ENDE_STUNDE,1,Unique
 TN_VW,1,Unique
+Tabellenkopf,1,Unique
 Tage,1,Unique
+Tagesmaximum Windspitze,1,Unique
+Tagesmaximum der Lufttemperatur in 2m Höhe,1,Unique
+Tagesminimum der Lufttemperatur in 2m Höhe,1,Unique
+Tagesmittel Windgeschwindigkeit,1,Unique
+Tagesmittel der Relativen Feuchte,1,Unique
+Tagesmittel der Temperatur,1,Unique
+Tagesmittel des Bedeckungsgrades,1,Unique
+Tagesmittel des Dampfdruckes,1,Unique
+Tagesmittel des Luftdrucks,1,Unique
+Tageswert Schneehöhe,1,Unique
+Tagungen - Anzahl,1,Unique
+Tagungen - Aussteller,1,Unique
+Tagungen - Besucher,1,Unique
 Target,1,Unique
 Tarifzone,1,Unique
-"Tarifzone (Erläuterung: 1 = 1€, 2 = 2€, 3 = 3€)",1,Unique
+"Tarifzone (Erläuterung: 1 = 1, 2 = 2, 3 = 3)",1,Unique
+Tatverdächtige insgesamt,1,Unique
 Teilverkehrszelle,1,Unique
+Telefon,1,Unique
 Temp,1,Unique
 Termin,1,Unique
 Termin bis,1,Unique
 Termin von,1,Unique
 Tielbezeichnung,1,Unique
+Tilgung (in Euro),1,Unique
+Titel_der_Initiative,1,Unique
+Todesursache,1,Unique
 Tourismus,1,Unique
+Tourismus_Betriebe gesamt,1,Unique
+Tourismus_Betten gesamt,1,Unique
+Traeger,1,Unique
 Traeger ,1,Unique
+Treffpunkt,1,Unique
 Träger ,1,Unique
 Träger bzw. Verantwortlicher,1,Unique
 "Trägerwohnraum in der psychiatrischen, ambulanten Pflichtversorgung Berlin-Mitte",1,Unique
+Tunnelstrecke an Bundesautobahn,1,Unique
+Tunnelstrecke an Straßen des überörtlichen Verkehrs,1,Unique
 UART,1,Unique
+UB: Arbeitslosigkeit im weiteren Sinne,1,Unique
+UB: Personen fern vom Arbeitslosenstatus,1,Unique
+UB: Personen im weiteren Sinne arbeitslos,1,Unique
+UB: Personen nahe am Arbeitslosenstatus,1,Unique
+UB: Unterbeschäftigung im engeren Sinne,1,Unique
+UB: Unterbeschäftigung im weiteren Sinne (ohne Kurzarbeit),1,Unique
 UGEMEINDE,1,Unique
 UJAHR,1,Unique
 UKATEGORIE,1,Unique
@@ -1443,205 +2113,37 @@ UWW_Name,1,Unique
 Umlandkreise - Nordsachsen und LK Leipzig,1,Unique
 Umzugsdatum,1,Unique
 Unbekannt,1,Unique
-Unnamed: 100,1,Unique
-Unnamed: 101,1,Unique
-Unnamed: 102,1,Unique
-Unnamed: 103,1,Unique
-Unnamed: 104,1,Unique
-Unnamed: 105,1,Unique
-Unnamed: 106,1,Unique
-Unnamed: 107,1,Unique
-Unnamed: 108,1,Unique
-Unnamed: 109,1,Unique
-Unnamed: 110,1,Unique
-Unnamed: 111,1,Unique
-Unnamed: 112,1,Unique
-Unnamed: 113,1,Unique
-Unnamed: 114,1,Unique
-Unnamed: 115,1,Unique
-Unnamed: 116,1,Unique
-Unnamed: 117,1,Unique
-Unnamed: 118,1,Unique
-Unnamed: 119,1,Unique
-Unnamed: 120,1,Unique
-Unnamed: 121,1,Unique
-Unnamed: 122,1,Unique
-Unnamed: 123,1,Unique
-Unnamed: 124,1,Unique
-Unnamed: 125,1,Unique
-Unnamed: 126,1,Unique
-Unnamed: 127,1,Unique
-Unnamed: 128,1,Unique
-Unnamed: 129,1,Unique
-Unnamed: 130,1,Unique
-Unnamed: 131,1,Unique
-Unnamed: 132,1,Unique
-Unnamed: 133,1,Unique
-Unnamed: 134,1,Unique
-Unnamed: 135,1,Unique
-Unnamed: 136,1,Unique
-Unnamed: 137,1,Unique
-Unnamed: 138,1,Unique
-Unnamed: 139,1,Unique
-Unnamed: 140,1,Unique
-Unnamed: 141,1,Unique
-Unnamed: 142,1,Unique
-Unnamed: 143,1,Unique
-Unnamed: 144,1,Unique
-Unnamed: 145,1,Unique
-Unnamed: 146,1,Unique
-Unnamed: 147,1,Unique
-Unnamed: 148,1,Unique
-Unnamed: 149,1,Unique
-Unnamed: 150,1,Unique
-Unnamed: 151,1,Unique
-Unnamed: 152,1,Unique
-Unnamed: 153,1,Unique
-Unnamed: 154,1,Unique
-Unnamed: 155,1,Unique
-Unnamed: 156,1,Unique
-Unnamed: 157,1,Unique
-Unnamed: 158,1,Unique
-Unnamed: 159,1,Unique
-Unnamed: 160,1,Unique
-Unnamed: 161,1,Unique
-Unnamed: 162,1,Unique
-Unnamed: 163,1,Unique
-Unnamed: 164,1,Unique
-Unnamed: 165,1,Unique
-Unnamed: 166,1,Unique
-Unnamed: 167,1,Unique
-Unnamed: 168,1,Unique
-Unnamed: 169,1,Unique
-Unnamed: 170,1,Unique
-Unnamed: 171,1,Unique
-Unnamed: 172,1,Unique
-Unnamed: 173,1,Unique
-Unnamed: 174,1,Unique
-Unnamed: 175,1,Unique
-Unnamed: 176,1,Unique
-Unnamed: 177,1,Unique
-Unnamed: 178,1,Unique
-Unnamed: 179,1,Unique
-Unnamed: 180,1,Unique
-Unnamed: 181,1,Unique
-Unnamed: 182,1,Unique
-Unnamed: 183,1,Unique
-Unnamed: 184,1,Unique
-Unnamed: 185,1,Unique
-Unnamed: 186,1,Unique
-Unnamed: 187,1,Unique
-Unnamed: 188,1,Unique
-Unnamed: 189,1,Unique
-Unnamed: 190,1,Unique
-Unnamed: 191,1,Unique
-Unnamed: 192,1,Unique
-Unnamed: 193,1,Unique
-Unnamed: 194,1,Unique
-Unnamed: 195,1,Unique
-Unnamed: 196,1,Unique
-Unnamed: 197,1,Unique
-Unnamed: 198,1,Unique
-Unnamed: 199,1,Unique
-Unnamed: 200,1,Unique
-Unnamed: 201,1,Unique
-Unnamed: 202,1,Unique
-Unnamed: 203,1,Unique
-Unnamed: 204,1,Unique
-Unnamed: 205,1,Unique
-Unnamed: 206,1,Unique
-Unnamed: 207,1,Unique
-Unnamed: 208,1,Unique
-Unnamed: 209,1,Unique
-Unnamed: 210,1,Unique
-Unnamed: 211,1,Unique
-Unnamed: 212,1,Unique
-Unnamed: 213,1,Unique
-Unnamed: 214,1,Unique
-Unnamed: 215,1,Unique
-Unnamed: 216,1,Unique
-Unnamed: 217,1,Unique
-Unnamed: 218,1,Unique
-Unnamed: 219,1,Unique
-Unnamed: 220,1,Unique
-Unnamed: 221,1,Unique
-Unnamed: 222,1,Unique
-Unnamed: 223,1,Unique
-Unnamed: 224,1,Unique
-Unnamed: 225,1,Unique
-Unnamed: 226,1,Unique
-Unnamed: 227,1,Unique
-Unnamed: 228,1,Unique
-Unnamed: 229,1,Unique
-Unnamed: 230,1,Unique
-Unnamed: 231,1,Unique
-Unnamed: 232,1,Unique
-Unnamed: 233,1,Unique
-Unnamed: 234,1,Unique
-Unnamed: 235,1,Unique
-Unnamed: 236,1,Unique
-Unnamed: 237,1,Unique
-Unnamed: 238,1,Unique
-Unnamed: 239,1,Unique
-Unnamed: 240,1,Unique
-Unnamed: 241,1,Unique
-Unnamed: 242,1,Unique
-Unnamed: 243,1,Unique
-Unnamed: 244,1,Unique
-Unnamed: 245,1,Unique
-Unnamed: 246,1,Unique
-Unnamed: 247,1,Unique
-Unnamed: 248,1,Unique
-Unnamed: 249,1,Unique
-Unnamed: 250,1,Unique
-Unnamed: 251,1,Unique
-Unnamed: 252,1,Unique
-Unnamed: 253,1,Unique
-Unnamed: 254,1,Unique
-Unnamed: 255,1,Unique
-Unnamed: 256,1,Unique
-Unnamed: 66,1,Unique
-Unnamed: 67,1,Unique
-Unnamed: 68,1,Unique
-Unnamed: 69,1,Unique
-Unnamed: 70,1,Unique
-Unnamed: 71,1,Unique
-Unnamed: 72,1,Unique
-Unnamed: 73,1,Unique
-Unnamed: 74,1,Unique
-Unnamed: 75,1,Unique
-Unnamed: 76,1,Unique
-Unnamed: 77,1,Unique
-Unnamed: 78,1,Unique
-Unnamed: 79,1,Unique
-Unnamed: 80,1,Unique
-Unnamed: 81,1,Unique
-Unnamed: 82,1,Unique
-Unnamed: 83,1,Unique
-Unnamed: 84,1,Unique
-Unnamed: 85,1,Unique
-Unnamed: 86,1,Unique
-Unnamed: 87,1,Unique
-Unnamed: 88,1,Unique
-Unnamed: 89,1,Unique
-Unnamed: 90,1,Unique
-Unnamed: 91,1,Unique
-Unnamed: 92,1,Unique
-Unnamed: 93,1,Unique
-Unnamed: 94,1,Unique
-Unnamed: 95,1,Unique
-Unnamed: 96,1,Unique
-Unnamed: 97,1,Unique
-Unnamed: 98,1,Unique
-Unnamed: 99,1,Unique
+Unfälle mit Personenschaden,1,Unique
+Unfälle mit schwerwiegendem Sachschaden durch Einfluss berauschender Mittel,1,Unique
+Unfälle mit schwerwiegendem Sachschaden im engeren Sinne,1,Unique
+Ungerade Hausnummer bis,1,Unique
+Ungerade Hausnummer von,1,Unique
+Unnamed: 23,1,Unique
+Unnamed: 24,1,Unique
+Unnamed: 26,1,Unique
+Unnamed: 27,1,Unique
+Unnamed: 28,1,Unique
+Unnamed: 30,1,Unique
+Unnamed: 31,1,Unique
+Unnamed: 32,1,Unique
+Unnamed: 33,1,Unique
+Unnamed: 34,1,Unique
+Unterbeschäftigungsquote,1,Unique
 Untere_Variante,1,Unique
 Untergruppe,1,Unique
+Unterkunftsart,1,Unique
 Unterkunftsart_nach,1,Unique
 Unterkunftsart_vor,1,Unique
 Unterrichtsräume,1,Unique
 Url zu Biografie,1,Unique
 VERSUCH,1,Unique
 Veranstaltungsort,1,Unique
+Verbrauch Wärme (witterungsbereinigt)  2019 [kWh/a],1,Unique
+Verbrauch Wärme (witterungsbereinigt)  2020 [kWh/a],1,Unique
+Verbrauch Wärme (witterungsbereinigt)  2021 [kWh/a],1,Unique
+Verbrauch Wärme (witterungsbereinigt)  2022 [kWh/a],1,Unique
+Verbrauch Wärme (witterungsbereinigt)  2023 [kWh/a],1,Unique
+Verfahren insgesamt,1,Unique
 Verfgbare Mittel,1,Unique
 Verfgbares Soll,1,Unique
 Verfgungsbeschr?nkung,1,Unique
@@ -1649,13 +2151,18 @@ Vergabeart,1,Unique
 Vergabesumme in TEUR,1,Unique
 Verhandlungsverfahren mit Teilnahmewettbewerb,1,Unique
 Verhandlungsverfahren ohne Teilnahmewettbewerb,1,Unique
-Verkauft seit Beginn des Angebotes bis 31.12.06,1,Unique
+Verkehrseinheiten (VE),1,Unique
 Versorgungsgrad Kindergarten in %,1,Unique
 Versorgungsgrad Kinderkrippe in %,1,Unique
 Vertrag,1,Unique
 Veröffentlichungsjahr,1,Unique
+Voraussichtliche Forderungen in Mio. Euro,1,Unique
+Voraussichtliches_Ende,1,Unique
 Vorlagen_und_Antraege,1,Unique
 Vorname1,1,Unique
+WZ-Abschnitt 2008 (1 Buchstabe),1,Unique
+WZ-Abschnitt 2008 (1 Buchstabe) zus.,1,Unique
+Wahlart,1,Unique
 Wahlobjekt,1,Unique
 Wahlraum,1,Unique
 Wanderungssaldo 2018,1,Unique
@@ -1667,23 +2174,26 @@ Wasserqualitaet,1,Unique
 Wasserqualitaet_lageso,1,Unique
 Wasserqualitaet_predict,1,Unique
 Wbz,1,Unique
+Website,1,Unique
+Wegezweck,1,Unique
 Wegzug - alte Definition,1,Unique
 Wegzug - revidiert,1,Unique
 Weitere Öffnungszeiten,1,Unique
 Weitere_Hinweise,1,Unique
 Westdeutschland,1,Unique
 Wickeltisch,1,Unique
+Wintersemester,1,Unique
 Wochenendgrundstück,1,Unique
 Wochentag,1,Unique
-Wohndauer,1,Unique
+Wohnfläche,1,Unique
+Wohnfläche pro Person,1,Unique
 Wärmemedium,1,Unique
 Wärmeverbrauch witterungsbereinigt [kWh],1,Unique
-X-Koordinate,1,Unique
 XGCSWGS84,1,Unique
-Y-Koordinate,1,Unique
 YGCSWGS84,1,Unique
 Z?hler,1,Unique
 Zahlungsart,1,Unique
+Zeitfenster,1,Unique
 Zentrum,1,Unique
 Zentrum in Transformation,1,Unique
 Zielgruppe,1,Unique
@@ -1693,24 +2203,108 @@ Zusammengefasste Geburtenziffer ,1,Unique
 Zusatz,1,Unique
 Zuzug - alte Definition,1,Unique
 Zuzug - revidiert,1,Unique
-Zweck,1,Unique
 Zügigkeit nach Baumaßnahme,1,Unique
-_DATUM|TATZ,1,Unique
-_STUND,1,Unique
 abs_nr,1,Unique
 abs_nr17,1,Unique
 absolut,1,Unique
 aktive technik verbaut ,1,Unique
 aktueller status,1,Unique
+altersbereich,1,Unique
 amtliche Einwohnerzahl Basis: Zensus 2011,1,Unique
-annotation,1,Unique
 anschluss nutzbar,1,Unique
 anschlussltg_kw,1,Unique
-art,1,Unique
+ansprechpartner,1,Unique
 art_des_gebiets,1,Unique
 art_dtsch,1,Unique
-aus_der_reihe,1,Unique
-band,1,Unique
+attributes.ANORDNUNG,1,Unique
+attributes.ANZAHL_LADEPUNKTE,1,Unique
+attributes.ANZAHL_LADESAEULEN,1,Unique
+attributes.AREA_HA,1,Unique
+attributes.AREA_QM,1,Unique
+attributes.ATTRIBUT_DATUM,1,Unique
+attributes.AUSLAGESTELLE,1,Unique
+attributes.AUSLEGUNG,1,Unique
+attributes.Auslegung,1,Unique
+attributes.BARRIEREFREI,1,Unique
+attributes.BAUMART,1,Unique
+attributes.BAUMNUMMER,1,Unique
+attributes.BAUMSCHLUESSEL,1,Unique
+attributes.BEKANNTMACHUNG,1,Unique
+attributes.BESCHLUSS,1,Unique
+attributes.BETRIEBSSTATUS,1,Unique
+attributes.BEZAHLSYSTEM,1,Unique
+attributes.BEZEICHNUNGZUSATZ,1,Unique
+attributes.BEZUGNR,1,Unique
+attributes.B_NR,1,Unique
+attributes.CreationDate,1,Unique
+attributes.Creator,1,Unique
+attributes.DAMENTOILETTE,1,Unique
+attributes.DIG_DATUM,1,Unique
+attributes.EINLEITUNG,1,Unique
+attributes.EINRICHTUNGSNAME,1,Unique
+attributes.EINZUGSGEBIET,1,Unique
+attributes.ERKLAERUNG,1,Unique
+attributes.EditDate,1,Unique
+attributes.Editor,1,Unique
+attributes.GEBIET,1,Unique
+attributes.GEBIETNR,1,Unique
+attributes.GEBIETSARTNUMMER,1,Unique
+attributes.GEBIETSNAME,1,Unique
+attributes.GEBNR,1,Unique
+attributes.GEMEINDESCHLUESSEL,1,Unique
+attributes.GENEHMIGUNG,1,Unique
+attributes.GEWAESSER,1,Unique
+attributes.GEWORDNUNG,1,Unique
+attributes.Gewaesser,1,Unique
+attributes.GewaesserOrdnung,1,Unique
+attributes.GlobalID,1,Unique
+attributes.HAUSNUMMER,1,Unique
+attributes.HERRENTOILETTE,1,Unique
+attributes.HORT,1,Unique
+attributes.INBETRIEBNAHMEDATUM,1,Unique
+attributes.INFO,1,Unique
+attributes.INKRAFTSEIT,1,Unique
+attributes.INTEGRATIV,1,Unique
+attributes.KGGS,1,Unique
+attributes.KITA,1,Unique
+attributes.LANDKREIS,1,Unique
+attributes.LFDNR,1,Unique
+attributes.NENNLEISTUNG,1,Unique
+attributes.NUTZNR,1,Unique
+attributes.NUTZUNG,1,Unique
+attributes.NUTZUNG_LANG,1,Unique
+attributes.OBJEKTSCHLUESSEL,1,Unique
+attributes.OEFFNUNGSZEITEN,1,Unique
+attributes.ORIENTATION,1,Unique
+attributes.PFLANZDATUM,1,Unique
+attributes.PROFILE,1,Unique
+attributes.RECHTSSTATUS,1,Unique
+attributes.RECHT_URL,1,Unique
+attributes.ROLLSTUHLGERECHT,1,Unique
+attributes.SCHUTZZONE,1,Unique
+attributes.SNUMMER,1,Unique
+attributes.SPRACHEN,1,Unique
+attributes.STADTNAME,1,Unique
+attributes.STANDORT,1,Unique
+attributes.STANDORTTYP,1,Unique
+attributes.Shape__Area,1,Unique
+attributes.Shape__Length,1,Unique
+attributes.Status,1,Unique
+attributes.TEILZONE,1,Unique
+attributes.TRAEGERTYP,1,Unique
+attributes.TYPE,1,Unique
+attributes.TYP_ERWEITERT,1,Unique
+attributes.UML_NR,1,Unique
+attributes.VERBUND,1,Unique
+attributes.VERFUEGBARE_STECKERTYPEN,1,Unique
+attributes.WAHLBEZIRK,1,Unique
+attributes.WICKELTISCH,1,Unique
+attributes.WWW,1,Unique
+attributes.XPLANUNG,1,Unique
+attributes.inKraftseit,1,Unique
+ausbau,1,Unique
+ausgesprochene Adoptionen im Berichtsjahr,1,Unique
+ausschließlich geringfügig Beschäftigte,1,Unique
 barrierearm,1,Unique
 barrierefrei,1,Unique
 baulast,1,Unique
@@ -1720,10 +2314,9 @@ baumnummer,1,Unique
 begehung ,1,Unique
 bemerkungen,1,Unique
 beschlussfähig,1,Unique
-beschreibungstext,1,Unique
+beschreibung,1,Unique
 bestelladresse,1,Unique
 bestellbarkeit,1,Unique
-betrag,1,Unique
 betreiber,1,Unique
 bewaesserungsmenge_in_liter,1,Unique
 bezID,1,Unique
@@ -1731,7 +2324,6 @@ bezNAME,1,Unique
 bike_lft,1,Unique
 bike_rgt,1,Unique
 bike_total,1,Unique
-bild,1,Unique
 bis_str,1,Unique
 bis_str_nr,1,Unique
 breitengrad,1,Unique
@@ -1751,70 +2343,119 @@ car_speed70,1,Unique
 car_total,1,Unique
 cb,1,Unique
 classification,1,Unique
-content,1,Unique
+darunter Allgemeinmedizin,1,Unique
+darunter Chirugie,1,Unique
+darunter Frauenheilkunde,1,Unique
+darunter Innere Medizin,1,Unique
+darunter Kinder- und Jugendmedizin,1,Unique
+darunter Krafträder,1,Unique
+darunter LKW,1,Unique
+darunter PKW,1,Unique
+darunter Verarbeitendes Gewerbe (in Mill. Euro),1,Unique
+darunter Zugmaschienen,1,Unique
+darunter eröffnete Verfahren,1,Unique
+darunter in Praxen,1,Unique
 date_local,1,Unique
 datum_des_beginns,1,Unique
 datum_des_beginns_des_vorhabens,1,Unique
 datum_des_endes,1,Unique
 datum_des_endes_des_vorhabens,1,Unique
+davon Auszubildende in  Branddirektion,1,Unique
+davon Auszubildende in Verwaltungsberufen,1,Unique
+davon Auszubildende in gewerblich-technischen und weiteren Berufen,1,Unique
+davon Auszubildende in soziale Berufen,1,Unique
+davon Baugewerbe (in Mill. Euro),1,Unique
+"davon Grundstücks- und Wohnungswesen, Finanz- und Unternehmensdienstleister (in Mill. Euro)",1,Unique
+"davon Handel, Verkehr und Gastgewerbe, Information und Kommunikation (in Mill. Euro)",1,Unique
+"davon Land- und Forstwirtschaft, Fischerei (in Mill. Euro)",1,Unique
+davon Produzierendes Gewerbe (in Mill. Euro),1,Unique
+davon Studierende in  Branddirektion,1,Unique
+davon Studierende in Verwaltungsberufen,1,Unique
+davon Studierende in gewerblich-technischen und weiteren Berufen,1,Unique
+davon Studierende in sozialen Berufen,1,Unique
 davon ohne Angabe,1,Unique
+"davon Öffentliche und sonstige Dienstleister, Erziehung und Gesundheit (in Mill. Euro)",1,Unique
 deutsch sprechen männlich,1,Unique
 deutsch sprechen weiblich,1,Unique
 deutsch verstehen männlich,1,Unique
 deutsch verstehen weiblich,1,Unique
-dokument_url,1,Unique
 dt_name,1,Unique
+durchm_aussen_mm,1,Unique
+durchm_innen_mm,1,Unique
 dynamicdata,1,Unique
-eMail,1,Unique
+e_mail,1,Unique
 east_etrs89,1,Unique
+eigentuemer,1,Unique
 einmal,1,Unique
+einrichtung,1,Unique
+einrichtung_projekte,1,Unique
 email,1,Unique
-email2,1,Unique
-empfaengerid,1,Unique
 ergänzende Informationen,1,Unique
 erscheinungsjahr,1,Unique
 erschlname,1,Unique
+et_pegel_m,1,Unique
 facilitylocationwgs84lat,1,Unique
 facilitylocationwgs84lon,1,Unique
 feldbezeichner,1,Unique
+fid,1,Unique
 finanzierungsform,1,Unique
+fiok_m_nhn,1,Unique
+fiok_u_gok,1,Unique
+fiuk_m_nhn,1,Unique
+fiuk_u_gok,1,Unique
 ga_lang_deutsch,1,Unique
 ga_lang_wiss,1,Unique
 gar nicht,1,Unique
 gattung,1,Unique
 gattung_deutsch,1,Unique
-geber,1,Unique
+geaendert,1,Unique
 gefahrdrohendes Anspringen von Menschen,1,Unique
+geometry.paths,1,Unique
 gesamtbetrag_der_fšrderfŠhigen_ausgaben_des_vorhabens,1,Unique
 gesamtbetrag_förderfähiger_ausgaben,1,Unique
+geschaetzte_Teilnehmerzahl,1,Unique
 gilt_bis,1,Unique
 gilt_von,1,Unique
 globalid,1,Unique
 gueltige_stimmen,1,Unique
+gwm_name,1,Unique
+h_ueber_nn,1,Unique
 haushaltsid,1,Unique
 haushaltstyp,1,Unique
 heavy_lft,1,Unique
 heavy_rgt,1,Unique
 heavy_total,1,Unique
-herausgeber_autor,1,Unique
 herkunftsregion,1,Unique
 hnr_z,1,Unique
+homepage,1,Unique
+id;bezirk;name;shortname;strasse;plz_ort;von;bis;veranstalter;oeffnungszeiten;email;w3;bemerkungen;lat;lng;RSS-Titel;RSS-Beschreibung;immer-kostenlos;Mo;Di;Mi;Do;Fr;Sa;So;closed-exc;closed-exc-readable;hours-exc;hours-exc-readable;ignore;merged;international;action;image;urheberschaft;train;train_distance;short_distance,1,Unique
 im Ausland; Angaben in Prozent,1,Unique
 im selben Stadtbezirk; Angaben in Prozent,1,Unique
 im selben Wohnviertel wie bisher; Angaben in Prozent,1,Unique
 in %,1,Unique
 in %.1,1,Unique
 in %.2,1,Unique
+in Adoptionspflege untergebrachte Kinder und Jugendliche am Jahresende,1,Unique
+in Adoptionspflege untergebrachte Kinder und Jugendliche am Jahresende - männlich,1,Unique
+in Adoptionspflege untergebrachte Kinder und Jugendliche am Jahresende - weiblich,1,Unique
+in Krankenhausapotheken - insgesamt,1,Unique
+in Krankenhausapotheken - männlich,1,Unique
+in Krankenhausapotheken - weiblich,1,Unique
 in Sachsen außer Leipzig und näherer Umgebung; Angaben in Prozent,1,Unique
 in der näheren Umgebung Leipzigs max. 30 Min. mit dem Pkw von Leipzig entfernt; Angaben in Prozent,1,Unique
 in einem Gemeinschaftsgarten,1,Unique
 in einem anderen Stadtbezirk Leipzigs; Angaben in Prozent,1,Unique
 in einem anderen der neuen Bundesländer außer nähere Umgebung; Angaben in Prozent,1,Unique
 in einem der alten Bundesländer; Angaben in Prozent,1,Unique
+in öffentlichen Apotheken - insgesamt,1,Unique
+in öffentlichen Apotheken - männlich,1,Unique
+in öffentlichen Apotheken - weiblich,1,Unique
 inbetrieb_am,1,Unique
 insgesamt,1,Unique
+installationdate,1,Unique
 interventionskategorie,1,Unique
 ja; Angaben in Prozent,1,Unique
+jahr,1,Unique
 kandidat_akadgrad,1,Unique
 kandidat_beruftaetigkeit,1,Unique
 kandidat_gebiet_name,1,Unique
@@ -1835,28 +2476,28 @@ knoten,1,Unique
 knoten_01,1,Unique
 kofinanzierung_aus_nationalen_öffentlichen_Mitteln,1,Unique
 kofinanzierungssatz_in_prozent,1,Unique
-kontakt,1,Unique
 kr_durchm,1,Unique
-kum. Ist bis Monat:,1,Unique
 ladeart,1,Unique
 ladeeinr_art,1,Unique
 laenge_m,1,Unique
 laengengrad,1,Unique
 laufende Nummer    ,1,Unique
 letzte_bewaesserung,1,Unique
-long,1,Unique
+lfd. Nr.,1,Unique
 mehrfach,1,Unique
 möglicherweise; Angaben in Prozent,1,Unique
 nachpflanzung_geplant,1,Unique
 name_des_beguenstigten,1,Unique
 name_des_begünstigten,1,Unique
 nein; Angaben in Prozent,1,Unique
+next,1,Unique
 "nicht zahlende Besucherinnen
 und Besucher",1,Unique
 north_etrs89,1,Unique
 nr_senatsverwaltung,1,Unique
 nummer,1,Unique
 objektkuerzel,1,Unique
+of_uf,1,Unique
 original names,1,Unique
 originalbild,1,Unique
 ortsd_text,1,Unique
@@ -1897,140 +2538,54 @@ pgrNAME,1,Unique
 plrID,1,Unique
 plrNAME,1,Unique
 plz_ort,1,Unique
-politikbereich,1,Unique
+previous,1,Unique
 projektnummer,1,Unique
-properties.ANORDNUNG,1,Unique
-properties.ANZAHL_LADEPUNKTE,1,Unique
-properties.ANZAHL_LADESAEULEN,1,Unique
-properties.AREA_HA,1,Unique
-properties.AREA_QM,1,Unique
-properties.ATTRIBUT_DATUM,1,Unique
-properties.AUSLAGESTELLE,1,Unique
-properties.AUSLEGUNG,1,Unique
-properties.Auslegung,1,Unique
-properties.BARRIEREFREI,1,Unique
-properties.BAUMART,1,Unique
-properties.BAUMNUMMER,1,Unique
-properties.BAUMSCHLUESSEL,1,Unique
-properties.BEKANNTMACHUNG,1,Unique
-properties.BESCHLUSS,1,Unique
-properties.BETRIEBSSTATUS,1,Unique
-properties.BEZAHLSYSTEM,1,Unique
-properties.BEZEICHNUNGZUSATZ,1,Unique
-properties.BEZUGNR,1,Unique
-properties.B_NR,1,Unique
-properties.Betriebsbe,1,Unique
-properties.CreationDate,1,Unique
-properties.Creator,1,Unique
-properties.DAMENTOILETTE,1,Unique
-properties.DIG_DATUM,1,Unique
-properties.Di,1,Unique
-properties.Do,1,Unique
-properties.EINLEITUNG,1,Unique
-properties.EINRICHTUNGSNAME,1,Unique
-properties.EINZUGSGEBIET,1,Unique
-properties.ERKLAERUNG,1,Unique
-properties.EditDate,1,Unique
-properties.Editor,1,Unique
-properties.Fr,1,Unique
-properties.GEBIET,1,Unique
-properties.GEBIETNR,1,Unique
-properties.GEBIETSARTNUMMER,1,Unique
-properties.GEBIETSNAME,1,Unique
-properties.GEBNR,1,Unique
-properties.GEMEINDESCHLUESSEL,1,Unique
-properties.GENEHMIGUNG,1,Unique
-properties.GEWAESSER,1,Unique
-properties.GEWORDNUNG,1,Unique
-properties.Gewaesser,1,Unique
-properties.GewaesserOrdnung,1,Unique
-properties.GlobalID,1,Unique
-properties.HAUSNUMMER,1,Unique
-properties.HERRENTOILETTE,1,Unique
-properties.HORT,1,Unique
-properties.INBETRIEBNAHMEDATUM,1,Unique
-properties.INFO,1,Unique
-properties.INKRAFTSEIT,1,Unique
-properties.INTEGRATIV,1,Unique
-properties.KGGS,1,Unique
-properties.KITA,1,Unique
-properties.LANDKREIS,1,Unique
-properties.LFDNR,1,Unique
-properties.Mi,1,Unique
-properties.Mo,1,Unique
-properties.NENNLEISTUNG,1,Unique
-properties.NUTZNR,1,Unique
-properties.NUTZUNG,1,Unique
-properties.NUTZUNG_LANG,1,Unique
-properties.OBJEKTSCHLUESSEL,1,Unique
-properties.OEFFNUNGSZEITEN,1,Unique
-properties.ORIENTATION,1,Unique
+properties.BEZIRK,1,Unique
+properties.BEZIRKSREG,1,Unique
+properties.BLOCK_ADDR,1,Unique
+properties.BLOCK_ID,1,Unique
+properties.BLOCK_NAME,1,Unique
+properties.BLOCK_SIDE,1,Unique
+properties.BUS,1,Unique
+properties.CAR_SHARE,1,Unique
+properties.CENTRE_POI,1,Unique
+properties.CONSTRUCTI,1,Unique
+properties.DISABLED,1,Unique
+properties.Direction,1,Unique
+properties.EINWOZAHL,1,Unique
+properties.END_OFFSET,1,Unique
+properties.EV,1,Unique
+properties.FREE_PARK,1,Unique
+properties.LENGTH_PER,1,Unique
+properties.Lane,1,Unique
+properties.Location,1,Unique
 properties.OT,1,Unique
-properties.PFLANZDATUM,1,Unique
-properties.PROFILE,1,Unique
-properties.RECHTSSTATUS,1,Unique
-properties.RECHT_URL,1,Unique
-properties.ROLLSTUHLGERECHT,1,Unique
-properties.RSS-Beschreibung,1,Unique
-properties.RSS-Titel,1,Unique
+properties.PAID_PARK,1,Unique
+properties.PLANRAUM,1,Unique
+properties.Position,1,Unique
+properties.RATES,1,Unique
+properties.RESIDENTIA,1,Unique
+properties.RESTRICTIO,1,Unique
 properties.SBZ,1,Unique
-properties.SCHUTZZONE,1,Unique
-properties.SNUMMER,1,Unique
-properties.SPRACHEN,1,Unique
-properties.STADTNAME,1,Unique
-properties.STANDORT,1,Unique
-properties.STANDORTTYP,1,Unique
+properties.SEGMENTID,1,Unique
+properties.SEG_LENGTH,1,Unique
+properties.SPACES_CAR,1,Unique
+properties.SPACES_DIS,1,Unique
+properties.SPACES_EV,1,Unique
+properties.SPACES_TAX,1,Unique
+properties.START_OFFS,1,Unique
 properties.STB,1,Unique
-properties.Sa,1,Unique
-properties.Shape__Area,1,Unique
-properties.Shape__Length,1,Unique
-properties.So,1,Unique
-properties.Status,1,Unique
-properties.TEILZONE,1,Unique
-properties.TRAEGERTYP,1,Unique
-properties.TYPE,1,Unique
-properties.TYP_ERWEITERT,1,Unique
-properties.UML_NR,1,Unique
-properties.VERBUND,1,Unique
-properties.VERFUEGBARE_STECKERTYPEN,1,Unique
-properties.WAHLBEZIRK,1,Unique
-properties.WICKELTISCH,1,Unique
-properties.WWW,1,Unique
-properties.XPLANUNG,1,Unique
-properties.action,1,Unique
+properties.Start of Operation,1,Unique
+properties.TAXI,1,Unique
+properties.TOTAL_SPAC,1,Unique
 properties.area,1,Unique
 properties.b_type,1,Unique
-properties.bemerkungen,1,Unique
-properties.bezirk,1,Unique
-properties.bis,1,Unique
-properties.closed-exc,1,Unique
-properties.closed-exc-readable,1,Unique
-properties.email,1,Unique
-properties.hours-exc,1,Unique
-properties.hours-exc-readable,1,Unique
-properties.id,1,Unique
-properties.ignore,1,Unique
-properties.image,1,Unique
-properties.immer-kostenlos,1,Unique
-properties.inKraftseit,1,Unique
+properties.category,1,Unique
+properties.info,1,Unique
 properties.inter_id,1,Unique
-properties.international,1,Unique
 properties.job_id,1,Unique
-properties.lat,1,Unique
-properties.lng,1,Unique
-properties.merged,1,Unique
 properties.name,1,Unique
-properties.oeffnungszeiten,1,Unique
-properties.plz_ort,1,Unique
-properties.short_distance,1,Unique
-properties.shortname,1,Unique
-properties.strasse,1,Unique
-properties.train,1,Unique
-properties.train_distance,1,Unique
-properties.urheberschaft,1,Unique
-properties.veranstalter,1,Unique
-properties.von,1,Unique
-properties.w3,1,Unique
+properties.teuID,1,Unique
 publictoilet,1,Unique
 publictransportbarrierfree,1,Unique
 publictransportbarrierfreeinfo,1,Unique
@@ -2038,9 +2593,13 @@ publictransportlineheavyrail,1,Unique
 publictransportlinetram,1,Unique
 publictransporturl,1,Unique
 quelle,1,Unique
+region1,1,Unique
+results,1,Unique
+schul_id,1,Unique
 schulart,1,Unique
 schule,1,Unique
 schulnummer,1,Unique
+schultraeger,1,Unique
 schutzzweck,1,Unique
 segment_id,1,Unique
 sekundäres_ESF-Thema,1,Unique
@@ -2082,10 +2641,13 @@ so_y,1,Unique
 so_zu_id,1,Unique
 so_zu_tx,1,Unique
 sonstige Form des Gärtnerns,1,Unique
+sonstige Rechtsformen,1,Unique
 sstrgsname,1,Unique
 st_durchm,1,Unique
 st_umfang,1,Unique
 stadtbez,1,Unique
+stadtteile,1,Unique
+stala_id,1,Unique
 stammumfang,1,Unique
 standort,1,Unique
 standort beauftragt,1,Unique
@@ -2095,6 +2657,7 @@ steckertyp_1,1,Unique
 steckertyp_2,1,Unique
 steckertyp_3,1,Unique
 steckertyp_4,1,Unique
+stichworte,1,Unique
 str,1,Unique
 str_nr,1,Unique
 territoriale_umsetzungsmechanismen,1,Unique
@@ -2103,15 +2666,22 @@ tiefbau ,1,Unique
 timestamp,1,Unique
 titel,1,Unique
 totalparkingcapacity,1,Unique
+traeger,1,Unique
 tstamp,1,Unique
-typ,1,Unique
+tägliche Niederschlagshöhe,1,Unique
+tägliche Sonnenscheindauer,1,Unique
 ungueltige_stimmzettel,1,Unique
 unions-kofinanzierungssatz_pro_prioritŠtsachse,1,Unique
-untertitel,1,Unique
 uptime,1,Unique
+url,1,Unique
+utm_east,1,Unique
+utm_north,1,Unique
 v85,1,Unique
+veranstaltungen.veranstaltung,1,Unique
+"version=""1.0""?>",1,Unique
 von_str,1,Unique
 von_str_nr,1,Unique
+vorgemerkte Adoptionsbewerbungen am Jahresende,1,Unique
 vz_aufst,1,Unique
 vz_bez,1,Unique
 vz_ftyp,1,Unique
@@ -2144,7 +2714,9 @@ wahlraeume,1,Unique
 wahlraeume-barrierefrei,1,Unique
 wintkat,1,Unique
 wiss_name,1,Unique
+x,1,Unique
 x_wert,1,Unique
+y,1,Unique
 y_wert,1,Unique
 "zahlende 
 Besucherinnen
@@ -2152,10 +2724,8 @@ und  Besucher",1,Unique
 zeitraum-ende,1,Unique
 zeitraum-start,1,Unique
 zw,1,Unique
-zweck,1,Unique
-|LOR|SCHAD,1,Unique
-|TATZ,1,Unique
-|V,1,Unique
+|------------------------------------------------------|,1,Unique
+Öffentliche Apotheken,1,Unique
 Öffnung,1,Unique
 Öffnungszeiten,1,Unique
 Öffnungszeiten Ende,1,Unique
@@ -2163,9 +2733,6 @@ zweck,1,Unique
 Über uns,1,Unique
 Überplanmäßige Ausgaben,1,Unique
 Überplanmäßige VE,1,Unique
+"Übrige Wirtschaftsbereiche (A, B, D, E, P)",1,Unique
 öffentliche Ausschreibung,1,Unique
-ÿþB e f r a g t e ,1,Unique
-ÿþG e s c h l e c h t ,1,Unique
-ÿþG e s c h l e c h t   u n d   A l t e r s g r u p p e ,1,Unique
-ÿþR e g i o n ,1,Unique
-ÿþS t a d t ,1,Unique
+übrige Unfälle mit schwerwiegendem Sachschaden ohne Alkoholeinfluss,1,Unique

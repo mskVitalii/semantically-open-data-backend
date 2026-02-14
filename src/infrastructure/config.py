@@ -97,9 +97,7 @@ MONGODB_URI = os.getenv(
     f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@mongodb:{MONGO_PORT}/{MONGO_INITDB_DATABASE}?authSource={MONGO_INITDB_DATABASE}",
 )
 
-RERANKER_HOST = os.getenv("RERANKER_HOST", "localhost")
-RERANKER_PORT = int(os.getenv("RERANKER_PORT", 8084))
-RERANKER_URL = f"http://{RERANKER_HOST}:{RERANKER_PORT}"
+RERANKER_URL = os.getenv("RERANKER_URL", "http://reranker:8084")
 
 LLM_HOST = os.getenv("LLM_HOST", "localhost")
 LLM_PORT = int(os.getenv("LLM_PORT", 11434))
