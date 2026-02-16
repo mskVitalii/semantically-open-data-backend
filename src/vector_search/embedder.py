@@ -10,6 +10,7 @@ from src.infrastructure.config import (
     DEFAULT_SPARSE_DIM,
     DEFAULT_SPARSE_MODE,
     get_embedder_url,
+    get_embedding_dim,
 )
 from src.infrastructure.logger import get_prefixed_logger
 
@@ -163,6 +164,46 @@ async def embed_batch_hybrid(
 # ---------------------------------------------------------------------------
 # Unified entry points (mode-aware)
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Token-level embeddings (PCA → 3D / TSV)
+# ---------------------------------------------------------------------------
+
+async def embed_tokens(
+    text: str,
+    embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
+) -> dict:
+    """Tokenize text, embed each token, PCA → 3D via a specific embedder."""
+    embedder_url = get_embedder_url(embedder_model)
+    dimension = get_embedding_dim(embedder_model)
+    logger.info(f"embed_tokens via {embedder_model.value} (dim={dimension})")
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            url=embedder_url + "/embed_tokens",
+            json={"text": text, "dimension": dimension},
+            timeout=120.0,
+        )
+    response.raise_for_status()
+    return response.json()
+
+
+async def embed_tokens_tsv(
+    text: str,
+    embedder_model: EmbedderModel = DEFAULT_EMBEDDER_MODEL,
+) -> dict:
+    """Same as embed_tokens but returns TSV format for TensorFlow Projector."""
+    embedder_url = get_embedder_url(embedder_model)
+    dimension = get_embedding_dim(embedder_model)
+    logger.info(f"embed_tokens_tsv via {embedder_model.value} (dim={dimension})")
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            url=embedder_url + "/embed_tokens_tsv",
+            json={"text": text, "dimension": dimension},
+            timeout=120.0,
+        )
+    response.raise_for_status()
+    return response.json()
+
 
 async def embed_single(
     text: str,

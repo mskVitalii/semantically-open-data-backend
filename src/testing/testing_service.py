@@ -18,7 +18,7 @@ from src.testing.testing_dto import (
     DatasetResultItem,
 )
 from src.infrastructure.config import SearchMode
-from src.vector_search.embedder import embed_batch_with_ids, embed_multi
+from src.vector_search.embedder import embed_multi
 
 logger = get_prefixed_logger(__name__, "TESTING_SERVICE")
 
@@ -341,7 +341,11 @@ class TestingService:
             )
 
             # Step 3: Search + rerank per research question, then merge
-            search_limit = reranker_candidates if use_reranker and reranker_candidates else config.limit
+            search_limit = (
+                reranker_candidates
+                if use_reranker and reranker_candidates
+                else config.limit
+            )
             all_datasets = []
             for vec, rq in zip(vectors, research_questions_objs):
                 datasets = await self.dataset_service.search_datasets_with_vector(
@@ -559,7 +563,15 @@ class TestingService:
 
         # Create all tasks
         tasks = [
-            run_with_semaphore(question, config, s_mode, use_filters, use_multiquery, use_reranker, lang_code)
+            run_with_semaphore(
+                question,
+                config,
+                s_mode,
+                use_filters,
+                use_multiquery,
+                use_reranker,
+                lang_code,
+            )
             for question in questions_to_test
             for config in request.test_configs
             for s_mode in search_modes_to_run
@@ -956,8 +968,7 @@ class TestingService:
                             == config_dict["used_multi_query"]
                             and result_has_filters
                             == config_dict["has_location_filters"]
-                            and result.used_reranker
-                            == config_dict["used_reranker"]
+                            and result.used_reranker == config_dict["used_reranker"]
                         ):
                             question_result = result
                             break
@@ -1021,8 +1032,7 @@ class TestingService:
                             == config_dict["used_multi_query"]
                             and result_has_filters
                             == config_dict["has_location_filters"]
-                            and result.used_reranker
-                            == config_dict["used_reranker"]
+                            and result.used_reranker == config_dict["used_reranker"]
                         ):
                             question_result = result
                             break
@@ -1070,8 +1080,7 @@ class TestingService:
                             == config_dict["used_multi_query"]
                             and result_has_filters
                             == config_dict["has_location_filters"]
-                            and result.used_reranker
-                            == config_dict["used_reranker"]
+                            and result.used_reranker == config_dict["used_reranker"]
                         ):
                             # Collect all scores from this result
                             all_scores_for_exp.extend(
@@ -1115,8 +1124,7 @@ class TestingService:
                             == config_dict["used_multi_query"]
                             and result_has_filters
                             == config_dict["has_location_filters"]
-                            and result.used_reranker
-                            == config_dict["used_reranker"]
+                            and result.used_reranker == config_dict["used_reranker"]
                         ):
                             question_result = result
                             break
@@ -1184,8 +1192,7 @@ class TestingService:
                             == config_dict["used_multi_query"]
                             and result_has_filters
                             == config_dict["has_location_filters"]
-                            and result.used_reranker
-                            == config_dict["used_reranker"]
+                            and result.used_reranker == config_dict["used_reranker"]
                         ):
                             question_result = result
                             break
@@ -1253,8 +1260,7 @@ class TestingService:
                             == config_dict["used_multi_query"]
                             and result_has_filters
                             == config_dict["has_location_filters"]
-                            and result.used_reranker
-                            == config_dict["used_reranker"]
+                            and result.used_reranker == config_dict["used_reranker"]
                         ):
                             question_result = result
                             break
@@ -1313,15 +1319,14 @@ class TestingService:
                             == config_dict["used_multi_query"]
                             and result_has_filters
                             == config_dict["has_location_filters"]
-                            and result.used_reranker
-                            == config_dict["used_reranker"]
+                            and result.used_reranker == config_dict["used_reranker"]
                         ):
                             question_result = result
                             break
 
                 if question_result and question_result.datasets:
                     datasets = question_result.datasets
-                    k_values = [5, 10]
+                    k_values = [5, 10, 25]
 
                     row = {
                         "Question": question[:80] + "..."
