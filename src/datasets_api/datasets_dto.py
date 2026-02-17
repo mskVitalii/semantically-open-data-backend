@@ -28,6 +28,9 @@ class DatasetSearchRequest(BaseModel):
     country: Optional[str] = Field(None, description="Filter by country")
     year_from: Optional[int] = Field(None, description="Filter datasets created from this year (inclusive)")
     year_to: Optional[int] = Field(None, description="Filter datasets created until this year (inclusive)")
+    use_multi_query: bool = Field(
+        False, description="Enable multi-query RAG: LLM generates research questions, searches for each, merges results"
+    )
     use_reranker: bool = Field(False, description="Rerank results using cross-encoder reranker")
     reranker_candidates: Optional[int] = Field(
         None, ge=10, le=200,

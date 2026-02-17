@@ -4,9 +4,11 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Query
 from starlette.responses import StreamingResponse
 
-from .datasets_dto import DatasetSearchRequest, DatasetSearchResponse
+from .datasets_dto import DatasetSearchRequest, DatasetSearchResponse, DatasetResponse
 from .qa_cache.qa_cache import check_qa_cache, set_qa_cache
+from ..domain.repositories.dataset_repository import DatasetRepository, get_dataset_repository
 from ..domain.services.dataset_service import DatasetService, get_dataset_service
+from ..domain.services.mongo_indexer import index_datasets_to_mongo
 from ..domain.services.llm_dto import (
     LLMQuestion,
     LLMQuestionWithEmbeddings,
@@ -23,6 +25,7 @@ from ..infrastructure.config import (
     SearchMode,
 )
 from ..infrastructure.logger import get_prefixed_logger
+from ..utils.datasets_utils import get_web_services
 from ..vector_search.embedder import embed_multi
 
 logger = get_prefixed_logger("API /datasets")
@@ -35,32 +38,35 @@ router = APIRouter(prefix="/datasets", tags=["datasets"])
 async def search_datasets(
     request: DatasetSearchRequest,
     service: DatasetService = Depends(get_dataset_service),
+    llm_service: LLMService = Depends(get_llm_service_dep),
 ) -> DatasetSearchResponse:
     """
     Dataset search
 
     Supported parameters:
     - query: full-text search by name and description
-    - embedder_model: embedder model to use for search (baai-bge-m3, intfloat-multilingual-e5-base, jinaai-jina-embeddings-v3, sentence-transformers-labse)
-    - tags: filter by tags
-    - city: filter by city
-    - state: filter by state/region
-    - country: filter by country
-    - year_from: filter datasets created from this year (inclusive)
-    - year_to: filter datasets created until this year (inclusive)
+    - embedder_model: embedder model to use for search
+    - use_multi_query: LLM generates research questions, searches for each, merges results
+    - use_reranker: rerank results using cross-encoder
+    - tags, city, state, country, year_from, year_to: filters
     - limit: number of results (1–100)
     - offset: pagination offset
     """
     try:
         original_limit = request.limit
-        if request.use_reranker:
-            request.limit = request.reranker_candidates or min(request.limit * 3, 100)
 
-        result = await service.search_datasets(
-            request,
-            embedder_model=request.embedder_model,
-            search_mode=request.search_mode,
-        )
+        if request.use_multi_query:
+            result = await _search_with_multi_query(request, service, llm_service)
+        else:
+            if request.use_reranker:
+                request.limit = request.reranker_candidates or min(
+                    request.limit * 3, 100
+                )
+            result = await service.search_datasets(
+                request,
+                embedder_model=request.embedder_model,
+                search_mode=request.search_mode,
+            )
 
         if request.use_reranker and result.datasets:
             result.datasets = await service.rerank_results(
@@ -69,11 +75,55 @@ async def search_datasets(
                 top_n=original_limit,
             )
             result.total = len(result.datasets)
-            result.limit = original_limit
 
+        result.limit = original_limit
+        result.datasets = result.datasets[:original_limit]
+        result.total = len(result.datasets)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _search_with_multi_query(
+    request: DatasetSearchRequest,
+    service: DatasetService,
+    llm_service: LLMService,
+) -> DatasetSearchResponse:
+    """Generate research questions via LLM, search for each, merge & deduplicate."""
+    research_questions = await llm_service.get_research_questions(request.query)
+    logger.info(f"Multi-query: generated {len(research_questions)} research questions")
+
+    # Expand limit for merging: fetch more per sub-query so we have enough after dedup
+    per_query_limit = (
+        request.reranker_candidates if request.use_reranker else request.limit
+    )
+    per_query_limit = max(per_query_limit, request.limit)
+
+    # Search for each research question
+    seen: dict[str, DatasetResponse] = {}  # id → best DatasetResponse
+    for rq in research_questions:
+        sub_request = request.model_copy(
+            update={"query": rq.question, "limit": per_query_limit}
+        )
+        sub_result = await service.search_datasets(
+            sub_request,
+            embedder_model=request.embedder_model,
+            search_mode=request.search_mode,
+        )
+        for ds in sub_result.datasets:
+            ds_id = ds.metadata.id
+            if ds_id not in seen or ds.score > seen[ds_id].score:
+                seen[ds_id] = ds
+
+    # Sort by best score, descending
+    merged = sorted(seen.values(), key=lambda d: d.score, reverse=True)
+
+    return DatasetSearchResponse(
+        datasets=merged,
+        total=len(merged),
+        limit=request.limit,
+        offset=request.offset,
+    )
 
 
 # endregion
@@ -155,6 +205,33 @@ async def index_datasets(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/index_mongo")
+async def index_mongo(
+    clear_before: bool = Query(False, description="Drop all MongoDB collections before indexing"),
+    repository: DatasetRepository = Depends(get_dataset_repository),
+):
+    """
+    Index datasets from filesystem into MongoDB (no Qdrant).
+
+    Scans city directories (berlin, chemnitz, leipzig, dresden):
+    - Upserts _metadata.json into the 'metadata' collection (by source id)
+    - Loads data files (.csv/.json, skipping _dataset_info.json and web_services.json)
+      into per-dataset collections
+    """
+    try:
+        result = await index_datasets_to_mongo(repository, clear_before=clear_before)
+        if not result["ok"]:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Completed with {result['errors']} errors",
+            )
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/clear")
 async def clear_all_data(
     clear_store: bool = Query(True, description="Clear MongoDB store"),
@@ -226,6 +303,20 @@ async def step_1_embeddings(
     return questions_with_embeddings
 
 
+def _enrich_with_web_services(datasets: list) -> list[dict]:
+    """Convert datasets to dicts and attach web_services for geo datasets."""
+    result = []
+    for ds in datasets:
+        ds_dict = ds.to_dict()
+        metadata = ds_dict.get("metadata", {})
+        if metadata.get("is_geo"):
+            ws = get_web_services(metadata.get("id", ""))
+            if ws:
+                ds_dict["web_services"] = ws
+        result.append(ds_dict)
+    return result
+
+
 async def generate_events(
     question: str,
     datasets_service: DatasetService,
@@ -241,6 +332,7 @@ async def generate_events(
     use_llm_interpretation: bool = True,
     use_reranker: bool = False,
     reranker_candidates: int | None = None,
+    is_geo: bool = False,
 ):
     step = 0
     try:
@@ -327,7 +419,11 @@ async def generate_events(
         result_questions_with_datasets: list[LLMQuestionWithDatasets] = []
         for i, embedding in enumerate(embeddings):
             default_limit = 25
-            search_limit = reranker_candidates if use_reranker and reranker_candidates else default_limit
+            search_limit = (
+                reranker_candidates
+                if use_reranker and reranker_candidates
+                else default_limit
+            )
             datasets = await datasets_service.search_datasets_with_vector(
                 embedding.embeddings,
                 search_mode=search_mode,
@@ -352,6 +448,11 @@ async def generate_events(
                     datasets=datasets,
                 )
             )
+            datasets_payload = (
+                _enrich_with_web_services(datasets)
+                if is_geo
+                else [ds.to_dict() for ds in datasets]
+            )
             yield f"data: {
                 json.dumps(
                     {
@@ -360,7 +461,7 @@ async def generate_events(
                         'status': 'OK',
                         'data': {
                             'question_hash': embedding.question_hash,
-                            'datasets': [ds.to_dict() for ds in datasets],
+                            'datasets': datasets_payload,
                         },
                     }
                 )
@@ -450,8 +551,13 @@ async def stream(
         False, description="Rerank results using cross-encoder reranker"
     ),
     reranker_candidates: int = Query(
-        None, ge=10, le=200,
-        description="How many candidates to fetch before reranking (default: limit * 3)",
+        None,
+        ge=10,
+        le=200,
+        description="How many candidates to fetch before reranking",
+    ),
+    is_geo: bool = Query(
+        True, description="Include web_services data for geo datasets in results"
     ),
     datasets_service: DatasetService = Depends(get_dataset_service),
     llm_service: LLMService = Depends(get_llm_service_dep),
@@ -472,6 +578,7 @@ async def stream(
             use_llm_interpretation,
             use_reranker,
             reranker_candidates,
+            is_geo,
         ),
         media_type="text/event-stream",
     )

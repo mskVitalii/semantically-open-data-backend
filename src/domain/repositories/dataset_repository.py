@@ -212,6 +212,66 @@ class DatasetRepository:
             "organizations": organizations,
         }
 
+    async def upsert_metadata(self, meta: dict[str, Any]) -> str:
+        """Upsert dataset metadata by its source 'id' field.
+
+        If a document with the same 'id' already exists, it is updated;
+        otherwise a new document is inserted.
+
+        Returns:
+            The string representation of the MongoDB _id.
+        """
+        external_id = meta.get("id")
+        if not external_id:
+            raise ValueError("metadata must contain an 'id' field")
+
+        now = datetime.now(UTC)
+        meta["updated_at"] = now
+
+        result = await self.meta_collection.find_one_and_update(
+            {"id": external_id},
+            {"$set": meta, "$setOnInsert": {"created_at": now}},
+            upsert=True,
+            return_document=ReturnDocument.AFTER,
+        )
+        return str(result["_id"])
+
+    async def insert_data_rows(
+        self,
+        collection_name: str,
+        rows: list[dict[str, Any]],
+        batch_size: int = 1000,
+    ) -> int:
+        """Insert data rows into a named collection in batches.
+
+        Returns:
+            Number of inserted documents.
+        """
+        if not rows:
+            return 0
+
+        inserted = 0
+        collection = self.db[collection_name]
+        for i in range(0, len(rows), batch_size):
+            batch = rows[i : i + batch_size]
+            now = datetime.now(UTC)
+            for row in batch:
+                row["created_at"] = now
+                row["updated_at"] = now
+            try:
+                result = await collection.insert_many(batch)
+                inserted += len(result.inserted_ids)
+            except Exception as e:
+                logger.error(
+                    f"Error inserting batch into {collection_name}: {e}"
+                )
+        return inserted
+
+    async def collection_has_data(self, collection_name: str) -> bool:
+        """Check if a collection already contains documents."""
+        count = await self.db[collection_name].count_documents({}, limit=1)
+        return count > 0
+
     async def index_dataset(self, dataset: Dataset, batch_size: int = 1000):
         if not isinstance(dataset, Dataset):
             raise Exception("dataset is not Dataset type. WTF?")

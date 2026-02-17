@@ -362,6 +362,58 @@ def extract_fields_from_folder(
     return extract_fields(all_records)
 
 
+# ---------------------------------------------------------------------------
+# Web services lookup (cached id → directory mapping)
+# ---------------------------------------------------------------------------
+
+_web_services_index: dict[str, Path] | None = None
+
+
+def _build_web_services_index() -> dict[str, Path]:
+    """Scan all dataset dirs, return {dataset_id: dir_path} for dirs with web_services.json."""
+    from src.infrastructure.paths import PROJECT_ROOT
+
+    index: dict[str, Path] = {}
+    datasets_root = PROJECT_ROOT / "src" / "datasets"
+    for city_dir in datasets_root.iterdir():
+        if not city_dir.is_dir() or city_dir.name.startswith("_"):
+            continue
+        for dataset_dir in city_dir.iterdir():
+            if not dataset_dir.is_dir():
+                continue
+            ws_file = dataset_dir / "web_services.json"
+            meta_file = dataset_dir / "_metadata.json"
+            if ws_file.exists() and meta_file.exists():
+                try:
+                    with open(meta_file, "r", encoding="utf-8") as f:
+                        data = json.loads(f.read())
+                    dataset_id = data.get("id")
+                    if dataset_id:
+                        index[dataset_id] = dataset_dir
+                except Exception:
+                    continue
+    logger.info(f"Web services index built: {len(index)} geo datasets")
+    return index
+
+
+def get_web_services(dataset_id: str) -> list[dict] | None:
+    """Load web_services.json for a given dataset ID. Returns None if not found."""
+    global _web_services_index
+    if _web_services_index is None:
+        _web_services_index = _build_web_services_index()
+
+    dataset_dir = _web_services_index.get(dataset_id)
+    if dataset_dir is None:
+        return None
+
+    ws_file = dataset_dir / "web_services.json"
+    try:
+        with open(ws_file, "r", encoding="utf-8") as f:
+            return json.loads(f.read())
+    except Exception:
+        return None
+
+
 def load_metadata_from_file(metadata_file: Path) -> DatasetMetadataWithFields | None:
     """
     Load DatasetMetadataWithFields from JSON file
