@@ -129,6 +129,8 @@ async def index_datasets_to_mongo(
             logger.warning(f"City directory not found: {city_path}")
             continue
 
+        logger.info(f"Processing city: {city}")
+
         for dataset_dir in city_path.iterdir():
             if not dataset_dir.is_dir():
                 continue
@@ -140,8 +142,7 @@ async def index_datasets_to_mongo(
 
             metadata = load_metadata_from_file(metadata_file)
             if metadata is None:
-                logger.warning(f"Failed to load metadata: {metadata_file}")
-                errors += 1
+                skipped += 1
                 continue
 
             try:
@@ -157,7 +158,6 @@ async def index_datasets_to_mongo(
                 )
 
                 if await repository.collection_has_data(collection_name):
-                    logger.debug(f"Collection already has data, skipping: {collection_name}")
                     indexed += 1
                     continue
 
@@ -178,7 +178,9 @@ async def index_datasets_to_mongo(
 
                 total_rows += rows_for_dataset
                 indexed += 1
-                logger.debug(f"Indexed {metadata.title}: {rows_for_dataset} rows")
+                logger.info(
+                    f"[{indexed}] {metadata.title}: {rows_for_dataset} rows"
+                )
 
             except Exception as e:
                 logger.error(f"Error indexing {dataset_dir.name}: {e}")

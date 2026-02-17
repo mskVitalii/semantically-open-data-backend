@@ -6,7 +6,10 @@ from starlette.responses import StreamingResponse
 
 from .datasets_dto import DatasetSearchRequest, DatasetSearchResponse, DatasetResponse
 from .qa_cache.qa_cache import check_qa_cache, set_qa_cache
-from ..domain.repositories.dataset_repository import DatasetRepository, get_dataset_repository
+from ..domain.repositories.dataset_repository import (
+    DatasetRepository,
+    get_dataset_repository,
+)
 from ..domain.services.dataset_service import DatasetService, get_dataset_service
 from ..domain.services.mongo_indexer import index_datasets_to_mongo
 from ..domain.services.llm_dto import (
@@ -207,7 +210,9 @@ async def index_datasets(
 
 @router.post("/index_mongo")
 async def index_mongo(
-    clear_before: bool = Query(False, description="Drop all MongoDB collections before indexing"),
+    clear_before: bool = Query(
+        False, description="Drop all MongoDB collections before indexing"
+    ),
     repository: DatasetRepository = Depends(get_dataset_repository),
 ):
     """
@@ -471,7 +476,7 @@ async def generate_events(
         step += 1
         # endregion
 
-        # region 3. INTERPRETATION
+        # region 4. INTERPRETATION
         if use_llm_interpretation:
             logger.info(f"step: {step}. INTERPRETATION start")
             start_3 = time.perf_counter()
