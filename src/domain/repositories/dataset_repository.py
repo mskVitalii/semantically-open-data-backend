@@ -272,6 +272,48 @@ class DatasetRepository:
         count = await self.db[collection_name].count_documents({}, limit=1)
         return count > 0
 
+    async def find_collection_name_by_external_id(
+        self, external_id: str
+    ) -> Optional[str]:
+        """Resolve per-dataset collection name from source external id.
+
+        Looks up the metadata document, builds the collection name using
+        the same ``sanitize_title(title) + "_" + _id`` convention that the
+        mongo indexer uses.
+        """
+        doc = await self.meta_collection.find_one({"id": external_id})
+        if doc is None:
+            return None
+        title = doc.get("title", "")
+        safe_title = sanitize_title(title)
+        collection_name = f"{safe_title}_{doc['_id']}"
+        # Apply the same sanitisation rules as the mongo indexer
+        collection_name = (
+            collection_name.replace("..", "_")
+            .replace("$", "_")
+            .replace("\x00", "_")
+            .strip(".")
+        )
+        return collection_name
+
+    async def query_collection(
+        self,
+        collection_name: str,
+        filter_dict: Optional[dict[str, Any]] = None,
+        limit: int = 200,
+    ) -> list[dict[str, Any]]:
+        """Query a per-dataset collection and return rows."""
+        filter_dict = filter_dict or {}
+        cursor = self.db[collection_name].find(filter_dict).limit(limit)
+        documents = await cursor.to_list(length=limit)
+        for doc in documents:
+            doc["_id"] = str(doc["_id"])
+        return documents
+
+    async def count_collection(self, collection_name: str) -> int:
+        """Count documents in a per-dataset collection."""
+        return await self.db[collection_name].count_documents({})
+
     async def index_dataset(self, dataset: Dataset, batch_size: int = 1000):
         if not isinstance(dataset, Dataset):
             raise Exception("dataset is not Dataset type. WTF?")

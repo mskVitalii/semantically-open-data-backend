@@ -198,6 +198,167 @@ The datasets above include detailed field information with semantic interpretati
             logger.error(f"Failed to answer the research question: {e}", exc_info=True)
             raise
 
+    # region MONGO FILTERS
+
+    _mongo_filters_format = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "mongo_filters",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "filters": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "field": {"type": "string"},
+                                "operator": {
+                                    "type": "string",
+                                    "enum": ["eq", "ne", "gt", "gte", "lt", "lte", "in", "regex"],
+                                },
+                                "value": {
+                                    "anyOf": [
+                                        {"type": "string"},
+                                        {"type": "number"},
+                                        {"type": "boolean"},
+                                        {"type": "array", "items": {"type": "string"}},
+                                        {"type": "array", "items": {"type": "number"}},
+                                    ]
+                                },
+                            },
+                            "required": ["field", "operator", "value"],
+                            "additionalProperties": False,
+                        },
+                    }
+                },
+                "required": ["filters"],
+                "additionalProperties": False,
+            },
+        },
+    }
+
+    @staticmethod
+    def describe_fields_for_filter(metadata) -> str:
+        """Build a compact field description for the filter-generation prompt."""
+        lines: list[str] = []
+        if not metadata.fields:
+            return "No field information available."
+        for name, info in metadata.fields.items():
+            parts = [f"- {name} ({info.type})"]
+            parts.append(f"unique={info.unique_count}, nulls={info.null_count}")
+            from src.datasets.datasets_metadata import FieldNumeric, FieldDate, FieldString
+
+            if isinstance(info, FieldNumeric):
+                parts.append(
+                    f"range=[{info.quantile_0_min}, {info.quantile_100_max}], mean={info.mean:.2f}"
+                )
+            elif isinstance(info, FieldDate):
+                parts.append(f"range=[{info.min.isoformat()}, {info.max.isoformat()}]")
+            lines.append(", ".join(parts))
+        return "\n".join(lines)
+
+    async def get_mongo_filters(
+        self,
+        question: str,
+        dataset_title: str,
+        fields_info: str,
+    ) -> list[dict]:
+        """Ask ChatGPT to generate MongoDB filters for a research question."""
+        prompt = f"""Given this research question: "{question}"
+And this dataset: "{dataset_title}"
+With these fields:
+{fields_info}
+
+Generate MongoDB-style filters to retrieve the most relevant rows for answering the research question.
+Rules:
+- Only use fields that exist in the dataset
+- Use operator "eq" for exact match, "regex" for partial text match (case-insensitive)
+- Use "in" with a list of values for multiple matches
+- Return an empty filters array if no filtering is needed (the whole dataset is relevant)
+- Keep filters minimal — only filter when it clearly helps answer the question"""
+
+        result = await self.openai_by_api(
+            system_prompt=self.system_prompt,
+            messages=[prompt],
+            response_format=self._mongo_filters_format,
+        )
+        parsed = json.loads(result)
+        return parsed["filters"]
+
+    @staticmethod
+    def build_mongo_query(filters: list[dict]) -> dict:
+        """Convert a list of {field, operator, value} dicts into a MongoDB query."""
+        if not filters:
+            return {}
+
+        op_map = {
+            "eq": "$eq",
+            "ne": "$ne",
+            "gt": "$gt",
+            "gte": "$gte",
+            "lt": "$lt",
+            "lte": "$lte",
+            "in": "$in",
+        }
+
+        query: dict = {}
+        for f in filters:
+            field = f["field"]
+            operator = f["operator"]
+            value = f["value"]
+
+            if operator == "regex":
+                query[field] = {"$regex": value, "$options": "i"}
+            elif operator in op_map:
+                query.setdefault(field, {})[op_map[operator]] = value
+            else:
+                query[field] = value
+
+        return query
+
+    async def answer_research_question_with_data(
+        self, question: LLMQuestionWithDatasets, data_by_dataset_id: dict[str, list[dict]]
+    ) -> str:
+        context = question.to_llm_context_with_data(data_by_dataset_id)
+        instructions = """
+## How to Analyze the Datasets
+
+You have access to both field statistics AND actual data rows from the datasets. Use the real data to give concrete, evidence-based answers.
+
+**Analysis Approach:**
+1. Examine the actual data rows to find specific values, patterns, and examples
+2. Use field statistics for overall context (ranges, distributions, completeness)
+3. Cite specific data points and values from the rows
+4. If the data rows are a filtered subset, note that your analysis is based on a sample
+
+**Response Format:**
+- Write a single focused paragraph (3-5 sentences maximum)
+- Start by directly addressing the research question
+- Reference specific values and examples from the data rows
+- Use quantitative evidence wherever possible
+- If the data doesn't contain relevant information, clearly state this
+
+**Critical Rules:**
+- ONLY use information explicitly present in the data
+- Prefer citing actual data rows over just statistics
+- DO NOT make assumptions beyond what the data shows
+- ALWAYS answer in the language of the question (or default English)
+        """
+        prompt = f"{context}\n{instructions}"
+
+        try:
+            result = await self.openai_by_api(
+                system_prompt=self.system_prompt, messages=[prompt]
+            )
+            return result
+        except Exception as e:
+            logger.error(f"Failed to answer research question with data: {e}", exc_info=True)
+            raise
+
+    # endregion
+
     async def summary(self, messages: list[str]):
         prompt = "Summarize those paragraphs. Use 1 paragraph in answer"
 

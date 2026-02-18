@@ -255,3 +255,36 @@ class LLMQuestionWithDatasets(LLMQuestion):
             context_parts.append("")  # Empty line between datasets
 
         return "\n".join(context_parts)
+
+    def to_llm_context_with_data(self, data_by_dataset_id: dict[str, list[dict]]) -> str:
+        """Generate context that includes both field statistics and actual data rows."""
+        base_context = self.to_llm_context()
+
+        data_parts: list[str] = [base_context, "\n## Actual Data Rows"]
+
+        for dataset_response in self.datasets:
+            ds_id = dataset_response.metadata.id
+            rows = data_by_dataset_id.get(ds_id)
+            if not rows:
+                continue
+
+            data_parts.append(f"\n### Data from: {dataset_response.metadata.title}")
+            data_parts.append(f"**Rows retrieved**: {len(rows)}")
+
+            # Show rows as compact JSON (limit to 50 for prompt size)
+            display_rows = rows[:50]
+            # Remove internal fields from display
+            clean_rows = []
+            for row in display_rows:
+                clean = {
+                    k: v for k, v in row.items()
+                    if k not in ("_id", "created_at", "updated_at")
+                }
+                clean_rows.append(clean)
+
+            data_parts.append(f"```json\n{json.dumps(clean_rows, indent=1, ensure_ascii=False, default=str)}\n```")
+
+            if len(rows) > 50:
+                data_parts.append(f"_(showing 50 of {len(rows)} rows)_")
+
+        return "\n".join(data_parts)

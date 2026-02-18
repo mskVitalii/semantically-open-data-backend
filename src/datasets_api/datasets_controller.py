@@ -338,6 +338,9 @@ async def generate_events(
     use_reranker: bool = False,
     reranker_candidates: int | None = None,
     is_geo: bool = False,
+    use_mongo_data: bool = False,
+    mongo_data_limit: int = 200,
+    dataset_repository: DatasetRepository = None,
 ):
     step = 0
     try:
@@ -476,21 +479,99 @@ async def generate_events(
         step += 1
         # endregion
 
+        # region 3. MONGO DATA RETRIEVAL (optional)
+        # dict[question_hash → dict[dataset_id → list[row]]]
+        mongo_data_by_question: dict[str, dict[str, list[dict]]] = {}
+
+        if use_mongo_data and dataset_repository is not None:
+            logger.info(f"step: {step}. MONGO DATA RETRIEVAL start")
+            start_3 = time.perf_counter()
+            cache_prefix = "mongo_"
+
+            for i, q in enumerate(result_questions_with_datasets):
+                datasets_data: dict[str, dict] = {}  # for SSE payload
+                full_data: dict[str, list[dict]] = {}  # for interpretation
+
+                for ds in q.datasets:
+                    ds_id = ds.metadata.id
+                    try:
+                        collection_name = await dataset_repository.find_collection_name_by_external_id(ds_id)
+                        if collection_name is None:
+                            logger.warning(f"No collection found for dataset {ds_id}")
+                            continue
+
+                        count = await dataset_repository.count_collection(collection_name)
+                        if count == 0:
+                            continue
+
+                        if count <= 500:
+                            query_filter = {}
+                        else:
+                            fields_info = llm_service.describe_fields_for_filter(ds.metadata)
+                            filters = await llm_service.get_mongo_filters(
+                                q.question, ds.metadata.title, fields_info
+                            )
+                            query_filter = llm_service.build_mongo_query(filters)
+                            logger.info(f"Generated filter for '{ds.metadata.title}': {query_filter}")
+
+                        rows = await dataset_repository.query_collection(
+                            collection_name, query_filter, limit=mongo_data_limit
+                        )
+                        if len(rows) >= mongo_data_limit:
+                            logger.warning(
+                                f"Hit mongo_data_limit={mongo_data_limit} for '{ds.metadata.title}' "
+                                f"(collection has {count} docs)"
+                            )
+
+                        full_data[ds_id] = rows
+                        # Build sample (5 rows) for SSE event
+                        sample = []
+                        for row in rows[:5]:
+                            sample.append({
+                                k: v for k, v in row.items()
+                                if k not in ("_id", "created_at", "updated_at")
+                            })
+                        datasets_data[ds_id] = {
+                            "row_count": len(rows),
+                            "sample": sample,
+                        }
+                    except Exception as e:
+                        logger.error(f"Error fetching data for dataset {ds_id}: {e}")
+
+                mongo_data_by_question[q.question_hash] = full_data
+
+                yield f"data: {json.dumps({'step': step, 'sub_step': i, 'status': 'OK', 'data': {'question_hash': q.question_hash, 'datasets_data': datasets_data}}, default=str)}\n\n"
+
+                if not IS_DOCKER:
+                    await set_qa_cache(question, f"{cache_prefix}{step}_{i}", datasets_data)
+
+            elapsed_3 = time.perf_counter() - start_3
+            logger.info(f"step: {step}. MONGO DATA RETRIEVAL end (elapsed: {elapsed_3:.2f}s)")
+            step += 1
+        # endregion
+
         # region 4. INTERPRETATION
         if use_llm_interpretation:
             logger.info(f"step: {step}. INTERPRETATION start")
-            start_3 = time.perf_counter()
+            start_4 = time.perf_counter()
 
             for i, q in enumerate(result_questions_with_datasets):
-                start_3_i = time.perf_counter()
+                start_4_i = time.perf_counter()
                 logger.info(f"step: {step}.{str(i)} INTERPRETATION STEP start")
                 answer: list[str] | None = None
+
+                cache_key = f"mongo_{step}_{i}" if use_mongo_data else f"{step}_{i}"
                 if not IS_DOCKER:
-                    cached_answer = await check_qa_cache(question, f"{step}_{i}")
+                    cached_answer = await check_qa_cache(question, cache_key)
                     if cached_answer is not None:
                         answer = cached_answer
+
                 if answer is None:
-                    answer = await llm_service.answer_research_question(q)
+                    q_data = mongo_data_by_question.get(q.question_hash)
+                    if use_mongo_data and q_data:
+                        answer = await llm_service.answer_research_question_with_data(q, q_data)
+                    else:
+                        answer = await llm_service.answer_research_question(q)
 
                 logger.info(answer)
                 yield f"data: {
@@ -507,13 +588,13 @@ async def generate_events(
                     )
                 }\n\n"
                 if not IS_DOCKER:
-                    await set_qa_cache(question, f"{step}_{i}", answer)
-                elapsed_3_i = time.perf_counter() - start_3_i
+                    await set_qa_cache(question, cache_key, answer)
+                elapsed_4_i = time.perf_counter() - start_4_i
                 logger.info(
-                    f"step: {step}.{str(i)} INTERPRETATION STEP end (elapsed: {elapsed_3_i:.2f}s)"
+                    f"step: {step}.{str(i)} INTERPRETATION STEP end (elapsed: {elapsed_4_i:.2f}s)"
                 )
-            elapsed_3 = time.perf_counter() - start_3
-            logger.info(f"step: {step}. INTERPRETATION end (elapsed: {elapsed_3:.2f}s)")
+            elapsed_4 = time.perf_counter() - start_4
+            logger.info(f"step: {step}. INTERPRETATION end (elapsed: {elapsed_4:.2f}s)")
             step += 1
         else:
             logger.info(f"step: {step}. INTERPRETATION skipped (disabled by user)")
@@ -564,8 +645,19 @@ async def stream(
     is_geo: bool = Query(
         True, description="Include web_services data for geo datasets in results"
     ),
+    use_mongo_data: bool = Query(
+        False,
+        description="Enable MongoDB data retrieval step (step 3) to fetch actual data rows",
+    ),
+    mongo_data_limit: int = Query(
+        200,
+        ge=1,
+        le=1000,
+        description="Max rows to fetch per dataset from MongoDB",
+    ),
     datasets_service: DatasetService = Depends(get_dataset_service),
     llm_service: LLMService = Depends(get_llm_service_dep),
+    dataset_repository: DatasetRepository = Depends(get_dataset_repository),
 ):
     return StreamingResponse(
         generate_events(
@@ -584,6 +676,9 @@ async def stream(
             use_reranker,
             reranker_candidates,
             is_geo,
+            use_mongo_data,
+            mongo_data_limit,
+            dataset_repository,
         ),
         media_type="text/event-stream",
     )
